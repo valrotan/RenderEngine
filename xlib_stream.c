@@ -1,9 +1,6 @@
 #include <X11/Xlib.h>
-#include <X11/extensions/XShm.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
 #include <sys/stat.h>
 #include <time.h>
 
@@ -22,31 +19,30 @@ void modifyImage(XImage *image, int offset) {
 	}
 }
 
+int width = 3*256, height = 3*256;
+unsigned char *imageData;
 int i;
 int completionType;
 struct timespec start, end;
 
-void processEvent(Display *display, Window window, XShmSegmentInfo *shminfo,
+void processEvent(Display *display, Window window,
 									XImage *image, int width, int height) {
 	XEvent ev;
 	XNextEvent(display, &ev);
-	if (ev.type == completionType || ev.type == Expose) {
+	if (ev.type == Expose) {
 
 		modifyImage(image, i++);
+
 		clock_gettime(CLOCK_MONOTONIC_RAW, &end);
 		uint64_t delta = (end.tv_sec - start.tv_sec) * 1000000 + (end.tv_nsec - start.tv_nsec) / 1000;
 		printf("draw took : %d micros\n", delta);
 		clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-		XShmPutImage(display, window, DefaultGC(display, 0), image, 0, 0, 0, 0,
-								 width, height, True);
+
+		XPutImage(display, window, DefaultGC(display, 0), image, 0, 0, 0, 0,
+								 width, height);
 
 	} else if (ev.type = ButtonPress) {
 
-		printf("destroying shared memory\n");
-		XShmDetach(display, shminfo);
-		XDestroyImage(image);
-		shmdt(shminfo->shmaddr);
-		shmctl(shminfo->shmid, IPC_RMID, 0);
 		printf("done.\n");
 		exit(0);
 	}
@@ -56,8 +52,8 @@ int main() {
 
 	printf("starting...\n");
 
+	imageData = (unsigned char *)malloc(width * height * 4);
 	XImage *image;
-	int width = 256, height = 256;
 	Display *display = XOpenDisplay(NULL);
 	Visual *visual = DefaultVisual(display, 0);
 	Window window = XCreateSimpleWindow(display, RootWindow(display, 0), 0, 0,
@@ -73,41 +69,18 @@ int main() {
 	XMapWindow(display, window);
 	printf("mapped window\n");
 
-	completionType = XShmGetEventBase(display) + ShmCompletion;
-
-	int screen = DefaultScreen(display);
-	XShmSegmentInfo shminfo;
-
 	// XImage *XShmCreateImage (display, visual, depth, format, data,
 	//													shminfo,
 	// width, height)
-	image = XShmCreateImage(
+	image = XCreateImage(
 			display, visual,
 			24, // Determine correct depth from the visual. Omitted for brevity
-			ZPixmap, NULL, &shminfo, width, height);
-	printf("created image:\n");
-	printf("%d x %d = %d\n", image->bytes_per_line, image->height,
-				 image->bytes_per_line * image->height);
+			ZPixmap, NULL, imageData, width, height, 32, width * 32 / 8);
 
-	shminfo.shmid = shmget(IPC_PRIVATE, image->bytes_per_line * image->height,
-												 IPC_CREAT | 0777);
-	if (shminfo.shmid < 0) {
-		perror("Failed to Create Shared Memory Key\n");
-		exit(0);
-	}
-	printf("got shared memory\n");
-
-	shminfo.shmaddr = image->data = shmat(shminfo.shmid, 0, 0);
-	shminfo.readOnly = False; // the server does not need to write to the image
-														// so could be false???
-	printf("created memory segment\n");
-
-	XShmAttach(display, &shminfo);
-	printf("attached to sharead memory\n");
 	printf("drawing...\n");
 
 	while (1) {
-		processEvent(display, window, &shminfo, image, width, height);
+		processEvent(display, window, image, width, height);
 	}
 
 	return 0;
