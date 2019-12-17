@@ -60,15 +60,18 @@ int main(int argc, char *argv[]) {
 	createRGB();
 	loadImage(rgbImage);
 
-	for (;;offset++) {
-		createRGB();
-		clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-		uint64_t delta = (end.tv_sec - start.tv_sec) * 1000000 + (end.tv_nsec - start.tv_nsec) / 1000;
-		printf("draw took : %d micros\n", delta);
-		clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+	for (;; offset++) {
 
+//		clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+
+		createRGB();
+		loadImage(rgbImage);
 		gtk_main_iteration();
 
+//		clock_gettime(CLOCK_MONOTONIC_RAW, &end);
+//		uint64_t delta = (end.tv_sec - start.tv_sec) * 1000000 +
+//										 (end.tv_nsec - start.tv_nsec) / 1000;
+//		printf("draw took : %d micros\n", delta);
 	}
 
 	return 0;
