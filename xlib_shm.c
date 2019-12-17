@@ -30,9 +30,10 @@ void processEvent(Display *display, Window window, XShmSegmentInfo *shminfo,
 									XImage *image, int width, int height) {
 	XEvent ev;
 	XNextEvent(display, &ev);
+	modifyImage(image, i++);
 	if (ev.type == completionType || ev.type == Expose) {
 
-		modifyImage(image, i++);
+//		modifyImage(image, i++);
 		clock_gettime(CLOCK_MONOTONIC_RAW, &end);
 		uint64_t delta = (end.tv_sec - start.tv_sec) * 1000000 + (end.tv_nsec - start.tv_nsec) / 1000;
 		printf("draw took : %d micros\n", delta);
