@@ -2,7 +2,7 @@
 
 #include "point.h"
 
-struct Polygon {
+typedef struct {
 	Point *points;
 	int npoints;
-};
+} Polygon;

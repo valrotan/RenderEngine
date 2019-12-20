@@ -1,5 +1,5 @@
 #pragma once
 
-typedef struct Vector {
+typedef struct {
 	float dx, dy, dz;
 } Vector;

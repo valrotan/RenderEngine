@@ -2,6 +2,6 @@
 
 #include "point.h"
 
-struct Triangle {
+typedef struct {
 	Point p1, p2, p3;
-};
+} Triangle;

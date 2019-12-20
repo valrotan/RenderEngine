@@ -3,7 +3,7 @@
 #include "point.h"
 #include "vector.h"
 
-struct Ray {
+typedef struct {
 	Point p;
 	Vector v;
-};
+} Ray;

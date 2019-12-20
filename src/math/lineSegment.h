@@ -2,6 +2,6 @@
 
 #include "point.h"
 
-struct LineSegment {
+typedef struct {
 	Point p1, p2;
-};
+} LineSegment;
