@@ -1,13 +1,15 @@
 #include <stdio.h>
 
-#include "../src/math/math.h"
+#include "renderMathTests.h"
 
 int main() {
 
-	printf("Runnning tests...");
+	printf("Runnning tests...\n");
 
-	Point p = {1, 2, 3};
-	printf("Point (%f. %f, %f)\n", p.x, p.y, p.z);
+	printf("Running math tests...\n");
+	runMathTests();
+
+	printf("Finished testing.\n");
 
 	return 0;
 }
