@@ -4,7 +4,7 @@
 int main()
 {
 
-	Point p = {0, 1, 2};
+	Point3D p = {0, 1, 2};
 
 	printf("Point (%f, %f, %f)\n", p.x, p.y, p.z);
 

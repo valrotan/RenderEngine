@@ -1,19 +1,4 @@
-#pragma once
-
-#include "../math/renderMath.h"
-
-typedef struct {
-	Point3D pos;
-	Vector3D dir;
-	Vector3D up;
-	float xfov;
-	float yfov;
-} Camera;
-
-typedef struct {
-	Triangle3D *triangles;
-	int nTriangles;
-} Scene;
+#include "renderer.h"
 
 char *rayCast(Camera *camera, Scene *scene, int width, int height);
 
