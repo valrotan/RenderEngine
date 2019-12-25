@@ -12,7 +12,7 @@ void runRendererTests() {
 	camera.up = up;
 	camera.screenZ = 150;
 
-	Ray3D *ray = constructRayThroughPixel(&camera, 0, 0);
+	/*Ray3D *ray = constructRayThroughPixel(&camera, 0, 0);
 	printf("Ray (%f, %f, %f) towards <%f, %f, %f>\n", ray->p.x, ray->p.y,
 				 ray->p.z, ray->v.dx, ray->v.dy, ray->v.dz);
 
@@ -22,6 +22,6 @@ void runRendererTests() {
 
 	ray = constructRayThroughPixel(&camera, 0, 1);
 	printf("Ray (%f, %f, %f) towards <%f, %f, %f>\n", ray->p.x, ray->p.y,
-				 ray->p.z, ray->v.dx, ray->v.dy, ray->v.dz);
+				 ray->p.z, ray->v.dx, ray->v.dy, ray->v.dz);*/
 	// TODO: add actual tests
 }

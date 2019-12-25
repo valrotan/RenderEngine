@@ -89,5 +89,8 @@
     <ClInclude Include="src\src\math\renderMath.h">
       <Filter>Header Files\math</Filter>
     </ClInclude>
+    <ClInclude Include="src\tests\tests.h">
+      <Filter>Header Files\tests</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

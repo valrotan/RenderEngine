@@ -140,6 +140,7 @@
     <ClInclude Include="src\tests\rendererTests.h" />
     <ClInclude Include="src\tests\renderMathTests.h" />
     <ClInclude Include="src\tests\testing.h" />
+    <ClInclude Include="src\tests\tests.h" />
     <ClInclude Include="src\tests\visualizerTests.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
