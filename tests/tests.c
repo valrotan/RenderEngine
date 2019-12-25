@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "renderMathTests.h"
+#include "rendererTests.h"
 #include "visualizerTests.h"
 
 int main() {
@@ -10,8 +11,11 @@ int main() {
 	printf("Running math tests...\n");
 	runMathTests();
 
-	printf("Running visualizer tests...\n");
-	runVisualizerTests();
+	printf("Running renderer tests...\n");
+	runRendererTests();
+
+//	printf("Running visualizer tests...\n");
+//	runVisualizerTests();
 
 	printf("Finished testing.\n");
 
