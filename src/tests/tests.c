@@ -3,8 +3,9 @@
 #include "renderMathTests.h"
 #include "rendererTests.h"
 #include "visualizerTests.h"
+#include "tests.h"
 
-int main() {
+int runAllTests() {
 
 	printf("Runnning tests...\n");
 

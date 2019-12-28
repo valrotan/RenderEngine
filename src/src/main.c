@@ -1,12 +1,11 @@
 #include <stdio.h>
 #include "math/renderMath.h"
+#include "../tests/tests.h"
 
 int main()
 {
 
-	Point3D p = {0, 1, 2};
-
-	printf("Point (%f, %f, %f)\n", p.x, p.y, p.z);
+	int result = runAllTests();
 
 	return 0;
 }
