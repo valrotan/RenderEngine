@@ -36,4 +36,4 @@ char *traceRay(Scene *scene, Ray3D *ray);
 
 void findIntersection(Scene *scene, Ray3D *ray);
 
-void getColor(); // TBD based on traceRay implementation
+void getColor(void); // TBD based on traceRay implementation

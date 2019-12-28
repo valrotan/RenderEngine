@@ -1,6 +1,16 @@
 #include "renderer.h"
 
-char *rayCast(Camera *camera, Scene *scene, int width, int height) {}
+char *rayCast(Camera *camera, Scene *scene, int width, int height) {
+	Ray3D *ray;
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
+			ray = constructRayThroughPixel(camera, x, y);
+			// trace ray (ray)
+			//   find intersection
+			//   get color + trace ray (for each intersection bounced ray)
+		}
+	}
+}
 
 // TODO change basically everything
 Ray3D *constructRayThroughPixel(Camera *camera, int x, int y) {
@@ -15,8 +25,24 @@ Ray3D *constructRayThroughPixel(Camera *camera, int x, int y) {
 	return ray;
 }
 
-char *traceRay(Scene *scene, Ray3D *ray);
+char *traceRay(Scene *scene, Ray3D *ray) {
+	// findIntersection()
+	// Intersection {
+	//   // could be a pointer to the original I guess
+	//   // could also be a pointer to a surface wrapper of triangle
+	//   // to store information like reflectivity
+	//   triangle t
+	//   point p
+	//   vector *bouncedVectors
+	//   float *bouncedCoefs
+	//   int nBouncedVectors
+	// };
+	// light = getColor(scene, intersection)
+	// for bounced vectors in intersection
+	//   light += bounced coef * traceRay(scene, bounced ray)
+	return 0;
+}
 
 void findIntersection(Scene *scene, Ray3D *ray);
 
-void getColor(); // TBD based on traceRay implementation
+void getColor(void); // TBD based on traceRay implementation
