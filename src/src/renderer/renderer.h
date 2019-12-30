@@ -28,7 +28,7 @@ typedef struct {
 	int nTriangles;
 } Scene;
 
-char *rayCast(Camera *camera, Scene *scene, int width, int height);
+void rayCast(Camera *camera, Scene *scene, char *screen, int width, int height);
 
 Ray3D *constructRayThroughPixel(Camera *camera, int x, int y);
 

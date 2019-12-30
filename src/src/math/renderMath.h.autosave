@@ -58,7 +58,7 @@ float dot(Vector3D *a, Vector3D *b);
 float dot2D(Vector2D *a, Vector2D *b);
 Vector3D *add(Vector3D *a, Vector3D *b);
 Vector3D *sub(Vector3D *a, Vector3D *b);
-Vector3D *mul(float f, Vector3D *v);
+Vector3D *mul(Vector3D *v, float f);
 Vector3D *div(Vector3D *v, float f);
 Vector3D *cross(Vector3D *a, Vector3D *b);
 float mag(Vector3D *v);

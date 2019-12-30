@@ -1,6 +1,7 @@
 #include "renderer.h"
+#include "stdlib.h"
 
-char *rayCast(Camera *camera, Scene *scene, int width, int height) {
+void rayCast(Camera *camera, Scene *scene, char *screen, int width, int height) {
 	Ray3D *ray;
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
@@ -43,6 +44,15 @@ char *traceRay(Scene *scene, Ray3D *ray) {
 	return 0;
 }
 
-void findIntersection(Scene *scene, Ray3D *ray);
+void findIntersection(Scene *scene, Ray3D *ray) {
+	/*
+	 * Intersection intersections[scene.size]
+	 * for shape in scene
+	 *   if shape.intersectsWith ray
+	 *     intersections[i] = intersection
+	 * // find closest intersection
+	 *
+	 */
+}
 
 void getColor(void); // TBD based on traceRay implementation
