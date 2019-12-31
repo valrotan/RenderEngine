@@ -47,7 +47,7 @@ typedef struct {
 } Ray3D;
 
 typedef struct {
-	Vector3D point;
+	Vector3D *point;
 	Triangle3D *triangle;
 	Ray3D *originalRay;
 	Ray3D *reflectionRay;
@@ -59,7 +59,7 @@ float dot2D(Vector2D *a, Vector2D *b);
 Vector3D *add(Vector3D *a, Vector3D *b);
 Vector3D *sub(Vector3D *a, Vector3D *b);
 Vector3D *mul(Vector3D *v, float f);
-Vector3D *div(Vector3D *v, float f);
+Vector3D *divide(Vector3D *v, float f);
 Vector3D *cross(Vector3D *a, Vector3D *b);
 float mag(Vector3D *v);
 float mag2D(Vector2D *v);

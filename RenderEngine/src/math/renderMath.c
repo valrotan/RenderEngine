@@ -46,7 +46,7 @@ Vector3D *mul(Vector3D *v, float f) {
 	return w;
 }
 
-Vector3D *div(Vector3D *v, float f) {
+Vector3D *divide(Vector3D *v, float f) {
 	Vector3D *w = (Vector3D *)malloc(sizeof(Vector3D));
 
 	w->x = v->x / f;
@@ -81,9 +81,32 @@ Intersection3D *intersect(Ray3D *r, Triangle3D *t) {
 
 	float u = -(dot(&(r->p), &(t->plane.v)) + t->plane.d) /
 						(dot(&(r->v), &(t->plane.v)));
-	i->point = *add(&(r->p), mul(&(r->v), u));
+	i->point = add(&(r->p), mul(&(r->v), u));
 
-	// TODO: out of bounds check for ray within triangle
+	// out of bounds check for ray within triangle
+	Vector3D *v1 = sub(&t->p1, i->point);
+	Vector3D *v2 = sub(&t->p2, i->point);
+	Vector3D *v3 = sub(&t->p3, i->point);
+	Vector3D *n1 = cross(v2, v1);
+	Vector3D *n2 = cross(v1, v3);
+	Vector3D *n3 = cross(v3, v2);
+	float d = dot(i->point, n1);
+	float d1 = dot(&r->p, n1); // might need to normalize N1
+	float d2 = dot(&r->p, n2); // might need to normalize N1
+	float d3 = dot(&r->p, n3); // might need to normalize N1
+	if (d < d1) {
+		i->point = 0;
+	} else if (d < d2) {
+		i->point = 0;
+	} else if (d < d3) {
+		i->point = 0;
+	}
+	free(v1);
+	free(v2);
+	free(v3);
+	free(n1);
+	free(n2);
+	free(n3);
 
 	return i;
 }

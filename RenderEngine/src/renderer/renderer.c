@@ -1,7 +1,9 @@
 #include "renderer.h"
 #include "stdlib.h"
+#include "float.h"
 
-void rayCast(Camera *camera, Scene *scene, char *screen, int width, int height) {
+void rayCast(Camera *camera, Scene *scene, char *screen, int width,
+						 int height) {
 	Ray3D *ray;
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
@@ -20,9 +22,9 @@ Ray3D *constructRayThroughPixel(Camera *camera, int x, int y) {
 	// ray->v = camera->dir; // for (0, 0)
 
 	// suppose camera is pointing at origin from +z axis
-	ray->v.dx = x;
-	ray->v.dy = y;
-	ray->v.dz = camera->pos.z - camera->screenZ;
+	ray->v.x = x;
+	ray->v.y = y;
+	ray->v.z = camera->pos.z - camera->screenZ;
 	return ray;
 }
 
@@ -44,15 +46,22 @@ char *traceRay(Scene *scene, Ray3D *ray) {
 	return 0;
 }
 
-void findIntersection(Scene *scene, Ray3D *ray) {
-	/*
-	 * Intersection intersections[scene.size]
-	 * for shape in scene
-	 *   if shape.intersectsWith ray
-	 *     intersections[i] = intersection
-	 * // find closest intersection
-	 *
-	 */
+Intersection3D *findIntersection(Scene *scene, Ray3D *ray) {
+
+	Intersection3D *intersection =
+			(Intersection3D *)malloc(sizeof(Intersection3D));
+	Intersection3D *tempIntersection;
+	float minDist = FLT_MAX;
+
+	for (int i = 0; i < scene->nTriangles; i++) {
+		tempIntersection = intersect(ray, &scene->triangles[i]);
+		if (tempIntersection->point != 0) {
+			if (1) {
+
+				}
+		}
+	}
+	return intersection;
 }
 
 void getColor(void); // TBD based on traceRay implementation

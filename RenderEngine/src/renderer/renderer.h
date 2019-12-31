@@ -4,7 +4,7 @@
 
 // todo: change screenZ to fov
 typedef struct {
-	Point3D pos;
+	Vector3D pos;
 	Vector3D dir;
 	Vector3D up;
 	//	float xfov;
@@ -34,6 +34,6 @@ Ray3D *constructRayThroughPixel(Camera *camera, int x, int y);
 
 char *traceRay(Scene *scene, Ray3D *ray);
 
-void findIntersection(Scene *scene, Ray3D *ray);
+Intersection3D *findIntersection(Scene *scene, Ray3D *ray);
 
 void getColor(void); // TBD based on traceRay implementation

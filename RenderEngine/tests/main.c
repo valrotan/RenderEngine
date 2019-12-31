@@ -1,7 +1,7 @@
 #include <stdio.h>
-#include "math/renderMath.h"
-#include "../tests/tests.h"
+#include "tests.h"
 
+// TODO: go through and free memory probably
 int main()
 {
 
