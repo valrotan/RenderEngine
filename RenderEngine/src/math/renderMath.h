@@ -61,6 +61,7 @@ Vector3D *sub(Vector3D *a, Vector3D *b);
 Vector3D *mul(Vector3D *v, float f);
 Vector3D *divide(Vector3D *v, float f);
 Vector3D *cross(Vector3D *a, Vector3D *b);
+void norm(Vector3D *v);
 float mag(Vector3D *v);
 float mag2D(Vector2D *v);
 float dist(Vector3D *a, Vector3D *b);

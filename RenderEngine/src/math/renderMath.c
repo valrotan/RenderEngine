@@ -16,6 +16,13 @@ float dot2D(Vector2D *a, Vector2D *b) { // dot a, b; place result in out
 
 float mag2D(Vector2D *v) { return sqrtf(powf(v->x, 2) + powf(v->y, 2)); }
 
+void norm(Vector3D *v) {
+	float l = mag(v);
+	v->x /= l;
+	v->y /= l;
+	v->z /= l;
+}
+
 Vector3D *add(Vector3D *a, Vector3D *b) {
 	Vector3D *v = (Vector3D *)malloc(sizeof(Vector3D));
 
@@ -82,24 +89,36 @@ Intersection3D *intersect(Ray3D *r, Triangle3D *t) {
 	float u = -(dot(&(r->p), &(t->plane.v)) + t->plane.d) /
 						(dot(&(r->v), &(t->plane.v)));
 	i->point = add(&(r->p), mul(&(r->v), u));
-
+	//	printf("%f %f %f\n", r->v.x, r->v.y, r->v.z);
 	// out of bounds check for ray within triangle
-	Vector3D *v1 = sub(&t->p1, i->point);
-	Vector3D *v2 = sub(&t->p2, i->point);
-	Vector3D *v3 = sub(&t->p3, i->point);
-	Vector3D *n1 = cross(v2, v1);
-	Vector3D *n2 = cross(v1, v3);
-	Vector3D *n3 = cross(v3, v2);
-	float d = dot(i->point, n1);
+	Vector3D *v1 = sub(&t->p1, &r->p);
+	Vector3D *v2 = sub(&t->p2, &r->p);
+	Vector3D *v3 = sub(&t->p3, &r->p);
+	Vector3D *n1 = cross(v3, v1);
+	Vector3D *n2 = cross(v1, v2);
+	Vector3D *n3 = cross(v2, v3);
+	norm(n1);
+	norm(n2);
+	norm(n3);
+	float o1 = dot(i->point, n1);
+	float o2 = dot(i->point, n2);
+	float o3 = dot(i->point, n3);
 	float d1 = dot(&r->p, n1); // might need to normalize N1
 	float d2 = dot(&r->p, n2); // might need to normalize N1
 	float d3 = dot(&r->p, n3); // might need to normalize N1
-	if (d < d1) {
+	if (o1 < d1) {
+//		printf("fail 1 (%f, %f, %f)\n", i->point->x, i->point->y, i->point->z);
 		i->point = 0;
-	} else if (d < d2) {
+	} else if (o2 < d2) {
+//		printf("fail 2 (%f, %f, %f)\n", i->point->x, i->point->y, i->point->z);
 		i->point = 0;
-	} else if (d < d3) {
+	} else if (o3 < d3) {
+//		printf("fail 3 (%f, %f, %f)\n", i->point->x, i->point->y, i->point->z);
 		i->point = 0;
+	}
+	if (i->point != 0) {
+		printf("Point (%f, %f, %f) in bounds\n", i->point->x, i->point->y,
+					 i->point->z);
 	}
 	free(v1);
 	free(v2);
