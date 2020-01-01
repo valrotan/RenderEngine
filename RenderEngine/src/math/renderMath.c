@@ -18,10 +18,11 @@ float mag2D(Vector2D *v) { return sqrtf(powf(v->x, 2) + powf(v->y, 2)); }
 
 Vector3D *norm(Vector3D *v) {
 	float l = mag(v);
-	v->x /= l;
-	v->y /= l;
-	v->z /= l;
-	return v;
+	Vector3D *o = (Vector3D *)malloc(sizeof(Vector3D));
+	o->x = v->x / l;
+	o->y = v->y / l;
+	o->z = v->z / l;
+	return o;
 }
 
 Vector3D *add(Vector3D *a, Vector3D *b) {
@@ -79,18 +80,18 @@ float dist(Vector3D *a, Vector3D *b) {
 							 powf(b->z - a->z, 2));
 }
 
-// TODO: experiment with out of bounds
-// TODO: reflection + refraction
-// TODO: get rid of copy for intersection point setting
+// TODO: reflection + refraction + ...
 Intersection3D *intersect(Ray3D *r, Triangle3D *t) {
 	Intersection3D *i = (Intersection3D *)malloc(sizeof(Intersection3D));
 	i->triangle = t;
 	i->originalRay = r;
 
-	float u = -(dot(r->p, t->plane->v) + t->plane->d) /
-						(dot(r->v, t->plane->v));
+	// TODO: free all the intermediate vectors or
+	// figure out how to do it no-copy style
+	float u = -(dot(r->p, t->plane->v) + t->plane->d) / (dot(r->v, t->plane->v));
 	i->point = add(r->p, mul(r->v, u));
 	//	printf("%f %f %f\n", r->v.x, r->v.y, r->v.z);
+
 	// out of bounds check for ray within triangle
 	Vector3D *v1 = sub(t->p1, r->p);
 	Vector3D *v2 = sub(t->p2, r->p);
@@ -98,29 +99,22 @@ Intersection3D *intersect(Ray3D *r, Triangle3D *t) {
 	Vector3D *n1 = cross(v3, v1);
 	Vector3D *n2 = cross(v1, v2);
 	Vector3D *n3 = cross(v2, v3);
-	norm(n1);
-	norm(n2);
-	norm(n3);
+	//	norm(n1);
+	//	norm(n2);
+	//	norm(n3);
 	float o1 = dot(i->point, n1);
 	float o2 = dot(i->point, n2);
 	float o3 = dot(i->point, n3);
-	float d1 = dot(r->p, n1); // might need to normalize N1
-	float d2 = dot(r->p, n2); // might need to normalize N1
-	float d3 = dot(r->p, n3); // might need to normalize N1
+	float d1 = dot(r->p, n1);
+	float d2 = dot(r->p, n2);
+	float d3 = dot(r->p, n3);
 	if (o1 < d1) {
-//		printf("fail 1 (%f, %f, %f)\n", i->point->x, i->point->y, i->point->z);
 		i->point = 0;
 	} else if (o2 < d2) {
-//		printf("fail 2 (%f, %f, %f)\n", i->point->x, i->point->y, i->point->z);
 		i->point = 0;
 	} else if (o3 < d3) {
-//		printf("fail 3 (%f, %f, %f)\n", i->point->x, i->point->y, i->point->z);
 		i->point = 0;
 	}
-//	if (i->point != 0) {
-//		printf("Point (%f, %f, %f) in bounds\n", i->point->x, i->point->y,
-//					 i->point->z);
-//	}
 	free(v1);
 	free(v2);
 	free(v3);

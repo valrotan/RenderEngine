@@ -32,8 +32,6 @@ typedef struct {
 	Vector3D *point;
 	Triangle3D *triangle;
 	Ray3D *originalRay;
-	Ray3D *reflectionRay;
-	Ray3D *refractionRay;
 } Intersection3D;
 
 static Vector3D ORIGIN_3D = {0, 0, 0};

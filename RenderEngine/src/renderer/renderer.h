@@ -22,10 +22,32 @@ typedef struct {
 // (0,0,1)
 // 150
 
+typedef struct {
+	float intensity;
+	Vector3D *point;
+	Vector3D *attenuationCoeffs;
+} PointLight;
+
+typedef struct {
+	float intensity;
+	Vector3D *direction;
+} DirectionalLight;
+
+typedef struct {
+	float intensity;
+	Vector3D *point;
+	Vector3D *direction;
+	Vector3D *attenuationCoeffs;
+} SpotLight;
+
 // Only triangles for now I guess
 typedef struct {
 	Triangle3D *triangles;
 	int nTriangles;
+
+	PointLight *pointLights;
+	int nPointLights;
+
 } Scene;
 
 typedef struct {
@@ -40,8 +62,8 @@ void rayCast(Camera *camera, Scene *scene, unsigned char *screen, int width,
 
 Ray3D *constructRayThroughPixel(Camera *camera, int x, int y);
 
-char *traceRay(Scene *scene, Ray3D *ray);
+unsigned char *traceRay(Scene *scene, Ray3D *ray);
 
 Intersection3D *findIntersection(Scene *scene, Ray3D *ray);
 
-void getColor(void); // TBD based on traceRay implementation
+unsigned char *getColor(Scene *scene, Intersection3D *intersection);

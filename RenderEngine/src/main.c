@@ -37,6 +37,15 @@ void triangleRayIntersectDemo() {
 	scene.triangles = t;
 	scene.nTriangles = 2;
 
+	PointLight pointLight;
+	Vector3D pointLightLoc = {20, 20,	50};
+	pointLight.point = &pointLightLoc;
+	pointLight.intensity = 2;
+	Vector3D pointLightCoeffs = {1, 0, 0};
+	pointLight.attenuationCoeffs = &pointLightCoeffs;
+	scene.pointLights = &pointLight;
+	scene.nPointLights = 1;
+
 	Renderer renderer = {&camera, &scene};
 
 	rendererInit(&renderer);
