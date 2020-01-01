@@ -2,6 +2,18 @@
 #include "float.h"
 #include "stdlib.h"
 
+void rendererInit(Renderer *renderer) {
+	for (int i = 0; i < renderer->scene->nTriangles; i++) {
+		Triangle3D *t = &renderer->scene->triangles[i];
+		Vector3D *v1 = sub(t->p1, t->p3);
+		Vector3D *v2 = sub(t->p1, t->p2);
+		t->plane = (Plane3D *)malloc(sizeof(Plane3D));
+		t->plane->v = cross(v1, v2);
+		norm(t->plane->v);
+		t->plane->d = dot(v1, t->plane->v);
+	}
+}
+
 void rayCast(Camera *camera, Scene *scene, unsigned char *screen, int width,
 						 int height) {
 	Ray3D *ray;
@@ -13,8 +25,7 @@ void rayCast(Camera *camera, Scene *scene, unsigned char *screen, int width,
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
 			ray = constructRayThroughPixel(camera, x - halfWidth, y - halfHeight);
-			//			printf("%f %f %f\n", ray->v.x, ray->v.y,
-			// ray->v.z);
+
 			// start temp code
 			if (findIntersection(scene, ray) != 0) {
 				*p++ = 255;
@@ -38,13 +49,14 @@ void rayCast(Camera *camera, Scene *scene, unsigned char *screen, int width,
 // TODO change basically everything
 Ray3D *constructRayThroughPixel(Camera *camera, int x, int y) {
 	Ray3D *ray = (Ray3D *)malloc(sizeof(Ray3D));
-	ray->p = camera->pos;
+	ray->p = &camera->pos;
 	// ray->v = camera->dir; // for (0, 0)
 
 	// suppose camera is pointing at origin from +z axis
-	ray->v.x = x;
-	ray->v.y = y;
-	ray->v.z = -camera->screenZ;
+	ray->v = (Vector3D *)malloc(sizeof(Vector3D));
+	ray->v->x = x;
+	ray->v->y = y;
+	ray->v->z = -camera->screenZ;
 	return ray;
 }
 
@@ -78,18 +90,19 @@ Intersection3D *findIntersection(Scene *scene, Ray3D *ray) {
 		//		Vector3D *r = tempIntersection->point;
 		//		printf("%f %f %f\n", r->x, r->y, r->z);
 		if (tempIntersection->point != 0) {
-			printf("%f\n", dist(&ray->p, tempIntersection->point));
-			if ((tempDist = dist(&ray->p, tempIntersection->point)) < minDist) {
+			//			printf("%f\n", dist(&ray->p,
+			// tempIntersection->point));
+			if ((tempDist = dist(ray->p, tempIntersection->point)) < minDist) {
 				free(intersection);
 				intersection = tempIntersection;
 				minDist = tempDist;
 			}
 		}
 	}
-	if (intersection != 0) {
-		Vector3D *r = intersection->point;
-		printf("found intersection (%f %f %f)\n", r->x, r->y, r->z);
-	}
+	//	if (intersection != 0) {
+	//		Vector3D *r = intersection->point;
+	//		printf("found intersection (%f %f %f)\n", r->x, r->y, r->z);
+	//	}
 	return intersection;
 }
 

@@ -29,15 +29,17 @@ void triangleRayIntersectDemo() {
 	Vector3D d = {0, 0, 0};
 	Vector3D e = {0, -50, 0};
 	Vector3D f = {-50, 0, 0};
-	Vector3D pv = {0, 0, 1};
-	Plane3D p = {pv, 0};
 	Triangle3D *t = (Triangle3D *)malloc(sizeof(Triangle3D) * 2);
-	Triangle3D temp1 = {a, b, c, p};
-	Triangle3D temp2 = {d, e, f, p};
+	Triangle3D temp1 = {&a, &b, &c};
+	Triangle3D temp2 = {&d, &e, &f};
 	t[0] = temp1;
 	t[1] = temp2;
 	scene.triangles = t;
 	scene.nTriangles = 2;
+
+	Renderer renderer = {&camera, &scene};
+
+	rendererInit(&renderer);
 
 	printf("Raycasting...\n");
 

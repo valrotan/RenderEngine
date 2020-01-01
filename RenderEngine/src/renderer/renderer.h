@@ -28,6 +28,13 @@ typedef struct {
 	int nTriangles;
 } Scene;
 
+typedef struct {
+	Camera *camera;
+	Scene *scene;
+} Renderer;
+
+void rendererInit(Renderer *renderer);
+
 void rayCast(Camera *camera, Scene *scene, unsigned char *screen, int width,
 						 int height);
 
