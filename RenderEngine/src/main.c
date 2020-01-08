@@ -30,8 +30,8 @@ void triangleRayIntersectDemo() {
 	Vector3D e = {0, -50, 0};
 	Vector3D f = {-50, 0, 0};
 	Triangle3D *t = (Triangle3D *)malloc(sizeof(Triangle3D) * 2);
-	Triangle3D temp1 = {&a, &b, &c};
-	Triangle3D temp2 = {&d, &e, &f};
+	Triangle3D temp1 = {&a, &b, &c, 0, .1};
+	Triangle3D temp2 = {&d, &e, &f, 0, .8};
 	t[0] = temp1;
 	t[1] = temp2;
 	scene.triangles = t;

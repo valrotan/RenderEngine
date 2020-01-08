@@ -21,6 +21,7 @@ typedef struct {
 typedef struct {
 	Vector3D *p1, *p2, *p3;
 	Plane3D *plane;
+	float lightEmission;
 } Triangle3D;
 
 typedef struct {

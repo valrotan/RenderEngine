@@ -44,10 +44,8 @@ typedef struct {
 typedef struct {
 	Triangle3D *triangles;
 	int nTriangles;
-
 	PointLight *pointLights;
 	int nPointLights;
-
 } Scene;
 
 typedef struct {

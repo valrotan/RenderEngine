@@ -126,26 +126,36 @@ unsigned char *getColor(Camera *camera, Scene *scene,
 
 	float i = 0;
 
+	float ia = .25;
+	float ie = intersection->triangle->lightEmission;
+
+	// for each light source:
 	// intersection to light
 	// diffuse light
 	Vector3D *l = sub(intersection->point, scene->pointLights->point);
 	l = norm(l);
 	Vector3D *n = intersection->triangle->plane->v; // normal
-	float K_D = .25;
+	float K_D = .125;
 	float id = -K_D * dot(n, l) * scene->pointLights->intensity;
 
 	// specular reflection
 	Vector3D *v = sub(&camera->pos, intersection->point);
 	// r=d-2(dot(dn))n
 	Vector3D *reflected = sub(l, mul(n, 2 * dot(l, n)));
-	float K_S = .5;
+	float K_S = .25;
 	float N = 3;
 	float is = dot(norm(v), norm(reflected));
 	if (is > 0) {
 		is = K_S * pow(is, N) * scene->pointLights->intensity;
 	}
+	// endfor
 
-	i = id + is;
+	// if light is blocked (intersection with scene w/ dist < len(ray))
+	// ia + id = 0
+
+	// TODO: refraction + reflection
+
+	i = ia + id + is + ie;
 
 	unsigned char *luminosity = (unsigned char *)malloc(sizeof(char) * 1);
 	if (i != 0) {
