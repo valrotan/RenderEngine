@@ -62,8 +62,9 @@ void rayCast(Camera *camera, Scene *scene, unsigned char *screen, int width,
 
 Ray3D *constructRayThroughPixel(Camera *camera, int x, int y);
 
-unsigned char *traceRay(Scene *scene, Ray3D *ray);
+unsigned char *traceRay(Camera *camera, Scene *scene, Ray3D *ray);
 
 Intersection3D *findIntersection(Scene *scene, Ray3D *ray);
 
-unsigned char *getColor(Scene *scene, Intersection3D *intersection);
+unsigned char *getColor(Camera *camera, Scene *scene,
+												Intersection3D *intersection);

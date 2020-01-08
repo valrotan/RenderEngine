@@ -24,8 +24,8 @@ void triangleRayIntersectDemo() {
 
 	Scene scene;
 	Vector3D a = {0, 0, 0};
-	Vector3D b = {0, 50, 0};
-	Vector3D c = {50, 0, 0};
+	Vector3D b = {0, 100, -50};
+	Vector3D c = {100, 0, -50};
 	Vector3D d = {0, 0, 0};
 	Vector3D e = {0, -50, 0};
 	Vector3D f = {-50, 0, 0};
@@ -38,10 +38,10 @@ void triangleRayIntersectDemo() {
 	scene.nTriangles = 2;
 
 	PointLight pointLight;
-	Vector3D pointLightLoc = {20, 20,	50};
+	Vector3D pointLightLoc = {100, 100, 50};
 	pointLight.point = &pointLightLoc;
 	pointLight.intensity = 2;
-	Vector3D pointLightCoeffs = {1, 0, 0};
+	Vector3D pointLightCoeffs = {0, 0, 0};
 	pointLight.attenuationCoeffs = &pointLightCoeffs;
 	scene.pointLights = &pointLight;
 	scene.nPointLights = 1;

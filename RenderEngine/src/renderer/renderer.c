@@ -1,5 +1,6 @@
 #include "renderer.h"
 #include "float.h"
+#include "math.h"
 #include "stdlib.h"
 
 void rendererInit(Renderer *renderer) {
@@ -38,7 +39,7 @@ void rayCast(Camera *camera, Scene *scene, unsigned char *screen, int width,
 			//			}
 			//			free(ray);
 			// end temp code
-			unsigned char temp = *traceRay(scene, ray);
+			unsigned char temp = *traceRay(camera, scene, ray);
 			*p++ = temp;
 			*p++ = temp;
 			*p++ = temp;
@@ -90,7 +91,7 @@ Intersection3D *findIntersection(Scene *scene, Ray3D *ray) {
 	return intersection;
 }
 
-unsigned char *traceRay(Scene *scene, Ray3D *ray) {
+unsigned char *traceRay(Camera *camera, Scene *scene, Ray3D *ray) {
 	//	 findIntersection()
 	// Intersection {
 	//   // could be a pointer to the original I guess
@@ -109,7 +110,7 @@ unsigned char *traceRay(Scene *scene, Ray3D *ray) {
 	Intersection3D *intersection = findIntersection(scene, ray);
 	unsigned char *color;
 	if (intersection != 0) {
-		color = getColor(scene, intersection);
+		color = getColor(camera, scene, intersection);
 	} else {
 		color = (unsigned char *)malloc(sizeof(unsigned char));
 		*color = 0;
@@ -119,27 +120,43 @@ unsigned char *traceRay(Scene *scene, Ray3D *ray) {
 	//	return 0;
 }
 
-unsigned char *getColor(Scene *scene, Intersection3D *intersection) {
+unsigned char *getColor(Camera *camera, Scene *scene,
+												Intersection3D *intersection) {
 	// I = Ie + Ka Ial + Kd (N * L) Il + Ks (V * R)^n Ii
 
 	float i = 0;
 
-	Vector3D *l = sub(scene->pointLights->point, intersection->point); // hmmmm...
+	// intersection to light
+	// diffuse light
+	Vector3D *l = sub(intersection->point, scene->pointLights->point);
 	l = norm(l);
-	Vector3D *n = intersection->triangle->plane->v;
-	float K_D = .5;
-	float id = K_D * dot(n, l) * scene->pointLights->intensity;
+	Vector3D *n = intersection->triangle->plane->v; // normal
+	float K_D = .25;
+	float id = -K_D * dot(n, l) * scene->pointLights->intensity;
 
-	i = id;
+	// specular reflection
+	Vector3D *v = sub(&camera->pos, intersection->point);
+	// r=d-2(dot(dn))n
+	Vector3D *reflected = sub(l, mul(n, 2 * dot(l, n)));
+	float K_S = .5;
+	float N = 3;
+	float is = dot(norm(v), norm(reflected));
+	if (is > 0) {
+		is = K_S * pow(is, N) * scene->pointLights->intensity;
+	}
+
+	i = id + is;
 
 	unsigned char *luminosity = (unsigned char *)malloc(sizeof(char) * 1);
-	printf("%f\n", i);
+	if (i != 0) {
+		printf("%f\n", i);
+	}
 	if (i > 1) {
 		*luminosity = 255;
 	} else if (i < 0) {
 		*luminosity = 0;
 	} else {
-		*luminosity = (unsigned char)(id * 255);
+		*luminosity = (unsigned char)(i * 255);
 	}
 	return luminosity;
 }
