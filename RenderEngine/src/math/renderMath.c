@@ -109,11 +109,11 @@ Intersection3D *intersect(Ray3D *r, Triangle3D *t) {
 	float d2 = dot(r->p, n2);
 	float d3 = dot(r->p, n3);
 	if (o1 < d1) {
-		i->point = 0;
+		i = 0;
 	} else if (o2 < d2) {
-		i->point = 0;
+		i = 0;
 	} else if (o3 < d3) {
-		i->point = 0;
+		i = 0;
 	}
 	free(v1);
 	free(v2);

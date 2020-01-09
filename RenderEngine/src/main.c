@@ -6,7 +6,7 @@
 void triangleRayIntersectDemo() {
 	printf("Starting render engine...\n");
 
-	int WIDTH = 256, HEIGHT = 256;
+	int WIDTH = 512, HEIGHT = 512;
 
 	printf("Initializing visualizer...\n");
 	visInit(WIDTH, HEIGHT);
@@ -24,21 +24,21 @@ void triangleRayIntersectDemo() {
 
 	Scene scene;
 	Vector3D a = {0, 0, 0};
-	Vector3D b = {0, 100, -50};
-	Vector3D c = {100, 0, -50};
+	Vector3D b = {0, 75, 100};
+	Vector3D c = {75, 0, 100};
 	Vector3D d = {0, 0, 0};
-	Vector3D e = {0, -50, 0};
-	Vector3D f = {-50, 0, 0};
+	Vector3D e = {0, -75, 100};
+	Vector3D f = {-75, 0, 100};
 	Triangle3D *t = (Triangle3D *)malloc(sizeof(Triangle3D) * 2);
-	Triangle3D temp1 = {&a, &b, &c, 0, .1};
-	Triangle3D temp2 = {&d, &e, &f, 0, .8};
+	Triangle3D temp1 = {&a, &b, &c, 0, .2};
+	Triangle3D temp2 = {&d, &e, &f, 0, .2};
 	t[0] = temp1;
 	t[1] = temp2;
 	scene.triangles = t;
 	scene.nTriangles = 2;
 
 	PointLight pointLight;
-	Vector3D pointLightLoc = {100, 100, 50};
+	Vector3D pointLightLoc = {0, 20, 150};
 	pointLight.point = &pointLightLoc;
 	pointLight.intensity = 2;
 	Vector3D pointLightCoeffs = {0, 0, 0};

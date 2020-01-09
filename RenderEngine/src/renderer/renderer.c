@@ -39,7 +39,15 @@ void rayCast(Camera *camera, Scene *scene, unsigned char *screen, int width,
 			//			}
 			//			free(ray);
 			// end temp code
-			unsigned char temp = *traceRay(camera, scene, ray);
+			float i = traceRay(camera, scene, ray, 0, 5);
+			unsigned char temp;
+			if (i > 1) {
+				temp = 255;
+			} else if (i < 0) {
+				temp = 0;
+			} else {
+				temp = (unsigned char)(i * 255);
+			}
 			*p++ = temp;
 			*p++ = temp;
 			*p++ = temp;
@@ -74,7 +82,7 @@ Intersection3D *findIntersection(Scene *scene, Ray3D *ray) {
 		tempIntersection = intersect(ray, &scene->triangles[i]);
 		//		Vector3D *r = tempIntersection->point;
 		//		printf("%f %f %f\n", r->x, r->y, r->z);
-		if (tempIntersection->point != 0) {
+		if (tempIntersection != 0) {
 			//			printf("%f\n", dist(&ray->p,
 			// tempIntersection->point));
 			if ((tempDist = dist(ray->p, tempIntersection->point)) < minDist) {
@@ -91,37 +99,23 @@ Intersection3D *findIntersection(Scene *scene, Ray3D *ray) {
 	return intersection;
 }
 
-unsigned char *traceRay(Camera *camera, Scene *scene, Ray3D *ray) {
-	//	 findIntersection()
-	// Intersection {
-	//   // could be a pointer to the original I guess
-	//   // could also be a pointer to a surface wrapper of triangle
-	//   // to store information like reflectivity
-	//   triangle t
-	//   point p
-	//   vector *bouncedVectors
-	//   float *bouncedCoefs
-	//   int nBouncedVectors
-	// };
-	// light = getColor(scene, intersection)
-	// for bounced vectors in intersection
-	//   light += bounced coef * traceRay(scene, bounced ray)
+float traceRay(Camera *camera, Scene *scene, Ray3D *ray, int curDepth,
+							 int maxDepth) {
 
 	Intersection3D *intersection = findIntersection(scene, ray);
-	unsigned char *color;
+	float color;
 	if (intersection != 0) {
-		color = getColor(camera, scene, intersection);
+		color = getColor(camera, scene, intersection, curDepth, maxDepth);
 	} else {
-		color = (unsigned char *)malloc(sizeof(unsigned char));
-		*color = 0;
+		color = .15; // background light
 	}
 	free(intersection);
 	return color;
 	//	return 0;
 }
 
-unsigned char *getColor(Camera *camera, Scene *scene,
-												Intersection3D *intersection) {
+float getColor(Camera *camera, Scene *scene, Intersection3D *intersection,
+							 int curDepth, int maxDepth) {
 	// I = Ie + Ka Ial + Kd (N * L) Il + Ks (V * R)^n Ii
 
 	float i = 0;
@@ -141,32 +135,45 @@ unsigned char *getColor(Camera *camera, Scene *scene,
 	// specular reflection
 	Vector3D *v = sub(&camera->pos, intersection->point);
 	// r=d-2(dot(dn))n
-	Vector3D *reflected = sub(l, mul(n, 2 * dot(l, n)));
+	Vector3D *lightReflectedVector = sub(l, mul(n, 2 * dot(l, n)));
 	float K_S = .25;
 	float N = 3;
-	float is = dot(norm(v), norm(reflected));
+	float is = dot(norm(v), norm(lightReflectedVector));
 	if (is > 0) {
 		is = K_S * pow(is, N) * scene->pointLights->intensity;
+	} else {
+		is = 0;
 	}
 	// endfor
 
 	// if light is blocked (intersection with scene w/ dist < len(ray))
 	// ia + id = 0
 
-	// TODO: refraction + reflection
+	// TODO: refraction
+	// reflection
+	float ir = 0;
+	if (curDepth < maxDepth) {
+		Vector3D *view = mul(v, -1);
+		Vector3D *reflectedVector = sub(view, mul(n, 2 * dot(view, n)));
+		Ray3D reflectedRay;
+		reflectedRay.p = add(intersection->point, mul(norm(n), -.0001)); // not sure why negative
+		reflectedRay.v = reflectedVector;
 
-	i = ia + id + is + ie;
+		//		printf("v (%.2f, %.2f, %.2f)\n", v->x, v->y, v->z);
+		//		printf("r (%.2f, %.2f, %.2f)\n", reflectedRay.v->x,
+		//reflectedRay.v->y, 					 reflectedRay.v->z);
 
-	unsigned char *luminosity = (unsigned char *)malloc(sizeof(char) * 1);
-	if (i != 0) {
-		printf("%f\n", i);
+		float reflectedColor =
+				traceRay(camera, scene, &reflectedRay, curDepth + 1, maxDepth);
+		//		printf("%f\n", reflectedColor);
+		ir = K_S * reflectedColor;
 	}
-	if (i > 1) {
-		*luminosity = 255;
-	} else if (i < 0) {
-		*luminosity = 0;
-	} else {
-		*luminosity = (unsigned char)(i * 255);
-	}
-	return luminosity;
+	//	ir = 0;
+	i = ia + id + is + ie + ir;
+
+	//	if (i != 0) {
+	//		printf("%f\n", i);
+	//	}
+
+	return i;
 }
