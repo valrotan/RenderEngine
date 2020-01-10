@@ -21,7 +21,10 @@ typedef struct {
 typedef struct {
 	Vector3D *p1, *p2, *p3;
 	Plane3D *plane;
-	float lightEmission;
+	unsigned char colorR, colorG, colorB;
+	float k_e; // emission
+	float k_d; // diffuse
+	float k_s; // specular (reflectivity)
 } Triangle3D;
 
 typedef struct {

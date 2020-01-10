@@ -42,6 +42,8 @@ typedef struct {
 
 // Only triangles for now I guess
 typedef struct {
+	float ambientLight;
+	unsigned char bkgR, bkgG, bkgB;
 	Triangle3D *triangles;
 	int nTriangles;
 	PointLight *pointLights;
@@ -60,10 +62,11 @@ void rayCast(Camera *camera, Scene *scene, unsigned char *screen, int width,
 
 Ray3D *constructRayThroughPixel(Camera *camera, int x, int y);
 
-float traceRay(Camera *camera, Scene *scene, Ray3D *ray, int curDepth,
-							 int maxDepth);
+unsigned char *traceRay(Camera *camera, Scene *scene, Ray3D *ray, int curDepth,
+												int maxDepth);
 
 Intersection3D *findIntersection(Scene *scene, Ray3D *ray);
 
-float getColor(Camera *camera, Scene *scene, Intersection3D *intersection,
-							 int curDepth, int maxDepth);
+unsigned char *getColor(Camera *camera, Scene *scene,
+												Intersection3D *intersection, int curDepth,
+												int maxDepth);

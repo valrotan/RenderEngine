@@ -27,32 +27,10 @@ void rayCast(Camera *camera, Scene *scene, unsigned char *screen, int width,
 		for (int x = 0; x < width; x++) {
 			ray = constructRayThroughPixel(camera, x - halfWidth, y - halfHeight);
 
-			// start temp code
-			//			if (findIntersection(scene, ray) != 0) {
-			//				*p++ = 255;
-			//				*p++ = 255;
-			//				*p++ = 255;
-			//			} else {
-			//				*p++ = 0;
-			//				*p++ = 0;
-			//				*p++ = 0;
-			//			}
-			//			free(ray);
-			// end temp code
-			float i = traceRay(camera, scene, ray, 0, 5);
-			unsigned char temp;
-			if (i > 1) {
-				temp = 255;
-			} else if (i < 0) {
-				temp = 0;
-			} else {
-				temp = (unsigned char)(i * 255);
-			}
-			*p++ = temp;
-			*p++ = temp;
-			*p++ = temp;
-			//   find intersection
-			//   get color + trace ray (for each intersection bounced ray)
+			unsigned char *i = traceRay(camera, scene, ray, 0, 2);
+			*p++ = i[0];
+			*p++ = i[1];
+			*p++ = i[2];
 		}
 	}
 }
@@ -99,48 +77,52 @@ Intersection3D *findIntersection(Scene *scene, Ray3D *ray) {
 	return intersection;
 }
 
-float traceRay(Camera *camera, Scene *scene, Ray3D *ray, int curDepth,
-							 int maxDepth) {
+unsigned char *traceRay(Camera *camera, Scene *scene, Ray3D *ray, int curDepth,
+												int maxDepth) {
 
 	Intersection3D *intersection = findIntersection(scene, ray);
-	float color;
+	unsigned char *color;
 	if (intersection != 0) {
 		color = getColor(camera, scene, intersection, curDepth, maxDepth);
 	} else {
-		color = .15; // background light
+		color = (unsigned char *)malloc(sizeof(char) * 3);
+		color[0] = scene->bkgR; // background light
+		color[1] = scene->bkgG; // background light
+		color[2] = scene->bkgB; // background light
 	}
 	free(intersection);
 	return color;
 	//	return 0;
 }
 
-float getColor(Camera *camera, Scene *scene, Intersection3D *intersection,
-							 int curDepth, int maxDepth) {
+unsigned char *getColor(Camera *camera, Scene *scene,
+												Intersection3D *intersection, int curDepth,
+												int maxDepth) {
 	// I = Ie + Ka Ial + Kd (N * L) Il + Ks (V * R)^n Ii
 
-	float i = 0;
+	float i[3];
 
-	float ia = .25;
-	float ie = intersection->triangle->lightEmission;
+	Triangle3D *t = intersection->triangle;
+
+	float ia = scene->ambientLight;
+	float ie = t->k_e;
 
 	// for each light source:
 	// intersection to light
 	// diffuse light
 	Vector3D *l = sub(intersection->point, scene->pointLights->point);
 	l = norm(l);
-	Vector3D *n = intersection->triangle->plane->v; // normal
-	float K_D = .125;
-	float id = -K_D * dot(n, l) * scene->pointLights->intensity;
+	Vector3D *n = t->plane->v; // normal
+	float id = -t->k_d * dot(n, l) * scene->pointLights->intensity;
 
 	// specular reflection
 	Vector3D *v = sub(&camera->pos, intersection->point);
 	// r=d-2(dot(dn))n
 	Vector3D *lightReflectedVector = sub(l, mul(n, 2 * dot(l, n)));
-	float K_S = .25;
-	float N = 3;
+	float N = 3; // number of ray traces
 	float is = dot(norm(v), norm(lightReflectedVector));
 	if (is > 0) {
-		is = K_S * pow(is, N) * scene->pointLights->intensity;
+		is = t->k_s * pow(is, N) * scene->pointLights->intensity;
 	} else {
 		is = 0;
 	}
@@ -151,29 +133,58 @@ float getColor(Camera *camera, Scene *scene, Intersection3D *intersection,
 
 	// TODO: refraction
 	// reflection
-	float ir = 0;
+	float ir_r = 0;
+	float ir_g = 0;
+	float ir_b = 0;
 	if (curDepth < maxDepth) {
 		Vector3D *view = mul(v, -1);
 		Vector3D *reflectedVector = sub(view, mul(n, 2 * dot(view, n)));
 		Ray3D reflectedRay;
-		reflectedRay.p = add(intersection->point, mul(norm(n), -.0001)); // not sure why negative
+		reflectedRay.p =
+				add(intersection->point, mul(norm(n), -.0001f)); // not sure why negative
 		reflectedRay.v = reflectedVector;
 
 		//		printf("v (%.2f, %.2f, %.2f)\n", v->x, v->y, v->z);
 		//		printf("r (%.2f, %.2f, %.2f)\n", reflectedRay.v->x,
-		//reflectedRay.v->y, 					 reflectedRay.v->z);
+		// reflectedRay.v->y, reflectedRay.v->z);
 
-		float reflectedColor =
+		unsigned char *reflectedColors =
 				traceRay(camera, scene, &reflectedRay, curDepth + 1, maxDepth);
 		//		printf("%f\n", reflectedColor);
-		ir = K_S * reflectedColor;
+		ir_r = t->k_s * reflectedColors[0] / 255;
+		ir_r = t->k_s * reflectedColors[1] / 255;
+		ir_r = t->k_s * reflectedColors[2] / 255;
 	}
 	//	ir = 0;
-	i = ia + id + is + ie + ir;
+	i[0] = t->colorR * (ia + id + ie) / 255.0f + is + ir_r;
+	i[1] = t->colorG * (ia + id + ie) / 255.0f + is + ir_g;
+	i[2] = t->colorB * (ia + id + ie) / 255.0f + is + ir_b;
 
+	unsigned char *i_char = (unsigned char *)malloc(sizeof(char) * 3);
+	if (i[0] > 1) {
+		i_char[0] = 255;
+	} else if (i[0] < 0) {
+		i_char[0] = 0;
+	} else {
+		i_char[0] = (unsigned char)(i[0] * 255);
+	}
+	if (i[1] > 1) {
+		i_char[1] = 255;
+	} else if (i[1] < 0) {
+		i_char[1] = 0;
+	} else {
+		i_char[1] = (unsigned char)(i[1] * 255);
+	}
+	if (i[2] > 1) {
+		i_char[2] = 255;
+	} else if (i[2] < 0) {
+		i_char[2] = 0;
+	} else {
+		i_char[2] = (unsigned char)(i[2] * 255);
+	}
 	//	if (i != 0) {
 	//		printf("%f\n", i);
 	//	}
 
-	return i;
+	return i_char;
 }
