@@ -11,7 +11,7 @@ void rendererInit(Renderer *renderer) {
 		t->plane = (Plane3D *)malloc(sizeof(Plane3D));
 		t->plane->v = cross(v1, v2);
 		t->plane->v = norm(t->plane->v);
-		t->plane->d = dot(v1, t->plane->v);
+		t->plane->d = dot(t->p1, t->plane->v);
 	}
 }
 
@@ -27,7 +27,7 @@ void rayCast(Camera *camera, Scene *scene, unsigned char *screen, int width,
 		for (int x = 0; x < width; x++) {
 			ray = constructRayThroughPixel(camera, x - halfWidth, y - halfHeight);
 
-			unsigned char *i = traceRay(camera, scene, ray, 0, 2);
+			unsigned char *i = traceRay(camera, scene, ray, 0, 4);
 			*p++ = i[0];
 			*p++ = i[1];
 			*p++ = i[2];
@@ -116,11 +116,11 @@ unsigned char *getColor(Camera *camera, Scene *scene,
 	float id = -t->k_d * dot(n, l) * scene->pointLights->intensity;
 
 	// specular reflection
-	Vector3D *v = sub(&camera->pos, intersection->point);
+	Vector3D *v = sub(intersection->point, &camera->pos);
 	// r=d-2(dot(dn))n
 	Vector3D *lightReflectedVector = sub(l, mul(n, 2 * dot(l, n)));
 	float N = 3; // number of ray traces
-	float is = dot(norm(v), norm(lightReflectedVector));
+	float is = -dot(norm(v), norm(lightReflectedVector));
 	if (is > 0) {
 		is = t->k_s * pow(is, N) * scene->pointLights->intensity;
 	} else {
@@ -128,6 +128,7 @@ unsigned char *getColor(Camera *camera, Scene *scene,
 	}
 	// endfor
 
+	// TODO light blocking
 	// if light is blocked (intersection with scene w/ dist < len(ray))
 	// ia + id = 0
 
@@ -137,7 +138,7 @@ unsigned char *getColor(Camera *camera, Scene *scene,
 	float ir_g = 0;
 	float ir_b = 0;
 	if (curDepth < maxDepth) {
-		Vector3D *view = mul(v, -1);
+		Vector3D *view = norm(mul(v, -1));
 		Vector3D *reflectedVector = sub(view, mul(n, 2 * dot(view, n)));
 		Ray3D reflectedRay;
 		reflectedRay.p =
@@ -152,10 +153,10 @@ unsigned char *getColor(Camera *camera, Scene *scene,
 				traceRay(camera, scene, &reflectedRay, curDepth + 1, maxDepth);
 		//		printf("%f\n", reflectedColor);
 		ir_r = t->k_s * reflectedColors[0] / 255;
-		ir_r = t->k_s * reflectedColors[1] / 255;
-		ir_r = t->k_s * reflectedColors[2] / 255;
+		ir_g = t->k_s * reflectedColors[1] / 255;
+		ir_b = t->k_s * reflectedColors[2] / 255;
 	}
-	//	ir = 0;
+//	ia = 0; id = 0; is = 0;
 	i[0] = t->colorR * (ia + id + ie) / 255.0f + is + ir_r;
 	i[1] = t->colorG * (ia + id + ie) / 255.0f + is + ir_g;
 	i[2] = t->colorB * (ia + id + ie) / 255.0f + is + ir_b;

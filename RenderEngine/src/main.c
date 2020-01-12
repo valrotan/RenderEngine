@@ -14,20 +14,20 @@ void triangleRayIntersectDemo() {
 
 	printf("Initializing renderer...\n");
 	Camera camera;
-	Vector3D pos = {0, 0, 100};
+	Vector3D pos = {0, 0, 200};
 	Vector3D dir = {0, 0, -1};
 	Vector3D up = {0, 1, 0};
 	camera.pos = pos;
 	camera.dir = dir;
 	camera.up = up;
-	camera.screenZ = 250;
+	camera.screenZ = 450;
 
 	Scene scene;
 	scene.bkgR = 64;
 	scene.bkgG = 64;
 	scene.bkgB = 64;
 
-	Triangle3D *t = (Triangle3D *)malloc(sizeof(Triangle3D) * 6);
+	Triangle3D *t = (Triangle3D *)malloc(sizeof(Triangle3D) * 8);
 	Vector3D a = {0, 50, 0};
 	Vector3D b = {50, 100, -50};
 	Vector3D c = {50, 50, -50};
@@ -50,24 +50,35 @@ void triangleRayIntersectDemo() {
 	t[2] = temp1b;
 	t[3] = temp2b;
 
-	Vector3D ac = {0, 50.01f, 0};
-	Vector3D bc = {-50, 50.02f, -50};
-	Vector3D cc = {0, 50.03f, -100};
-	Vector3D dc = {0, 50.01f, 0};
-	Vector3D ec = {0, 50.02f, -100};
-	Vector3D fc = {50, 50.03f, -50};
+	Vector3D ac = {0, 50, 0};
+	Vector3D bc = {-50, 50, -50};
+	Vector3D cc = {0, 50, -100};
+	Vector3D dc = {0, 50, 0};
+	Vector3D ec = {0, 50, -100};
+	Vector3D fc = {50, 50, -50};
 	Triangle3D temp1c = {&ac, &bc, &cc, 0, 0, 0, 255, .75f, .75f, .25f};
 	Triangle3D temp2c = {&dc, &ec, &fc, 0, 0, 0, 255, .75f, .75f, .25f};
 	t[4] = temp1c;
 	t[5] = temp2c;
 
+	Vector3D ad = {0, 0, 0};
+	Vector3D bd = {50, 30, 60};
+	Vector3D cd = {50, -30, 60};
+	Vector3D dd = {0, 0, 0};
+	Vector3D ed = {-50, -50, 40};
+	Vector3D fd = {-50, 50, 40};
+	Triangle3D temp1d = {&ad, &bd, &cd, 0, 255, 0, 0, .5f, .5f, .25f};
+	Triangle3D temp2d = {&dd, &ed, &fd, 0, 0, 0, 255, .5f, .5f, .25f};
+	t[6] = temp1d;
+	t[7] = temp2d;
+
 	scene.triangles = t;
-	scene.nTriangles = 6;
+	scene.nTriangles = 8;
 
 	PointLight pointLight;
 	Vector3D pointLightLoc = {0, 0, 50};
 	pointLight.point = &pointLightLoc;
-	pointLight.intensity = 5.5f;
+	pointLight.intensity = 5;
 	Vector3D pointLightCoeffs = {0, 0, 0};
 	pointLight.attenuationCoeffs = &pointLightCoeffs;
 	scene.pointLights = &pointLight;
