@@ -3,13 +3,6 @@
 
 ### Minimalistic render engine in C without using any libraries (almost)
 
-## TODO:
-- [ ] Init camera at any position
-- [ ] Support multiple light sources
-- [ ] Spot lights
-- [ ] Directional lights
-- [ ] Get rid of excessive dynamic allocation
-
 ## How to run
 ### Prerequisites:
 - GTK+ needs to be installed for visualization. Without it, the visualization module will not work.
@@ -28,7 +21,22 @@ make
 ```
 
 ## How to use the source code
-The source code is split into 3 main modules. 
+The source code is split into 3 main modules.
 - *math* - standalone module for geometric primitives, vector functions, and other geometric functions
 - *visualizer* - standalone module to visualize renders using the GTK+ toolkit
 - *renderer* - module responsible for tracking the scene state and performing raytracing. Depends on the *math* module.
+
+
+## TODO + Bug/Modification tracker:
+- [ ] Camera orientations
+- [ ] Camera fov
+- [ ] Support multiple light sources
+- [ ] Spot lights
+- [ ] Directional lights
+- [ ] Get rid of excessive dynamic allocation
+- [ ] Reflections going the wrong way (see cube render)
+- [ ] Fix triangle points have to be clockwise
+- [ ] Create a 3D shape to triangles module
+- [ ] Data structures for scene representation
+- [ ] Clean source code from debugging code
+- [ ] High level API for scene creation
