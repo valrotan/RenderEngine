@@ -88,22 +88,30 @@ Intersection3D *intersect(Ray3D *r, Triangle3D *t) {
 
   // TODO: free all the intermediate vectors or
   // figure out how to do it no-copy style
-//  float num = (dot(r->p, t->plane->v) + t->plane->d);
-//  float den = dot(r->v, t->plane->v);
-  float u = -(dot(r->p, t->plane->v) + t->plane->d) / dot(r->v, t->plane->v);
-//  if (isnan(u) || fabs(u) < .0000000001) {
-//	return 0;
-//  }
+  //  float num = (dot(r->p, t->plane->v) + t->plane->d);
+  //  float den = dot(r->v, t->plane->v);
+  float denom = dot(r->v, t->plane->v);
+  float u = -(dot(r->p, t->plane->v) + t->plane->d) / denom;
+  if (isinf(u) || isnan(u) ||
+	  u == 0.0f) { // u == 0.0f prevents intersection at exactly camera point
+				   // (when y = 0 for all 3 pts)
+	return 0;
+  }
   i->point = add(r->p, mul(r->v, u));
-//  if (u < 0.1) {
-//	printf("- N (%.2f, %.2f, %.2f)\n", t->plane->v->x, t->plane->v->y,
-//		   t->plane->v->z);
-//	printf("  R (%.2f, %.2f, %.2f)\n", r->v->x, r->v->y, r->v->z);
-//	printf("  P %.2f (%.2f, %.2f, %.2f)\n", u, i->point->x,
-//		   i->point->y, i->point->z);
-//	printf("  PlaneD: %.2f num: %.2f den: %.2f u: %.2f\n", t->plane->d, num, den, u);
-//	//	printf("%f %f %f\n", r->v.x, r->v.y, r->v.z);
-//  }
+  if (fabsf(dot(i->point, t->plane->v) + t->plane->d) > .0001f) {
+	//	return 0;
+  }
+//  printf("I (%.2f, %.2f, %.2f) u: %.2f \n", i->point->x, i->point->y, i->point->z, u);
+  //	if (u < 0.1) {
+  //	printf("- N (%.2f, %.2f, %.2f)\n", t->plane->v->x, t->plane->v->y,
+  //		   t->plane->v->z);
+  //	printf("  R (%.2f, %.2f, %.2f)\n", r->v->x, r->v->y, r->v->z);
+  //	printf("  P %.2f (%.2f, %.2f, %.2f)\n", u, i->point->x,
+  //		   i->point->y, i->point->z);
+  //	printf("  PlaneD: %.2f num: %.2f den: %.2f u: %.2f\n", t->plane->d, num,
+  // den, u);
+  //	//	printf("%f %f %f\n", r->v.x, r->v.y, r->v.z);
+  //  }
   // out of bounds check for ray within triangle
   Vector3D *v1 = sub(t->p1, r->p);
   Vector3D *v2 = sub(t->p2, r->p);
