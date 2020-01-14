@@ -20,7 +20,7 @@ void rendererInit(Renderer *renderer) {
 }
 
 void rayTrace(Camera *camera, Scene *scene, unsigned char *screen, int width,
-			 int height) {
+			  int height) {
   Ray3D *ray;
   unsigned char *p = screen;
 
@@ -118,33 +118,42 @@ unsigned char *getColor(Camera *camera, Scene *scene,
 
   Triangle3D *t = intersection->triangle;
 
+  Vector3D *n = t->plane->v; // normal
+  Vector3D *v = sub(intersection->point, &camera->pos);
+
   float ia = scene->ambientLight;
   float ie = t->k_e;
 
-  // for each light source:
-  // intersection to light
-  // diffuse light
-  Vector3D *l = sub(intersection->point, scene->pointLights->point);
-  l = norm(l);
-  Vector3D *n = t->plane->v; // normal
-  float id = -t->k_d * dot(n, l) * scene->pointLights->intensity;
+  float id = 0;
+  float is = 0;
 
-  // specular reflection
-  Vector3D *v = sub(intersection->point, &camera->pos);
-  // r=d-2(dot(dn))n
-  Vector3D *lightReflectedVector = sub(l, mul(n, 2 * dot(l, n)));
-  float N = 3; // specular light exponent
-  float is = -dot(norm(v), norm(lightReflectedVector));
-  if (is > 0) {
-	is = t->k_s * powf(is, N) * scene->pointLights->intensity;
-  } else {
-	is = 0;
+  // point lights
+  for (int i = 0; i < scene->nPointLights; i++) {
+
+	Vector3D *l = sub(intersection->point, scene->pointLights[i].point);
+	l = norm(l);
+	Vector3D *lightReflectedVector = sub(l, mul(n, 2 * dot(l, n)));
+
+	PointLight *pl = &scene->pointLights[i];
+	float d = dist(pl->point, intersection->point);
+	Vector3D dvec = {1, d, d * d};
+	float il = pl->intensity; // intensity of light
+	il /= dot(pl->attenuationCoeffs, &dvec);
+
+	// diffuse light
+	id += -t->k_d * dot(n, l) * il;
+
+	// specular reflection
+	float N = 3; // specular light exponent
+	float is_temp = -dot(norm(v), norm(lightReflectedVector));
+	if (is_temp > 0) {
+	  is += t->k_s * powf(is_temp, N) * il;
+	}
   }
-  // endfor
 
   // TODO light blocking
   // if light is blocked (intersection with scene w/ dist < len(ray))
-  // ia + id = 0
+  // id = 0
 
   // TODO: refraction
   // reflection
@@ -152,34 +161,23 @@ unsigned char *getColor(Camera *camera, Scene *scene,
   float ir_g = 0;
   float ir_b = 0;
   if (curDepth < maxDepth) {
-	Vector3D *view = norm(mul(v, -1));
-	Vector3D *reflectedVector = sub(view, mul(n, 2 * dot(view, n)));
+	Vector3D *reflectedVector = sub(v, mul(n, 2 * dot(v, n)));
 	Ray3D reflectedRay;
 	reflectedRay.p = add(intersection->point,
 						 mul(norm(n), -.0001f)); // not sure why negative
-	reflectedRay.v = mul(reflectedVector, -1);
-
-	//		printf("v (%.2f, %.2f, %.2f)\n", v->x, v->y, v->z);
-	//		printf("r (%.2f, %.2f, %.2f)\n", reflectedRay.v->x,
-	// reflectedRay.v->y, reflectedRay.v->z);
+	reflectedRay.v = reflectedVector; // might need to multiply by -1, idk
 
 	unsigned char *reflectedColors =
 		traceRay(camera, scene, &reflectedRay, curDepth + 1, maxDepth);
-	//		printf("%f\n", reflectedColor);
+
 	ir_r = t->k_s * reflectedColors[0] / 255;
 	ir_g = t->k_s * reflectedColors[1] / 255;
 	ir_b = t->k_s * reflectedColors[2] / 255;
   }
-  //	ia = 0; id = 0; is = 0;
   i[0] = t->colorR * (ia + id + ie) / 255.0f + is + ir_r;
   i[1] = t->colorG * (ia + id + ie) / 255.0f + is + ir_g;
   i[2] = t->colorB * (ia + id + ie) / 255.0f + is + ir_b;
 
-//  printf("color: (%d %d %d) -> (%.2f %.2f %.2f) \n", t->colorR, t->colorG,
-//         t->colorB, ia, id, ie);
-
-  //  printf("inter: %.2f %.2f %.2f \n", intersection->point->x,
-  //  intersection->point->y, intersection->point->z);
   unsigned char *i_char = (unsigned char *)malloc(sizeof(char) * 3);
   if (i[0] > 1) {
 	i_char[0] = 255;
@@ -202,9 +200,6 @@ unsigned char *getColor(Camera *camera, Scene *scene,
   } else {
 	i_char[2] = (unsigned char)(i[2] * 255);
   }
-  //	if (i != 0) {
-  //		printf("%f\n", i);
-  //	}
 
   return i_char;
 }

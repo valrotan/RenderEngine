@@ -67,8 +67,8 @@ void rayTraceDemo() {
 	Vector3D d = {0, 50, 0};
 	Vector3D e = {0, 100, 0};
 	Vector3D f = {50, 100, -50};
-	Triangle3D temp1 = {&a, &b, &c, 0, 255, 0, 0, .1f, .25f, .25f};
-	Triangle3D temp2 = {&d, &e, &f, 0, 255, 0, 0, .1f, .25f, .25f};
+	Triangle3D temp1 = {&a, &b, &c, 0, 255, 0, 0, 0, .25f, .25f};
+	Triangle3D temp2 = {&d, &e, &f, 0, 255, 0, 0, 0, .25f, .25f};
 	Vector3D ab = {0, 50, 0};
 	Vector3D bb = {-50, 50, -50};
 	Vector3D cb = {-50, 100, -50};
@@ -83,16 +83,16 @@ void rayTraceDemo() {
 	Vector3D dc = {0, 50, 0};
 	Vector3D ec = {50, 50, -50};
 	Vector3D fc = {0, 50, -100};
-	Triangle3D temp5 = {&ac, &bc, &cc, 0, 0, 0, 255, .75f, .75f, .25f};
-	Triangle3D temp6 = {&dc, &ec, &fc, 0, 0, 0, 255, .75f, .75f, .25f};
+	Triangle3D temp5 = {&ac, &bc, &cc, 0, 0, 0, 255, 0, .75f, .25f};
+	Triangle3D temp6 = {&dc, &ec, &fc, 0, 0, 0, 255, 0, .75f, .25f};
 	Vector3D ad = {0, 0, 0};
 	Vector3D bd = {50, 30, 60};
 	Vector3D cd = {50, -30, 60};
 	Vector3D dd = {0, 0, 0};
 	Vector3D ed = {-50, -50, 40};
 	Vector3D fd = {-50, 50, 40};
-	Triangle3D temp7 = {&ad, &bd, &cd, 0, 0, 0, 0, .0f, 1.0f, .05f};
-	Triangle3D temp8 = {&dd, &ed, &fd, 0, 0, 255, 0, .0f, .5f, .25f};
+	Triangle3D temp7 = {&ad, &bd, &cd, 0, 0, 0, 0, 0, 1.0f, .05f};
+	Triangle3D temp8 = {&dd, &ed, &fd, 0, 0, 0, 255, 0, .5f, .25f};
 
 	t[0] = temp1;
 	t[1] = temp2;
@@ -112,14 +112,21 @@ void rayTraceDemo() {
 	scene.triangles = t;
 	scene.nTriangles = 8;
 
-	PointLight pointLight;
-	Vector3D pointLightLoc = {0, 0, 50};
-	pointLight.point = &pointLightLoc;
-	pointLight.intensity = 5;
-	Vector3D pointLightCoeffs = {0, 0, 0};
-	pointLight.attenuationCoeffs = &pointLightCoeffs;
-	scene.pointLights = &pointLight;
-	scene.nPointLights = 1;
+	PointLight pointLights[4];
+	Vector3D pointLightLoc1 = {0, -20, 50};
+	pointLights[0].point = &pointLightLoc1;
+	pointLights[0].intensity = 20;
+	Vector3D pointLightCoeffs1 = {1, .04f, .002f};
+	pointLights[0].attenuationCoeffs = &pointLightCoeffs1;
+
+	Vector3D pointLightLoc2 = {-50, -200, 500};
+	pointLights[1].point = &pointLightLoc2;
+	pointLights[1].intensity = 1000;
+	Vector3D pointLightCoeffs2 = {1, .02f, .002f};
+	pointLights[1].attenuationCoeffs = &pointLightCoeffs2;
+
+	scene.pointLights = &pointLights[0];
+	scene.nPointLights = 2;
 
 	Renderer renderer = {&camera, &scene};
 
