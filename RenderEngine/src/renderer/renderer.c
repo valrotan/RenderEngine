@@ -19,7 +19,7 @@ void rendererInit(Renderer *renderer) {
   }
 }
 
-void rayCast(Camera *camera, Scene *scene, unsigned char *screen, int width,
+void rayTrace(Camera *camera, Scene *scene, unsigned char *screen, int width,
 			 int height) {
   Ray3D *ray;
   unsigned char *p = screen;
@@ -31,11 +31,11 @@ void rayCast(Camera *camera, Scene *scene, unsigned char *screen, int width,
 	for (int x = 0; x < width; x++) {
 	  ray = constructRayThroughPixel(camera, x - halfWidth, y - halfHeight);
 
-	  unsigned char *i = traceRay(camera, scene, ray, 0, 0);
+	  unsigned char *i = traceRay(camera, scene, ray, 0, 3);
 	  *p++ = i[0];
 	  *p++ = i[1];
 	  *p++ = i[2];
-//	  printf("%d %d %d \n", i[0], i[1], i[2]);
+	  //	  printf("%d %d %d \n", i[0], i[1], i[2]);
 	}
   }
 }
@@ -90,8 +90,9 @@ Intersection3D *findIntersection(Scene *scene, Ray3D *ray) {
 	  tempDist = dist(tempIntersection->point, ray->p);
 	  float pos = dot(ray->v, sub(tempIntersection->point, ray->p));
 	  //	  tempDist = dot(ray->v, sub(tempIntersection->point, ray->p));
-//	  printf("(%.2f, %.2f, %.2f) %.2f\n", tempIntersection->point->x,
-//			 tempIntersection->point->y, tempIntersection->point->z, tempDist);
+	  //	  printf("(%.2f, %.2f, %.2f) %.2f\n",
+	  // tempIntersection->point->x, tempIntersection->point->y,
+	  // tempIntersection->point->z, tempDist);
 	  if (tempDist < minDist) { // not sure why pos < 0
 		free(intersection);
 		intersection = tempIntersection;
@@ -174,11 +175,11 @@ unsigned char *getColor(Camera *camera, Scene *scene,
   i[1] = t->colorG * (ia + id + ie) / 255.0f + is + ir_g;
   i[2] = t->colorB * (ia + id + ie) / 255.0f + is + ir_b;
 
+//  printf("color: (%d %d %d) -> (%.2f %.2f %.2f) \n", t->colorR, t->colorG,
+//         t->colorB, ia, id, ie);
 
-  printf("color: (%d %d %d) -> (%.2f %.2f %.2f) \n", t->colorR, t->colorG, t->colorB, ia, id, ie);
-
-
-  //  printf("inter: %.2f %.2f %.2f \n", intersection->point->x, intersection->point->y, intersection->point->z);
+  //  printf("inter: %.2f %.2f %.2f \n", intersection->point->x,
+  //  intersection->point->y, intersection->point->z);
   unsigned char *i_char = (unsigned char *)malloc(sizeof(char) * 3);
   if (i[0] > 1) {
 	i_char[0] = 255;

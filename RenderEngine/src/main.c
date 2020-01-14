@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void triangleRayIntersectDemo() {
+void rayTraceDemo() {
 	printf("Starting render engine...\n");
 
 	int WIDTH = 512, HEIGHT = 512;
@@ -92,7 +92,7 @@ void triangleRayIntersectDemo() {
 	Vector3D ed = {-50, -50, 40};
 	Vector3D fd = {-50, 50, 40};
 	Triangle3D temp7 = {&ad, &bd, &cd, 0, 0, 0, 0, .0f, 1.0f, .05f};
-	Triangle3D temp8 = {&dd, &ed, &fd, 0, 0, 0, 255, .0f, .5f, .25f};
+	Triangle3D temp8 = {&dd, &ed, &fd, 0, 0, 255, 0, .0f, .5f, .25f};
 
 	t[0] = temp1;
 	t[1] = temp2;
@@ -127,7 +127,7 @@ void triangleRayIntersectDemo() {
 
 	printf("Raycasting...\n");
 
-	rayCast(&camera, &scene, screen, WIDTH, HEIGHT);
+	rayTrace(&camera, &scene, screen, WIDTH, HEIGHT);
 
 	printf("Showing...\n");
 
@@ -136,6 +136,6 @@ void triangleRayIntersectDemo() {
 
 // TODO: go through and free memory probably
 int main() {
-	triangleRayIntersectDemo();
+	rayTraceDemo();
 	return 0;
 }
