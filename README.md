@@ -34,7 +34,7 @@ The source code is split into 3 main modules.
 - [ ] Spot lights
 - [ ] Directional lights
 - [ ] Get rid of excessive dynamic allocation
-- [ ] Reflections going the wrong way (see cube render)
+- [x] Reflections going the wrong way (see cube render)
 - [ ] Fix triangle points have to be clockwise
 - [ ] Create a 3D shape to triangles module
 - [ ] Data structures for scene representation
