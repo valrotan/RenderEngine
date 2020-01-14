@@ -14,6 +14,8 @@ void rendererInit(Renderer *renderer) {
 	t->plane->d = -dot(t->p1, t->plane->v);
 	printf("init triangle : V (%.2f, %.2f, %.2f) d %.2f \n", t->plane->v->x,
 		   t->plane->v->y, t->plane->v->z, t->plane->d);
+	printf("  color : C (%d, %d, %d) \n", t->colorR, t->colorG, t->colorB);
+	printf("  refl  : C (%.2f, %.2f, %.2f) \n", t->k_d, t->k_e, t->k_s);
   }
 }
 
@@ -29,10 +31,11 @@ void rayCast(Camera *camera, Scene *scene, unsigned char *screen, int width,
 	for (int x = 0; x < width; x++) {
 	  ray = constructRayThroughPixel(camera, x - halfWidth, y - halfHeight);
 
-	  unsigned char *i = traceRay(camera, scene, ray, 0, 1);
+	  unsigned char *i = traceRay(camera, scene, ray, 0, 0);
 	  *p++ = i[0];
 	  *p++ = i[1];
 	  *p++ = i[2];
+//	  printf("%d %d %d \n", i[0], i[1], i[2]);
 	}
   }
 }
@@ -46,7 +49,7 @@ Ray3D *constructRayThroughPixel(Camera *camera, int x, int y) {
   // suppose camera is pointing at origin from +z axis
   ray->v = (Vector3D *)malloc(sizeof(Vector3D));
   ray->v->x = x;
-  ray->v->y = y;
+  ray->v->y = y; // proper up would be -y
   ray->v->z = -camera->screenZ;
   ray->v = norm(ray->v);
   return ray;
@@ -171,6 +174,11 @@ unsigned char *getColor(Camera *camera, Scene *scene,
   i[1] = t->colorG * (ia + id + ie) / 255.0f + is + ir_g;
   i[2] = t->colorB * (ia + id + ie) / 255.0f + is + ir_b;
 
+
+  printf("color: (%d %d %d) -> (%.2f %.2f %.2f) \n", t->colorR, t->colorG, t->colorB, ia, id, ie);
+
+
+  //  printf("inter: %.2f %.2f %.2f \n", intersection->point->x, intersection->point->y, intersection->point->z);
   unsigned char *i_char = (unsigned char *)malloc(sizeof(char) * 3);
   if (i[0] > 1) {
 	i_char[0] = 255;

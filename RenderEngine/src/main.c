@@ -22,12 +22,9 @@ void triangleRayIntersectDemo() {
 	camera.up = up;
 	camera.screenZ = 450;
 
-	Scene scene;
-	scene.bkgR = 64;
-	scene.bkgG = 64;
-	scene.bkgB = 64;
-
-	Triangle3D *t = (Triangle3D *) malloc(sizeof (Triangle3D) * 8);
+//	Triangle3D *t = (Triangle3D *) malloc(sizeof (Triangle3D) * 8);
+	Triangle3D t[8];
+//	printf("%d \n", sizeof(t));
 
 	// test triangles
 //	Vector3D a = {0, 50, 500}; // behind camera
@@ -106,7 +103,13 @@ void triangleRayIntersectDemo() {
 	t[6] = temp7;
 	t[7] = temp8;
 
-	scene.triangles = &t[0];
+	Scene scene;
+	scene.bkgR = 64;
+	scene.bkgG = 64;
+	scene.bkgB = 64;
+	scene.ambientLight = .1f;
+
+	scene.triangles = t;
 	scene.nTriangles = 8;
 
 	PointLight pointLight;
