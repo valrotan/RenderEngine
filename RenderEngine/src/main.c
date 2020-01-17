@@ -2,8 +2,16 @@
 #include "visualizer/visualizer.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
-void triangleRayIntersectDemo() {
+long long timeInMilliseconds(void) {
+	    struct timeval tv;
+
+	        gettimeofday(&tv,NULL);
+		    return (((long long)tv.tv_sec)*1000)+(tv.tv_usec/1000);
+}
+
+void rayTraceDemo() {
 	printf("Starting render engine...\n");
 
 	int WIDTH = 512, HEIGHT = 512;
@@ -22,12 +30,9 @@ void triangleRayIntersectDemo() {
 	camera.up = up;
 	camera.screenZ = 450;
 
-	Scene scene;
-	scene.bkgR = 64;
-	scene.bkgG = 64;
-	scene.bkgB = 64;
-
-	Triangle3D *t = (Triangle3D *) malloc(sizeof (Triangle3D) * 8);
+//	Triangle3D *t = (Triangle3D *) malloc(sizeof (Triangle3D) * 8);
+	Triangle3D t[8];
+//	printf("%d \n", sizeof(t));
 
 	// test triangles
 //	Vector3D a = {0, 50, 500}; // behind camera
@@ -70,8 +75,8 @@ void triangleRayIntersectDemo() {
 	Vector3D d = {0, 50, 0};
 	Vector3D e = {0, 100, 0};
 	Vector3D f = {50, 100, -50};
-	Triangle3D temp1 = {&a, &b, &c, 0, 255, 0, 0, .1f, .25f, .25f};
-	Triangle3D temp2 = {&d, &e, &f, 0, 255, 0, 0, .1f, .25f, .25f};
+	Triangle3D temp1 = {&a, &b, &c, 0, 255, 0, 0, 0, .25f, .25f};
+	Triangle3D temp2 = {&d, &e, &f, 0, 255, 0, 0, 0, .25f, .25f};
 	Vector3D ab = {0, 50, 0};
 	Vector3D bb = {-50, 50, -50};
 	Vector3D cb = {-50, 100, -50};
@@ -86,16 +91,16 @@ void triangleRayIntersectDemo() {
 	Vector3D dc = {0, 50, 0};
 	Vector3D ec = {50, 50, -50};
 	Vector3D fc = {0, 50, -100};
-	Triangle3D temp5 = {&ac, &bc, &cc, 0, 0, 0, 255, .75f, .75f, .25f};
-	Triangle3D temp6 = {&dc, &ec, &fc, 0, 0, 0, 255, .75f, .75f, .25f};
+	Triangle3D temp5 = {&ac, &bc, &cc, 0, 0, 0, 255, 0, .75f, .25f};
+	Triangle3D temp6 = {&dc, &ec, &fc, 0, 0, 0, 255, 0, .75f, .25f};
 	Vector3D ad = {0, 0, 0};
 	Vector3D bd = {50, 30, 60};
 	Vector3D cd = {50, -30, 60};
 	Vector3D dd = {0, 0, 0};
 	Vector3D ed = {-50, -50, 40};
 	Vector3D fd = {-50, 50, 40};
-	Triangle3D temp7 = {&ad, &bd, &cd, 0, 0, 0, 0, .0f, 1.0f, .05f};
-	Triangle3D temp8 = {&dd, &ed, &fd, 0, 0, 0, 255, .0f, .5f, .25f};
+	Triangle3D temp7 = {&ad, &bd, &cd, 0, 0, 0, 0, 0, 1.0f, .05f};
+	Triangle3D temp8 = {&dd, &ed, &fd, 0, 0, 0, 255, 0, .5f, .25f};
 
 	t[0] = temp1;
 	t[1] = temp2;
@@ -106,17 +111,30 @@ void triangleRayIntersectDemo() {
 	t[6] = temp7;
 	t[7] = temp8;
 
-	scene.triangles = &t[0];
+	Scene scene;
+	scene.bkgR = 64;
+	scene.bkgG = 64;
+	scene.bkgB = 64;
+	scene.ambientLight = .1f;
+
+	scene.triangles = t;
 	scene.nTriangles = 8;
 
-	PointLight pointLight;
-	Vector3D pointLightLoc = {0, 0, 50};
-	pointLight.point = &pointLightLoc;
-	pointLight.intensity = 5;
-	Vector3D pointLightCoeffs = {0, 0, 0};
-	pointLight.attenuationCoeffs = &pointLightCoeffs;
-	scene.pointLights = &pointLight;
-	scene.nPointLights = 1;
+	PointLight pointLights[4];
+	Vector3D pointLightLoc1 = {0, -20, 50};
+	pointLights[0].point = &pointLightLoc1;
+	pointLights[0].intensity = 20;
+	Vector3D pointLightCoeffs1 = {1, .04f, .002f};
+	pointLights[0].attenuationCoeffs = &pointLightCoeffs1;
+
+	Vector3D pointLightLoc2 = {-50, -200, 500};
+	pointLights[1].point = &pointLightLoc2;
+	pointLights[1].intensity = 1000;
+	Vector3D pointLightCoeffs2 = {1, .02f, .002f};
+	pointLights[1].attenuationCoeffs = &pointLightCoeffs2;
+
+	scene.pointLights = &pointLights[0];
+	scene.nPointLights = 2;
 
 	Renderer renderer = {&camera, &scene};
 
@@ -124,7 +142,11 @@ void triangleRayIntersectDemo() {
 
 	printf("Raycasting...\n");
 
-	rayCast(&camera, &scene, screen, WIDTH, HEIGHT);
+	
+	long long start = timeInMilliseconds();
+	rayTrace(&camera, &scene, screen, WIDTH, HEIGHT);
+	long long stop = timeInMilliseconds();
+	printf("Render time : %d \n", stop - start);
 
 	printf("Showing...\n");
 
@@ -133,6 +155,6 @@ void triangleRayIntersectDemo() {
 
 // TODO: go through and free memory probably
 int main() {
-	triangleRayIntersectDemo();
+	rayTraceDemo();
 	return 0;
 }
