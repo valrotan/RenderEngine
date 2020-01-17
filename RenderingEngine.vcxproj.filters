@@ -13,84 +13,30 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\math">
-      <UniqueIdentifier>{cf04fb0b-d784-4830-969e-bf2b6118e1c7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\visualizer">
-      <UniqueIdentifier>{3d5cc0ca-2352-40c1-bbeb-d6922cc0a1dc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\tests">
-      <UniqueIdentifier>{607fdfca-bdbd-4c69-bc74-02753e9d46d6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\renderer">
-      <UniqueIdentifier>{b40d5273-7a0f-4a1f-a4f0-cc5023ea549f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\math">
-      <UniqueIdentifier>{fa6f8be9-7276-43cf-9950-5254a881c05d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\renderer">
-      <UniqueIdentifier>{85c50ae6-554d-421d-91a3-6c5f12f40fc8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\tests">
-      <UniqueIdentifier>{dbc98e9f-9657-4bf2-bae3-7c1e3b6246a1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\visualizer">
-      <UniqueIdentifier>{bcd78979-ea80-4f21-ba4e-0f5f89dd668c}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\src\math\renderMath.c">
-      <Filter>Source Files\math</Filter>
-    </ClCompile>
-    <ClCompile Include="src\src\main.c">
+    <ClCompile Include="RenderEngine\src\main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\tests\visualizerTests.c">
-      <Filter>Source Files\tests</Filter>
+    <ClCompile Include="RenderEngine\src\math\renderMath.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\tests\tests.c">
-      <Filter>Source Files\tests</Filter>
+    <ClCompile Include="RenderEngine\src\renderer\renderer.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\tests\testing.c">
-      <Filter>Source Files\tests</Filter>
-    </ClCompile>
-    <ClCompile Include="src\tests\renderMathTests.c">
-      <Filter>Source Files\tests</Filter>
-    </ClCompile>
-    <ClCompile Include="src\tests\rendererTests.c">
-      <Filter>Source Files\tests</Filter>
-    </ClCompile>
-    <ClCompile Include="src\src\visualizer\visualizer.c">
-      <Filter>Source Files\visualizer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\src\renderer\renderer.c">
-      <Filter>Source Files\renderer</Filter>
+    <ClCompile Include="RenderEngine\src\visualizer\visualizer.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\src\visualizer\visualizer.h">
-      <Filter>Header Files\visualizer</Filter>
+    <ClInclude Include="RenderEngine\src\math\renderMath.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\tests\rendererTests.h">
-      <Filter>Header Files\tests</Filter>
+    <ClInclude Include="RenderEngine\src\renderer\renderer.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\tests\renderMathTests.h">
-      <Filter>Header Files\tests</Filter>
-    </ClInclude>
-    <ClInclude Include="src\tests\testing.h">
-      <Filter>Header Files\tests</Filter>
-    </ClInclude>
-    <ClInclude Include="src\tests\visualizerTests.h">
-      <Filter>Header Files\tests</Filter>
-    </ClInclude>
-    <ClInclude Include="src\src\renderer\renderer.h">
-      <Filter>Header Files\renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\src\math\renderMath.h">
-      <Filter>Header Files\math</Filter>
-    </ClInclude>
-    <ClInclude Include="src\tests\tests.h">
-      <Filter>Header Files\tests</Filter>
+    <ClInclude Include="RenderEngine\src\visualizer\visualizer.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
