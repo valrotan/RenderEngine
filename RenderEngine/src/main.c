@@ -105,9 +105,9 @@ void rayTraceDemo() {
 	t[7] = temp8;
 
 	Scene scene;
-	scene.bkgR = 64;
-	scene.bkgG = 64;
-	scene.bkgB = 64;
+	scene.bkgR = 128;
+	scene.bkgG = 128;
+	scene.bkgB = 156;
 	scene.ambientLight = .45f;
 
 	scene.triangles = t;
@@ -120,14 +120,34 @@ void rayTraceDemo() {
 	Vector3D pointLightCoeffs1 = {1, .06f, .002f};
 	pointLights[0].attenuationCoeffs = &pointLightCoeffs1;
 
-	Vector3D pointLightLoc2 = {-50, -200, 500};
+	Vector3D pointLightLoc2 = {0, 0, 1};
 	pointLights[1].point = &pointLightLoc2;
-	pointLights[1].intensity = 2000;
+	pointLights[1].intensity = 10;
 	Vector3D pointLightCoeffs2 = {1, .02f, .002f};
 	pointLights[1].attenuationCoeffs = &pointLightCoeffs2;
 
 	scene.pointLights = &pointLights[0];
 	scene.nPointLights = 2;
+
+	DirectionalLight dirLights[4];
+	Vector3D dirLightDir0 = {-1, 0, 0};
+	dirLights[0].direction = norm(&dirLightDir0, &dirLightDir0);
+	dirLights[0].intensity = .5f;
+
+	scene.directionalLights = dirLights;
+	scene.nDirectionalLights = 1;
+
+	SpotLight spotLights[4];
+	Vector3D spotLightLoc0 = {-100, 75, 50};
+	Vector3D spotLightDir0 = {1, -.25f, 0};
+	Vector3D spotLightCoeffs0 = {1, 0, 2.0f};
+	spotLights[0].point = &spotLightLoc0;
+	spotLights[0].direction = norm(&spotLightDir0, &spotLightDir0);
+	spotLights[0].attenuationCoeffs = &spotLightCoeffs0;
+	spotLights[0].intensity = 500.0f;
+
+	scene.spotLights = spotLights;
+	scene.nSpotLights = 1;
 
 	Renderer renderer = {&camera, &scene};
 
@@ -138,7 +158,6 @@ void rayTraceDemo() {
 	
 	struct timeb start, end;
 	int diff;
-	int i = 0;
 	ftime(&start);
 
 	rayTrace(&camera, &scene, screen, WIDTH, HEIGHT);
@@ -146,7 +165,7 @@ void rayTraceDemo() {
 	diff = (int)(1000.0 * (end.time - start.time)
 		+ (end.millitm - start.millitm));
 
-	printf("\Render took %u milliseconds\n", diff);
+	printf("Render took %u milliseconds \n", diff);
 
 	printf("Showing...\n");
 

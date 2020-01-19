@@ -34,8 +34,9 @@ void rayTrace(Camera *camera, Scene *scene, unsigned char *screen, int width,
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
 			ray = constructRayThroughPixel(camera, x - halfWidth, y - halfHeight);
-//			printf(" - P (%.2f, %.2f, %.2f) \n", ray->p->x, ray->p->y, ray->p->z);
-//			printf("   V (%.2f, %.2f, %.2f) \n", ray->v->x, ray->v->y, ray->v->z);
+			//			printf(" - P (%.2f, %.2f, %.2f) \n", ray->p->x, ray->p->y,
+			// ray->p->z); 			printf("   V (%.2f, %.2f, %.2f) \n", ray->v->x,
+			// ray->v->y, ray->v->z);
 			unsigned char *i = traceRay(camera, scene, ray, 0, 3);
 			*p++ = i[0];
 			*p++ = i[1];
@@ -65,7 +66,7 @@ unsigned char *traceRay(Camera *camera, Scene *scene, Ray3D *ray, int curDepth,
 
 	Intersection3D *intersection = findIntersection(scene, ray);
 	unsigned char *color;
-//	printf("tr1 \n");
+	//	printf("tr1 \n");
 	if (intersection != 0) {
 		color = getColor(camera, scene, intersection, curDepth, maxDepth);
 	} else {
@@ -129,16 +130,16 @@ unsigned char *getColor(Camera *camera, Scene *scene,
 												int maxDepth) {
 	// I = Ie + Ka Ial + Kd (N * L) Il + Ks (V * R)^n Ii
 
-//	printf("gc1 \n");
+	//	printf("gc1 \n");
 
 	float i[3];
 
 	Triangle3D *t = intersection->triangle;
 
-	Vector3D *n = t->plane->v; // normal
-	Vector3D v;
-	sub(intersection->point, &camera->pos, &v);
-//	printf("gc2 \n");
+	Vector3D *normal = t->plane->v; // normal
+	Vector3D view;
+	sub(intersection->point, &camera->pos, &view);
+	//	printf("gc2 \n");
 
 	float ia = scene->ambientLight;
 	float ie = t->k_e;
@@ -146,37 +147,9 @@ unsigned char *getColor(Camera *camera, Scene *scene,
 	float id = 0;
 	float is = 0;
 
-//	printf("gc3 \n");
-
-	// point lights
-	for (int i = 0; i < scene->nPointLights; i++) {
-
-		Vector3D l;
-		sub(intersection->point, scene->pointLights[i].point, &l);
-		norm(&l, &l);
-		Vector3D lightReflectedVector;
-		sub(&l, mul(n, 2 * dot(&l, n), &lightReflectedVector),
-				&lightReflectedVector);
-		norm(&lightReflectedVector, &lightReflectedVector);
-
-		PointLight *pl = &scene->pointLights[i];
-		float d = dist(pl->point, intersection->point);
-		Vector3D dvec = {1, d, d * d};
-		float il = pl->intensity; // intensity of light
-		il /= dot(pl->attenuationCoeffs, &dvec);
-
-		// diffuse light
-		id += -t->k_d * dot(n, &l) * il;
-
-		// specular reflection
-		float N = 3; // specular light exponent
-		float is_temp = -dot(norm(&v, &v), &lightReflectedVector);
-		if (is_temp > 0) {
-			is += t->k_s * powf(is_temp, N) * il;
-		}
-	}
-
-//	printf("gc4 \n");
+	calcPointLights(scene, intersection, normal, &view, &id, &is);
+	calcDirectionalLights(scene, intersection, normal, &view, &id, &is);
+	calcSpotLights(scene, intersection, normal, &view, &id, &is);
 
 	// TODO light blocking
 	// if light is blocked (intersection with scene w/ dist < len(ray))
@@ -189,13 +162,14 @@ unsigned char *getColor(Camera *camera, Scene *scene,
 	float ir_b = 0;
 	if (curDepth < maxDepth) {
 		Vector3D reflectedVector;
-		sub(&v, mul(n, 2 * dot(&v, n), &reflectedVector), &reflectedVector);
+		sub(&view, mul(normal, 2 * dot(&view, normal), &reflectedVector),
+				&reflectedVector);
 		Ray3D reflectedRay;
 		Vector3D rrp, rrv;
 		reflectedRay.p = &rrp;
 		reflectedRay.v = &rrv;
 		Vector3D eps;
-		add(intersection->point, mul(n, -.0001f, &eps),
+		add(intersection->point, mul(normal, -.0001f, &eps),
 				reflectedRay.p);               // not sure why negative
 		reflectedRay.v = &reflectedVector; // might need to multiply by -1, idk
 
@@ -206,7 +180,7 @@ unsigned char *getColor(Camera *camera, Scene *scene,
 		ir_g = t->k_s * reflectedColors[1] / 255;
 		ir_b = t->k_s * reflectedColors[2] / 255;
 	}
-//	printf("gc5 \n");
+	//	printf("gc5 \n");
 	i[0] = t->colorR * (ia + id + ie) / 255.0f + is + ir_r;
 	i[1] = t->colorG * (ia + id + ie) / 255.0f + is + ir_g;
 	i[2] = t->colorB * (ia + id + ie) / 255.0f + is + ir_b;
@@ -236,3 +210,97 @@ unsigned char *getColor(Camera *camera, Scene *scene,
 
 	return i_char;
 }
+
+void calcPointLights(Scene *scene, Intersection3D *intersection,
+										 Vector3D *normal, Vector3D *view, float *id, float *is) {
+
+	for (int i = 0; i < scene->nPointLights; i++) {
+
+		Vector3D l;
+		sub(intersection->point, scene->pointLights[i].point, &l);
+		norm(&l, &l);
+		Vector3D lightReflectedVector;
+		sub(&l, mul(normal, 2 * dot(&l, normal), &lightReflectedVector),
+				&lightReflectedVector);
+		norm(&lightReflectedVector, &lightReflectedVector);
+
+		PointLight *pl = &scene->pointLights[i];
+		float d = dist(pl->point, intersection->point);
+		Vector3D dvec = {1, d, d * d};
+		float il = pl->intensity; // intensity of light
+		il /= dot(pl->attenuationCoeffs, &dvec);
+
+		// diffuse light
+		*id += -intersection->triangle->k_d * dot(normal, &l) * il;
+
+		// specular reflection
+		float N = 3; // specular light exponent
+		float is_temp = -dot(norm(view, view), &lightReflectedVector);
+		if (is_temp > 0) {
+			*is += intersection->triangle->k_s * powf(is_temp, N) * il;
+		}
+	}
+}
+
+void calcDirectionalLights(Scene *scene, Intersection3D *intersection,
+													 Vector3D *normal, Vector3D *view, float *id,
+													 float *is) {
+
+	for (int i = 0; i < scene->nDirectionalLights; i++) {
+
+		DirectionalLight *dl = &scene->directionalLights[i];
+
+		Vector3D lightReflectedVector;
+		sub(dl->direction, mul(normal, 2 * dot(dl->direction, normal), &lightReflectedVector),
+				&lightReflectedVector);
+		norm(&lightReflectedVector, &lightReflectedVector);
+
+		float il = dl->intensity; // intensity of light
+
+		// diffuse light
+		*id += -intersection->triangle->k_d * dot(normal, dl->direction) * il;
+
+		// specular reflection
+		float N = 3; // specular light exponent
+		float is_temp = -dot(norm(view, view), &lightReflectedVector);
+		if (is_temp > 0) {
+			*is += intersection->triangle->k_s * powf(is_temp, N) * il;
+		}
+	}
+}
+
+void calcSpotLights(Scene *scene, Intersection3D *intersection,
+										Vector3D *normal, Vector3D *view, float *id, float *is) {
+
+	for (int i = 0; i < scene->nSpotLights; i++) {
+
+		SpotLight *sl = &scene->spotLights[i];
+
+		Vector3D lightReflectedVector;
+		sub(sl->direction, mul(normal, 2 * dot(sl->direction, normal), &lightReflectedVector),
+				&lightReflectedVector);
+		norm(&lightReflectedVector, &lightReflectedVector);
+
+		Vector3D lightToInter;
+		sub(intersection->point, sl->point, &lightToInter);
+
+		float d = dist(sl->point, intersection->point);
+		Vector3D dvec = {1, d, d * d};
+		float il = sl->intensity; // intensity of light
+		il /= dot(sl->attenuationCoeffs, &dvec);
+		il *= dot(sl->direction, &lightToInter);
+
+		// diffuse light
+		*id += -intersection->triangle->k_d * dot(normal, sl->direction) * il;
+
+		// specular reflection
+		float N = 3; // specular light exponent
+		float is_temp = -dot(norm(view, view), &lightReflectedVector);
+		if (is_temp > 0) {
+			*is += intersection->triangle->k_s * powf(is_temp, N) * il;
+		}
+	}
+}
+
+// TODO change the structure so the light helper functions only calculate the
+// illuminosity

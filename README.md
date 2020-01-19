@@ -30,16 +30,19 @@ The source code is split into 3 main modules.
 ## TODO + Bug/Modification tracker:
 - [ ] Camera orientations
 - [ ] Camera fov
-- [ ] Support multiple light sources
-- [ ] Spot lights
-- [ ] Directional lights
-- [ ] Get rid of excessive dynamic allocation
+- [x] Support multiple light sources
+- [x] Spot lights
+- [x] Directional lights
+- [x] Get rid of excessive dynamic allocation
 - [x] Reflections going the wrong way (see cube render)
 - [ ] Fix triangle points have to be clockwise
 - [ ] Create a 3D shape to triangles module
 - [ ] Data structures for scene representation
 - [ ] Clean source code from debugging code
 - [ ] High level API for scene creation
+- [ ] Fix negative lighting bug
+- [ ] Test with different view points
+- [ ] Test with different lights in different locations
 
 ## Render times benchmarks:
 - MacBookPro 2019 2.30 GHZ i5 : 426ms
