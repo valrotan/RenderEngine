@@ -33,7 +33,7 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{E90911DC-2809-4456-8FFE-D143791D9ADC}</ProjectGuid>
     <RootNamespace>RenderingEngine</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

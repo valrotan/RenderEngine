@@ -83,3 +83,4 @@ _deps
 /.vs/RenderingEngine/v16
 /src/.vs
 /x64/Debug
+/Debug

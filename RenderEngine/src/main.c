@@ -2,14 +2,7 @@
 #include "visualizer/visualizer.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
-
-long long timeInMilliseconds(void) {
-	    struct timeval tv;
-
-	        gettimeofday(&tv,NULL);
-		    return (((long long)tv.tv_sec)*1000)+(tv.tv_usec/1000);
-}
+#include <sys/timeb.h>
 
 void rayTraceDemo() {
 	printf("Starting render engine...\n");
@@ -143,10 +136,17 @@ void rayTraceDemo() {
 	printf("Raycasting...\n");
 
 	
-	long long start = timeInMilliseconds();
+	struct timeb start, end;
+	int diff;
+	int i = 0;
+	ftime(&start);
+
 	rayTrace(&camera, &scene, screen, WIDTH, HEIGHT);
-	long long stop = timeInMilliseconds();
-	printf("Render time : %d \n", stop - start);
+	ftime(&end);
+	diff = (int)(1000.0 * (end.time - start.time)
+		+ (end.millitm - start.millitm));
+
+	printf("\Render took %u milliseconds\n", diff);
 
 	printf("Showing...\n");
 
