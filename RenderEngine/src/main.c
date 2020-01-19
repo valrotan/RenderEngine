@@ -1,5 +1,6 @@
 #include "renderer/renderer.h"
 #include "visualizer/visualizer.h"
+#include "math/renderMath.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/timeb.h>
@@ -18,10 +19,21 @@ void rayTraceDemo() {
 	Vector3D pos = {0, 0, 200};
 	Vector3D dir = {0, 0, -1};
 	Vector3D up = {0, -1, 0};
+	char cmt[4][4] = {	{0,0,0,0},
+						{0,0,0,0},
+						{0,0,0,0},
+						{0,0,0,0}
+					};
+	Matrix4x4 camToWorld = {{
+						{0,0,0,0},
+						{0,0,0,0},
+						{0,0,0,0},
+						{0,0,0,0}}};
 	camera.pos = pos;
 	camera.dir = dir;
 	camera.up = up;
-	camera.screenZ = 450;
+	camera.screenZ = 1;
+	camera.cameraToWorld = camToWorld;
 
 //	Triangle3D *t = (Triangle3D *) malloc(sizeof (Triangle3D) * 8);
 	Triangle3D t[8];
@@ -153,8 +165,34 @@ void rayTraceDemo() {
 	visShowStill();
 }
 
+void testMatrixMult() {
+	
+	struct timeb start, end;
+	int diff;
+	int i = 0;
+	ftime(&start);
+	Matrix4x4 t[] = {getTranslationMatrix(1.5,1,1.5),getXRotationMatrix(180,0),getYRotationMatrix(90,0)};
+	Matrix4x4 trans = getTransformationMatrix(t, 3);
+	Vector3D orig = {0,1,0};
+	Vector3D translated = applyTransformation(orig, trans);
+
+	//printf("Resulting matrix: \n");
+	//for (int i = 0; i < 4; i++) {
+	//	for (int j = 0; j < 4; j++) {
+	//		printf("%2.3f ", trans.matrix[i][j]);
+	//	}
+	//	printf("\n");
+	//}
+
+	ftime(&end);
+	diff = (int)(1000.0 * (end.time - start.time)	+ (end.millitm - start.millitm));
+
+	printf("\Matrix multiplication took %u milliseconds\n", diff);
+}
+
 // TODO: go through and free memory probably
 int main() {
-	rayTraceDemo();
+	//rayTraceDemo();
+	testMatrixMult();
 	return 0;
 }

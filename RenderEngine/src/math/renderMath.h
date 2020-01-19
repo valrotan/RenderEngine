@@ -39,6 +39,23 @@ typedef struct {
 	int exists;
 } Intersection3D;
 
+typedef struct {
+	float matrix[4][4];
+} Matrix4x4;
+
+float getRad(float);
+Matrix4x4 getEye();
+Matrix4x4 multiply4x4Matrices(Matrix4x4 a, Matrix4x4 b);
+
+Matrix4x4 getTranslationMatrix(float x, float y, float z);
+Matrix4x4 getScaleMatrix(float xScale, float yScale, float zScale);
+Matrix4x4 getXRotationMatrix(float angle, int rad); // angle is angle in degrees or radians
+Matrix4x4 getYRotationMatrix(float angle, int rad); // specify if rad with rad = 1
+Matrix4x4 getZRotationMatrix(float angle, int rad); // else rad = 0
+Matrix4x4 getTransformationMatrix(Matrix4x4 matrices[], int size);
+Vector3D applyTransformation(Vector3D originVec, Matrix4x4 transform);
+
+
 static Vector3D ORIGIN_3D = {0, 0, 0};
 
 float dot(Vector3D *a, Vector3D *b);
