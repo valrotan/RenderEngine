@@ -40,3 +40,6 @@ The source code is split into 3 main modules.
 - [ ] Data structures for scene representation
 - [ ] Clean source code from debugging code
 - [ ] High level API for scene creation
+
+## Render times benchmarks:
+- MacBookPro 2019 2.30 GHZ i5 : 426ms
