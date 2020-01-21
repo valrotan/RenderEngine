@@ -28,8 +28,8 @@ The source code is split into 3 main modules.
 
 
 ## TODO + Bug/Modification tracker:
-- [ ] Camera orientations
-- [ ] Camera fov
+- [x] Camera orientations
+- [x] Camera fov
 - [x] Support multiple light sources
 - [x] Spot lights
 - [x] Directional lights
@@ -37,10 +37,14 @@ The source code is split into 3 main modules.
 - [x] Reflections going the wrong way (see cube render)
 - [x] Fix triangle points have to be clockwise
 - [ ] Create a 3D shape to triangles module
+- [ ] High level API for scene creation
 - [ ] Data structures for scene representation
 - [ ] Clean source code from debugging code
-- [ ] High level API for scene creation
 - [x] Fix negative lighting bug
+- [ ] Triangle orientation - agnostic code
+- [ ] Moving camera and update camera pos and dir
+- [ ] Do not convert float to char and back for reflections
+- [ ] Anti aliasing
 - [ ] Shadows
 - [ ] Test with different view points
 - [ ] Test with different lights in different locations

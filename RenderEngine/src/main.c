@@ -25,17 +25,20 @@ void rayTraceDemo() {
 
 	printf("Initializing renderer...\n");
 	Camera camera;
-	Vector3D pos = { 0, 0, 0 };
+	Vector3D pos = { 0, 0, 200 };
 	Vector3D dir = { 0, 0, -1 };
 	Vector3D up = { 0, -1, 0 };
-	Matrix4x4 trans[] = {getTranslationMatrix(0, 0, 200), getYRotationMatrix(180,0)};
+	Matrix4x4 trans[] = {getTranslationMatrix(0, 0, 200), getYRotationMatrix(0,0)};
 	Matrix4x4 camToWorld = getTransformationMatrix(trans, 2);
 	
 	printf("Orig pos: (%f, %f, %f)\n", pos.x,pos.y,pos.z);
 
-	camera.pos = applyTransformation(pos,camToWorld);
-	camera.dir = applyTransformation(dir,camToWorld);
-	camera.up = applyTransformation(up,camToWorld);
+//	camera.pos = applyTransformation(pos,camToWorld);
+//	camera.dir = applyTransformation(dir,camToWorld);
+//	camera.up = applyTransformation(up,camToWorld);
+	camera.pos = pos;
+	camera.dir = dir;
+	camera.up = up;
 	camera.screenZ = 60;
 	camera.cameraToWorld = camToWorld;
 
@@ -78,36 +81,36 @@ void rayTraceDemo() {
 //	Triangle3D temp8 = {&dd, &ed, &fd, 0, 0, 0, 255, .0f, .5f, .25f};
 
 	// cool triangles
-	Vector3D a = {0, 50, 0};
-	Vector3D b = {50, 50, -50};
-	Vector3D c = {50, 100, -50};
-	Vector3D d = {0, 50, 0};
-	Vector3D e = {0, 100, 0};
-	Vector3D f = {50, 100, -50};
+	Vector3D a = {0, -50, 0};
+	Vector3D b = {50, -100, -50};
+	Vector3D c = {50, -50, -50};
+	Vector3D d = {0, -50, 0};
+	Vector3D e = {0, -100, 0};
+	Vector3D f = {50, -100, -50};
 	Triangle3D temp1 = {&a, &b, &c, 0, 155, 50, 50, 0, .25f, .25f};
 	Triangle3D temp2 = {&d, &e, &f, 0, 155, 50, 50, 0, .25f, .25f};
-	Vector3D ab = {0, 50, 0};
-	Vector3D bb = {-50, 50, -50};
-	Vector3D cb = {-50, 100, -50};
-	Vector3D db = {0, 50, 0};
-	Vector3D eb = {-50, 100, -50};
-	Vector3D fb = {0, 100, 0};
+	Vector3D ab = {0, -50, 0};
+	Vector3D bb = {-50, -50, -50};
+	Vector3D cb = {-50, -100, -50};
+	Vector3D db = {0, -50, 0};
+	Vector3D eb = {-50, -100, -50};
+	Vector3D fb = {0, -100, 0};
 	Triangle3D temp3 = {&ab, &bb, &cb, 0, 50, 155, 50, 0, .25f, .25f};
 	Triangle3D temp4 = {&db, &eb, &fb, 0, 50, 155, 50, 0, .25f, .25f};
-	Vector3D ac = {0, 50, 0};
-	Vector3D bc = {0, 50, -100};
-	Vector3D cc = {-50, 50, -50};
-	Vector3D dc = {0, 50, 0};
-	Vector3D ec = {50, 50, -50};
-	Vector3D fc = {0, 50, -100};
+	Vector3D ac = {0, -50, 0};
+	Vector3D bc = {-50, -50, -50};
+	Vector3D cc = {0, -50, -100};
+	Vector3D dc = {0, -50, 0};
+	Vector3D ec = {0, -50, -100};
+	Vector3D fc = {50, -50, -50};
 	Triangle3D temp5 = {&ac, &bc, &cc, 0, 50, 50, 200, 0, .25f, .25f};
 	Triangle3D temp6 = {&dc, &ec, &fc, 0, 50, 50, 200, 0, .25f, .25f};
 	Vector3D ad = {0, 0, 0};
-	Vector3D bd = {50, 30, 60};
-	Vector3D cd = {50, -30, 60};
+	Vector3D bd = {50, -30, 60};
+	Vector3D cd = {50, 30, 60};
 	Vector3D dd = {0, 0, 0};
-	Vector3D ed = {-50, -50, 40};
-	Vector3D fd = {-50, 50, 40};
+	Vector3D ed = {-50, 50, 40};
+	Vector3D fd = {-50, -50, 40};
 	Triangle3D temp7 = {&ad, &bd, &cd, 0, 20, 20, 20, 0, 1.0f, .05f};
 	Triangle3D temp8 = {&dd, &ed, &fd, 0, 50, 50, 200, 0, .25f, .25f};
 

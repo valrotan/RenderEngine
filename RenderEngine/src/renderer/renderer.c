@@ -45,7 +45,10 @@ void rayTrace(Camera *camera, Scene *scene, unsigned char *screen, int width,
 			//			printf(" - P (%.2f, %.2f, %.2f) \n", ray->p->x, ray->p->y,
 			// ray->p->z); 			printf("   V (%.2f, %.2f, %.2f) \n", ray->v->x,
 			// ray->v->y, ray->v->z);
-			unsigned char *i = traceRay(camera, scene, ray, 0, 3);
+
+//			printf("(%.2f, %.2f) \n", ray->v->x, ray->v->y, ray->v->z);
+
+			unsigned char *i = traceRay(camera, scene, ray, 0, 3); // 3
 			*p++ = i[0];
 			*p++ = i[1];
 			*p++ = i[2];
@@ -60,12 +63,12 @@ Ray3D* constructRayThroughPixel(Camera* camera, int x, int y, int imageWidth, in
 	float imageAspectRatio = (float)imageWidth / (float)imageHeight; // assuming width > height 
 	float scale = (float)tan(getRad(camera->screenZ / 2));
 
-	float Px = (2 * ((x + 0.5f) / (float)imageWidth) - 1) * scale * imageAspectRatio;
-	float Py = (1 - (2 * (y + 0.5f) / (float)imageHeight)) * scale;
+	float Px = (2 * (x + 0.5f) / (float)imageWidth - 1) * scale * imageAspectRatio;
+	float Py = (1 - 2 * (y + 0.5f) / (float)imageHeight) * scale;
 
 	Vector3D origin = { 0,0,0 };
 	origin = applyTransformation(origin, camera->cameraToWorld);
-	Vector3D pWorld = { Px,Py,-1 };
+	Vector3D pWorld = { Px,Py, -1 };
 	pWorld = applyTransformation(pWorld, camera->cameraToWorld);
 
 	/*printf("Printing all of the info: \n");
@@ -270,7 +273,7 @@ void calcPointLights(Scene *scene, Intersection3D *intersection,
 		}
 
 		Vector3D l;
-		sub(scene->pointLights[i].point, intersection->point, &l);
+		sub(intersection->point, scene->pointLights[i].point, &l);
 		norm(&l, &l);
 
 		// check if light behind triangle
