@@ -74,3 +74,13 @@ Intersection3D *findIntersection(Scene *scene, Ray3D *ray);
 unsigned char *getColor(Camera *camera, Scene *scene,
 												Intersection3D *intersection, int curDepth,
 												int maxDepth);
+
+void calcPointLights(Scene *scene, Intersection3D *intersection,
+										 Vector3D *normal, Vector3D *view, float *id, float *is);
+
+void calcDirectionalLights(Scene *scene, Intersection3D *intersection,
+													 Vector3D *normal, Vector3D *view, float *id,
+													 float *is);
+
+void calcSpotLights(Scene *scene, Intersection3D *intersection,
+										Vector3D *normal, Vector3D *view, float *id, float *is);

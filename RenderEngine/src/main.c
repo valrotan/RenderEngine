@@ -1,6 +1,5 @@
 #include "renderer/renderer.h"
 #include "visualizer/visualizer.h"
-#include "math/renderMath.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/timeb.h>
@@ -19,21 +18,10 @@ void rayTraceDemo() {
 	Vector3D pos = {0, 0, 200};
 	Vector3D dir = {0, 0, -1};
 	Vector3D up = {0, -1, 0};
-	char cmt[4][4] = {	{0,0,0,0},
-						{0,0,0,0},
-						{0,0,0,0},
-						{0,0,0,0}
-					};
-	Matrix4x4 camToWorld = {{
-						{0,0,0,0},
-						{0,0,0,0},
-						{0,0,0,0},
-						{0,0,0,0}}};
 	camera.pos = pos;
 	camera.dir = dir;
 	camera.up = up;
-	camera.screenZ = 1;
-	camera.cameraToWorld = camToWorld;
+	camera.screenZ = 450;
 
 //	Triangle3D *t = (Triangle3D *) malloc(sizeof (Triangle3D) * 8);
 	Triangle3D t[8];
@@ -75,8 +63,8 @@ void rayTraceDemo() {
 
 	// cool triangles
 	Vector3D a = {0, 50, 0};
-	Vector3D b = {50, 100, -50};
-	Vector3D c = {50, 50, -50};
+	Vector3D b = {50, 50, -50};
+	Vector3D c = {50, 100, -50};
 	Vector3D d = {0, 50, 0};
 	Vector3D e = {0, 100, 0};
 	Vector3D f = {50, 100, -50};
@@ -117,29 +105,51 @@ void rayTraceDemo() {
 	t[7] = temp8;
 
 	Scene scene;
-	scene.bkgR = 64;
-	scene.bkgG = 64;
-	scene.bkgB = 64;
+	scene.bkgR = 128;
+	scene.bkgG = 128;
+	scene.bkgB = 156;
 	scene.ambientLight = .45f;
 
-	scene.triangles = t;
+	scene.triangles = &t[0];
 	scene.nTriangles = 8;
 
 	PointLight pointLights[4];
-	Vector3D pointLightLoc1 = {0, 20, 50};
+	Vector3D pointLightLoc1 = {0, 20, -50};
 	pointLights[0].point = &pointLightLoc1;
 	pointLights[0].intensity = 14;
 	Vector3D pointLightCoeffs1 = {1, .06f, .002f};
 	pointLights[0].attenuationCoeffs = &pointLightCoeffs1;
 
-	Vector3D pointLightLoc2 = {-50, -200, 500};
+	Vector3D pointLightLoc2 = {0, 0, 1};
 	pointLights[1].point = &pointLightLoc2;
-	pointLights[1].intensity = 2000;
+	pointLights[1].intensity = 10;
 	Vector3D pointLightCoeffs2 = {1, .02f, .002f};
 	pointLights[1].attenuationCoeffs = &pointLightCoeffs2;
 
 	scene.pointLights = &pointLights[0];
+
+	DirectionalLight dirLights[4];
+	Vector3D dirLightDir0 = {-1, -1, 0};
+	dirLights[0].direction = norm(&dirLightDir0, &dirLightDir0);
+	dirLights[0].intensity = .5f;
+
+	scene.directionalLights = dirLights;
+
+	SpotLight spotLights[4];
+	Vector3D spotLightLoc0 = {-100, 75, 50};
+	Vector3D spotLightDir0 = {1, -.25f, 0};
+	Vector3D spotLightCoeffs0 = {1, 0, 2.0f};
+	spotLights[0].point = &spotLightLoc0;
+	spotLights[0].direction = norm(&spotLightDir0, &spotLightDir0);
+	spotLights[0].attenuationCoeffs = &spotLightCoeffs0;
+	spotLights[0].intensity =	500.0f;
+
+	scene.spotLights = spotLights;
+
+	// *** light counts
 	scene.nPointLights = 2;
+	scene.nDirectionalLights = 1;
+	scene.nSpotLights = 1;
 
 	Renderer renderer = {&camera, &scene};
 
@@ -150,7 +160,6 @@ void rayTraceDemo() {
 	
 	struct timeb start, end;
 	int diff;
-	int i = 0;
 	ftime(&start);
 
 	rayTrace(&camera, &scene, screen, WIDTH, HEIGHT);
@@ -158,41 +167,14 @@ void rayTraceDemo() {
 	diff = (int)(1000.0 * (end.time - start.time)
 		+ (end.millitm - start.millitm));
 
-	printf("\Render took %u milliseconds\n", diff);
+	printf("Render took %u milliseconds \n", diff);
 
 	printf("Showing...\n");
 
 	visShowStill();
 }
 
-void testMatrixMult() {
-	
-	struct timeb start, end;
-	int diff;
-	int i = 0;
-	ftime(&start);
-	Matrix4x4 t[] = {getTranslationMatrix(1.5,1,1.5),getXRotationMatrix(180,0),getYRotationMatrix(90,0)};
-	Matrix4x4 trans = getTransformationMatrix(t, 3);
-	Vector3D orig = {0,1,0};
-	Vector3D translated = applyTransformation(orig, trans);
-
-	//printf("Resulting matrix: \n");
-	//for (int i = 0; i < 4; i++) {
-	//	for (int j = 0; j < 4; j++) {
-	//		printf("%2.3f ", trans.matrix[i][j]);
-	//	}
-	//	printf("\n");
-	//}
-
-	ftime(&end);
-	diff = (int)(1000.0 * (end.time - start.time)	+ (end.millitm - start.millitm));
-
-	printf("\Matrix multiplication took %u milliseconds\n", diff);
-}
-
-// TODO: go through and free memory probably
 int main() {
-	//rayTraceDemo();
-	testMatrixMult();
+	rayTraceDemo();
 	return 0;
 }
