@@ -41,7 +41,7 @@ void rayTrace(Camera *camera, Scene *scene, unsigned char *screen, int width,
 
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
-			ray = constructRayThroughPixel(camera, x - halfWidth, y - halfHeight, width,height);
+			ray = constructRayThroughPixel(camera, x, y, width, height);
 			//			printf(" - P (%.2f, %.2f, %.2f) \n", ray->p->x, ray->p->y,
 			// ray->p->z); 			printf("   V (%.2f, %.2f, %.2f) \n", ray->v->x,
 			// ray->v->y, ray->v->z);
@@ -58,19 +58,24 @@ void rayTrace(Camera *camera, Scene *scene, unsigned char *screen, int width,
 Ray3D* constructRayThroughPixel(Camera* camera, int x, int y, int imageWidth, int imageHeight) {
 	Ray3D* ray = (Ray3D*)malloc(sizeof(Ray3D));
 	float imageAspectRatio = (float)imageWidth / (float)imageHeight; // assuming width > height 
+	float scale = (float)tan(getRad(camera->screenZ / 2));
 
-	float Px = (2 * (((float)x + 0.5) / imageWidth) - 1) * (float)tan(getRad(camera->screenZ / 2)) * imageAspectRatio;
-	float Py = (1 - 2 * (((float)y + 0.5) / imageHeight) * (float)tan(getRad(camera->screenZ / 2)));
+	float Px = (2 * ((x + 0.5f) / (float)imageWidth) - 1) * scale * imageAspectRatio;
+	float Py = (1 - (2 * (y + 0.5f) / (float)imageHeight)) * scale;
 
 	Vector3D origin = { 0,0,0 };
 	origin = applyTransformation(origin, camera->cameraToWorld);
 	Vector3D pWorld = { Px,Py,-1 };
 	pWorld = applyTransformation(pWorld, camera->cameraToWorld);
 
-	//printf("Printing all of the info: \n");
-	//printf("CASTING TO: %f %f %f\n", pWorld.x, pWorld.y, pWorld.z);
-	//printf("(x,y): (%d %d)\n", x, y);
-	//printf("PxPY : (%0.3f, %0.3f)\n\n", Px, Py);
+	/*printf("Printing all of the info: \n");
+	printf("CASTING TO: %f %f %f\n", pWorld.x, pWorld.y, pWorld.z);
+	printf("(x,y): (%d %d)\n", x, y);
+	printf("PxPY : (%0.3f, %0.3f)\n\n", Px, Py);
+	printf("OxOY : (%0.3f, %0.3f)\n\n", origin.x, origin.y);*/
+
+	
+
 
 	ray->p = (Vector3D*)malloc(sizeof(Vector3D));
 	ray->p->x = origin.x;
@@ -79,7 +84,7 @@ Ray3D* constructRayThroughPixel(Camera* camera, int x, int y, int imageWidth, in
 
 	ray->v = (Vector3D*)malloc(sizeof(Vector3D));
 	ray->v->x = pWorld.x - origin.x;
-	ray->v->y = pWorld.x - origin.x;
+	ray->v->y = pWorld.y - origin.y;
 	ray->v->z = pWorld.z - origin.z;
 	norm(ray->v, ray->v);
 
@@ -265,12 +270,12 @@ void calcPointLights(Scene *scene, Intersection3D *intersection,
 		}
 
 		Vector3D l;
-		sub(intersection->point, scene->pointLights[i].point, &l);
+		sub(scene->pointLights[i].point, intersection->point, &l);
 		norm(&l, &l);
 
 		// check if light behind triangle
 		if (dot(&l, intersection->triangle->plane->v) > 0) {
-			//continue;
+			continue;
 		}
 
 		Vector3D lightReflectedVector;

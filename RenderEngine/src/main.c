@@ -28,11 +28,14 @@ void rayTraceDemo() {
 	Vector3D pos = { 0, 0, 0 };
 	Vector3D dir = { 0, 0, -1 };
 	Vector3D up = { 0, -1, 0 };
-	Matrix4x4 trans[] = { getTranslationMatrix(50,100,500) };
-	Matrix4x4 camToWorld = getTransformationMatrix(trans, 1);
-	camera.pos = pos;
-	camera.dir = dir;
-	camera.up = up;
+	Matrix4x4 trans[] = {getTranslationMatrix(0, 0, 200), getYRotationMatrix(180,0)};
+	Matrix4x4 camToWorld = getTransformationMatrix(trans, 2);
+	
+	printf("Orig pos: (%f, %f, %f)\n", pos.x,pos.y,pos.z);
+
+	camera.pos = applyTransformation(pos,camToWorld);
+	camera.dir = applyTransformation(dir,camToWorld);
+	camera.up = applyTransformation(up,camToWorld);
 	camera.screenZ = 60;
 	camera.cameraToWorld = camToWorld;
 
