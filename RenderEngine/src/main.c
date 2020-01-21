@@ -110,7 +110,7 @@ void rayTraceDemo() {
 	scene.bkgB = 156;
 	scene.ambientLight = .45f;
 
-	scene.triangles = t;
+	scene.triangles = &t[0];
 	scene.nTriangles = 8;
 
 	PointLight pointLights[4];
@@ -127,7 +127,6 @@ void rayTraceDemo() {
 	pointLights[1].attenuationCoeffs = &pointLightCoeffs2;
 
 	scene.pointLights = &pointLights[0];
-	scene.nPointLights = 2;
 
 	DirectionalLight dirLights[4];
 	Vector3D dirLightDir0 = {-1, 0, 0};
@@ -135,7 +134,6 @@ void rayTraceDemo() {
 	dirLights[0].intensity = .5f;
 
 	scene.directionalLights = dirLights;
-	scene.nDirectionalLights = 1;
 
 	SpotLight spotLights[4];
 	Vector3D spotLightLoc0 = {-100, 75, 50};
@@ -147,6 +145,10 @@ void rayTraceDemo() {
 	spotLights[0].intensity = 500.0f;
 
 	scene.spotLights = spotLights;
+
+	// *** light counts
+	scene.nPointLights = 2;
+	scene.nDirectionalLights = 1;
 	scene.nSpotLights = 1;
 
 	Renderer renderer = {&camera, &scene};
@@ -172,7 +174,6 @@ void rayTraceDemo() {
 	visShowStill();
 }
 
-// TODO: go through and free memory probably
 int main() {
 	rayTraceDemo();
 	return 0;

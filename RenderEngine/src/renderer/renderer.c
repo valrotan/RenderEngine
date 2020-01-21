@@ -1,7 +1,7 @@
 #include "renderer.h"
-#include "float.h"
-#include "math.h"
-#include "stdlib.h"
+#include <float.h>
+#include <math.h>
+#include <stdlib.h>
 
 void rendererInit(Renderer *renderer) {
 	for (int i = 0; i < renderer->scene->nTriangles; i++) {
@@ -118,10 +118,7 @@ Intersection3D *findIntersection(Scene *scene, Ray3D *ray) {
 			}
 		}
 	}
-	//	if (intersection != 0) {
-	//		Vector3D *r = intersection->point;
-	//		printf("found intersection (%f %f %f)\n", r->x, r->y, r->z);
-	//	}
+
 	return intersection->exists ? intersection : 0;
 }
 
@@ -150,10 +147,6 @@ unsigned char *getColor(Camera *camera, Scene *scene,
 	calcPointLights(scene, intersection, normal, &view, &id, &is);
 	calcDirectionalLights(scene, intersection, normal, &view, &id, &is);
 	calcSpotLights(scene, intersection, normal, &view, &id, &is);
-
-	// TODO light blocking
-	// if light is blocked (intersection with scene w/ dist < len(ray))
-	// id = 0
 
 	// TODO: refraction
 	// reflection
@@ -216,16 +209,31 @@ void calcPointLights(Scene *scene, Intersection3D *intersection,
 
 	for (int i = 0; i < scene->nPointLights; i++) {
 
+		PointLight *pl = &scene->pointLights[i];
+		float d = dist(pl->point, intersection->point);
+		Ray3D lightToInter;
+		sub(intersection->point, pl->point, lightToInter.v);
+		lightToInter.p = pl->point;
+		Intersection3D* inter = findIntersection(scene, &lightToInter);
+
+//		if (inter != 0 && dist(inter->point, intersection->point) < d) {
+//			continue; // not count this light source
+//		}
+
 		Vector3D l;
 		sub(intersection->point, scene->pointLights[i].point, &l);
 		norm(&l, &l);
+
+		// check light behind triangle
+		if (dot(&l, intersection->triangle->plane->v) > 0) {
+			continue;
+		}
+
 		Vector3D lightReflectedVector;
 		sub(&l, mul(normal, 2 * dot(&l, normal), &lightReflectedVector),
 				&lightReflectedVector);
 		norm(&lightReflectedVector, &lightReflectedVector);
 
-		PointLight *pl = &scene->pointLights[i];
-		float d = dist(pl->point, intersection->point);
 		Vector3D dvec = {1, d, d * d};
 		float il = pl->intensity; // intensity of light
 		il /= dot(pl->attenuationCoeffs, &dvec);
