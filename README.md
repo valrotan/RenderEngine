@@ -40,7 +40,8 @@ The source code is split into 3 main modules.
 - [ ] Data structures for scene representation
 - [ ] Clean source code from debugging code
 - [ ] High level API for scene creation
-- [ ] Fix negative lighting bug
+- [x] Fix negative lighting bug
+- [ ] Shadows
 - [ ] Test with different view points
 - [ ] Test with different lights in different locations
 
