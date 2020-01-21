@@ -41,7 +41,7 @@ void rayTrace(Camera *camera, Scene *scene, unsigned char *screen, int width,
 
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
-			ray = constructRayThroughPixel(camera, x - halfWidth, y - halfHeight);
+			ray = constructRayThroughPixel(camera, x - halfWidth, y - halfHeight, width,height);
 			//			printf(" - P (%.2f, %.2f, %.2f) \n", ray->p->x, ray->p->y,
 			// ray->p->z); 			printf("   V (%.2f, %.2f, %.2f) \n", ray->v->x,
 			// ray->v->y, ray->v->z);
@@ -55,17 +55,51 @@ void rayTrace(Camera *camera, Scene *scene, unsigned char *screen, int width,
 }
 
 // TODO change basically everything
-Ray3D *constructRayThroughPixel(Camera *camera, int x, int y) {
-	Ray3D *ray = (Ray3D *)malloc(sizeof(Ray3D));
-	ray->p = &camera->pos;
-	// ray->v = camera->dir; // for (0, 0)
+Ray3D* constructRayThroughPixel(Camera* camera, int x, int y, int imageWidth, int imageHeight) {
+	Ray3D* ray = (Ray3D*)malloc(sizeof(Ray3D));
+	float imageAspectRatio = (float)imageWidth / (float)imageHeight; // assuming width > height 
 
-	// suppose camera is pointing at origin from +z axis
-	ray->v = (Vector3D *)malloc(sizeof(Vector3D));
-	ray->v->x = x;
-	ray->v->y = y; // proper up would be -y
-	ray->v->z = -camera->screenZ;
+	float Px = (2 * (((float)x + 0.5) / imageWidth) - 1) * (float)tan(getRad(camera->screenZ / 2)) * imageAspectRatio;
+	float Py = (1 - 2 * (((float)y + 0.5) / imageHeight) * (float)tan(getRad(camera->screenZ / 2)));
+
+	Vector3D origin = { 0,0,0 };
+	origin = applyTransformation(origin, camera->cameraToWorld);
+	Vector3D pWorld = { Px,Py,-1 };
+	pWorld = applyTransformation(pWorld, camera->cameraToWorld);
+
+	//printf("Printing all of the info: \n");
+	//printf("CASTING TO: %f %f %f\n", pWorld.x, pWorld.y, pWorld.z);
+	//printf("(x,y): (%d %d)\n", x, y);
+	//printf("PxPY : (%0.3f, %0.3f)\n\n", Px, Py);
+
+	ray->p = (Vector3D*)malloc(sizeof(Vector3D));
+	ray->p->x = origin.x;
+	ray->p->y = origin.y;
+	ray->p->z = origin.z;
+
+	ray->v = (Vector3D*)malloc(sizeof(Vector3D));
+	ray->v->x = pWorld.x - origin.x;
+	ray->v->y = pWorld.x - origin.x;
+	ray->v->z = pWorld.z - origin.z;
 	norm(ray->v, ray->v);
+
+	//Vec3f rayOriginWorld, rayPixelWorld;
+	//cameraToWorld.multVectMatrix(rayOrigin, rayOriginWorld);
+	//cameraToWorld.multVectMatrix(Vec3f(Px, Py, -1), rayPixelWorld);
+	//
+	//Vec3f rayDirection = rayPWorld - rayOriginWorld;
+	//rayDirection.normalize(); // it's a direction so don't forget to normalize 
+
+
+	/*ray->p = &camera->pos;
+	ray->v = (Vector3D*)malloc(sizeof(Vector3D));
+	ray->v->x = camera->dir.x;
+	ray->v->y = camera->dir.y;
+	ray->v->z = camera->dir.z;
+	norm(ray->v, ray->v);*/
+	// suppose camera is pointing at origin from +z axis
+
+
 	return ray;
 }
 

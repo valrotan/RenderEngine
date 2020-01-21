@@ -9,7 +9,7 @@ typedef struct {
 	Vector3D up;
 	//	float xfov;
 	//	float yfov;
-
+	Matrix4x4 cameraToWorld;
 	// distance of screen from camera point
 	// makes ray through pixel calculation easier
 	// for 256x256 150 is a good value
@@ -64,7 +64,7 @@ void rendererInit(Renderer *renderer);
 void rayTrace(Camera *camera, Scene *scene, unsigned char *screen, int width,
 							int height);
 
-Ray3D *constructRayThroughPixel(Camera *camera, int x, int y);
+Ray3D *constructRayThroughPixel(Camera *camera, int x, int y, int width, int height);
 
 unsigned char *traceRay(Camera *camera, Scene *scene, Ray3D *ray, int curDepth,
 												int maxDepth);

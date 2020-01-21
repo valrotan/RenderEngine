@@ -13,15 +13,28 @@ void rayTraceDemo() {
 	visInit(WIDTH, HEIGHT);
 	unsigned char *screen = visGetPixbuf();
 
+	//printf("Initializing renderer...\n");
+	//Camera camera;
+	//Vector3D pos = {0, 0, 200};
+	//Vector3D dir = {0, 0, -1};
+	//Vector3D up = {0, -1, 0};
+	//camera.pos = pos;
+	//camera.dir = dir;
+	//camera.up = up;
+	//camera.screenZ = 450;
+
 	printf("Initializing renderer...\n");
 	Camera camera;
-	Vector3D pos = {0, 0, 200};
-	Vector3D dir = {0, 0, -1};
-	Vector3D up = {0, -1, 0};
+	Vector3D pos = { 0, 0, 0 };
+	Vector3D dir = { 0, 0, -1 };
+	Vector3D up = { 0, -1, 0 };
+	Matrix4x4 trans[] = { getTranslationMatrix(50,100,500) };
+	Matrix4x4 camToWorld = getTransformationMatrix(trans, 1);
 	camera.pos = pos;
 	camera.dir = dir;
 	camera.up = up;
-	camera.screenZ = 450;
+	camera.screenZ = 60;
+	camera.cameraToWorld = camToWorld;
 
 //	Triangle3D *t = (Triangle3D *) malloc(sizeof (Triangle3D) * 8);
 	Triangle3D t[8];
@@ -105,9 +118,9 @@ void rayTraceDemo() {
 	t[7] = temp8;
 
 	Scene scene;
-	scene.bkgR = 128;
-	scene.bkgG = 128;
-	scene.bkgB = 156;
+	scene.bkgR = 100;
+	scene.bkgG = 100;
+	scene.bkgB = 100;
 	scene.ambientLight = .45f;
 
 	scene.triangles = &t[0];
