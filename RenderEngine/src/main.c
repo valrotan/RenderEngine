@@ -63,8 +63,8 @@ void rayTraceDemo() {
 
 	// cool triangles
 	Vector3D a = {0, 50, 0};
-	Vector3D b = {50, 100, -50};
-	Vector3D c = {50, 50, -50};
+	Vector3D b = {50, 50, -50};
+	Vector3D c = {50, 100, -50};
 	Vector3D d = {0, 50, 0};
 	Vector3D e = {0, 100, 0};
 	Vector3D f = {50, 100, -50};
@@ -114,7 +114,7 @@ void rayTraceDemo() {
 	scene.nTriangles = 8;
 
 	PointLight pointLights[4];
-	Vector3D pointLightLoc1 = {0, 20, 50};
+	Vector3D pointLightLoc1 = {0, 20, -50};
 	pointLights[0].point = &pointLightLoc1;
 	pointLights[0].intensity = 14;
 	Vector3D pointLightCoeffs1 = {1, .06f, .002f};
@@ -129,7 +129,7 @@ void rayTraceDemo() {
 	scene.pointLights = &pointLights[0];
 
 	DirectionalLight dirLights[4];
-	Vector3D dirLightDir0 = {-1, 0, 0};
+	Vector3D dirLightDir0 = {-1, -1, 0};
 	dirLights[0].direction = norm(&dirLightDir0, &dirLightDir0);
 	dirLights[0].intensity = .5f;
 
@@ -142,7 +142,7 @@ void rayTraceDemo() {
 	spotLights[0].point = &spotLightLoc0;
 	spotLights[0].direction = norm(&spotLightDir0, &spotLightDir0);
 	spotLights[0].attenuationCoeffs = &spotLightCoeffs0;
-	spotLights[0].intensity = 500.0f;
+	spotLights[0].intensity =	500.0f;
 
 	scene.spotLights = spotLights;
 

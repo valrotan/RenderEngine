@@ -80,10 +80,6 @@ Intersection3D *intersect(Ray3D *r, Triangle3D *t, Intersection3D *i) {
 	i->triangle = t;
 	i->originalRay = r;
 
-	// TODO: free all the intermediate vectors or
-	// figure out how to do it no-copy style
-	//  float num = (dot(r->p, t->plane->v) + t->plane->d);
-	//  float den = dot(r->v, t->plane->v);
 	float denom = dot(r->v, t->plane->v);
 	float u = -(dot(r->p, t->plane->v) + t->plane->d) / denom;
 	if (isinf(u) || isnan(u) ||
@@ -92,11 +88,7 @@ Intersection3D *intersect(Ray3D *r, Triangle3D *t, Intersection3D *i) {
 		i->exists = 0;
 		return i;
 	}
-	Vector3D temp;
-	add(r->p, mul(r->v, u, &temp), i->point);
-//	if (fabsf(dot(i->point, t->plane->v) + t->plane->d) > .0001f) {
-//		//	return 0;
-//	}
+	add(r->p, mul(r->v, u, i->point), i->point);
 
 	// out of bounds check for ray within triangle
 	Vector3D v1;
@@ -112,19 +104,23 @@ Intersection3D *intersect(Ray3D *r, Triangle3D *t, Intersection3D *i) {
 	Vector3D n3;
 	cross(&v2, &v3, &n3);
 
-//	printf("inter 3 \n");
-
 	float o1 = dot(i->point, &n1);
 	float o2 = dot(i->point, &n2);
 	float o3 = dot(i->point, &n3);
 	float d1 = dot(r->p, &n1);
 	float d2 = dot(r->p, &n2);
 	float d3 = dot(r->p, &n3);
+
+//	printf("%.2f %.2f ; %.2f %.2f ; %.2f %.2f \n", o1, d1, o2, d2, o3, d3);
+
+	int c = 0;
 	if (o1 < d1) {
 		i->exists = 0;
-	} else if (o2 < d2) {
+	}
+	if (o2 < d2) {
 		i->exists = 0;
-	} else if (o3 < d3) {
+	}
+	if (o3 < d3) {
 		i->exists = 0;
 	}
 

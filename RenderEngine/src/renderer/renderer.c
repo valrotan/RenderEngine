@@ -14,7 +14,15 @@ void rendererInit(Renderer *renderer) {
 		t->plane->v = (Vector3D *)malloc(sizeof(Vector3D));
 		cross(&v1, &v2, t->plane->v);
 		norm(t->plane->v, t->plane->v);
+
+		if (dot(&renderer->camera->dir, t->plane->v) > 0) {
+			sub(&ORIGIN_3D, t->plane->v, t->plane->v);
+			Vector3D *temp = t->p2;
+			t->p2 = t->p3;
+			t->p3 = temp;
+		}
 		t->plane->d = -dot(t->p1, t->plane->v);
+
 		printf("init triangle : N (%.2f, %.2f, %.2f) d %.2f \n", t->plane->v->x,
 					 t->plane->v->y, t->plane->v->z, t->plane->d);
 		printf("  color : C (%d, %d, %d) \n", t->colorR, t->colorG, t->colorB);
@@ -149,6 +157,7 @@ unsigned char *getColor(Camera *camera, Scene *scene,
 	calcSpotLights(scene, intersection, normal, &view, &id, &is);
 
 	// TODO: refraction
+
 	// reflection
 	float ir_r = 0;
 	float ir_g = 0;
@@ -173,7 +182,7 @@ unsigned char *getColor(Camera *camera, Scene *scene,
 		ir_g = t->k_s * reflectedColors[1] / 255;
 		ir_b = t->k_s * reflectedColors[2] / 255;
 	}
-	//	printf("gc5 \n");
+
 	i[0] = t->colorR * (ia + id + ie) / 255.0f + is + ir_r;
 	i[1] = t->colorG * (ia + id + ie) / 255.0f + is + ir_g;
 	i[2] = t->colorB * (ia + id + ie) / 255.0f + is + ir_b;
@@ -216,15 +225,15 @@ void calcPointLights(Scene *scene, Intersection3D *intersection,
 		lightToInter.p = pl->point;
 		Intersection3D* inter = findIntersection(scene, &lightToInter);
 
-//		if (inter != 0 && dist(inter->point, intersection->point) < d) {
+		if (inter != 0 && dist(inter->point, intersection->point) < d) {
 //			continue; // not count this light source
-//		}
+		}
 
 		Vector3D l;
 		sub(intersection->point, scene->pointLights[i].point, &l);
 		norm(&l, &l);
 
-		// check light behind triangle
+		// check if light behind triangle
 		if (dot(&l, intersection->triangle->plane->v) > 0) {
 			continue;
 		}
@@ -257,6 +266,11 @@ void calcDirectionalLights(Scene *scene, Intersection3D *intersection,
 	for (int i = 0; i < scene->nDirectionalLights; i++) {
 
 		DirectionalLight *dl = &scene->directionalLights[i];
+
+		// check if light behind triangle
+		if (dot(dl->direction, intersection->triangle->plane->v) > 0) {
+			continue;
+		}
 
 		Vector3D lightReflectedVector;
 		sub(dl->direction, mul(normal, 2 * dot(dl->direction, normal), &lightReflectedVector),
@@ -291,6 +305,14 @@ void calcSpotLights(Scene *scene, Intersection3D *intersection,
 
 		Vector3D lightToInter;
 		sub(intersection->point, sl->point, &lightToInter);
+
+		// check if light behind triangle
+		if (dot(&lightToInter, intersection->triangle->plane->v) > 0) {
+			continue;
+		}
+		if (dot(sl->direction, intersection->triangle->plane->v) > 0) {
+			continue;
+		}
 
 		float d = dist(sl->point, intersection->point);
 		Vector3D dvec = {1, d, d * d};
