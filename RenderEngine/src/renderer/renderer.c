@@ -288,6 +288,7 @@ void calcDirectionalLights(Scene *scene, Intersection3D *intersection,
 		// shadows
 		Ray3D lightToInter;
 		lightToInter.v = (Vector3D *)malloc(sizeof(Vector3D));
+		lightToInter.p = (Vector3D*)malloc(sizeof(Vector3D));
 		mul(dl->direction, -1, lightToInter.v);
 		add(intersection->point, mul(normal, 1.001f, lightToInter.p),
 				lightToInter.p);
