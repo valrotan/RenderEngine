@@ -25,20 +25,20 @@ void rayTraceDemo() {
 
 	printf("Initializing renderer...\n");
 	Camera camera;
-	Vector3D pos = { 0, 0, 200 };
-	Vector3D dir = { 0, 0, -1 };
-	Vector3D up = { 0, -1, 0 };
+//	Vector3D pos = { 0, 0, 200 };
+//	Vector3D dir = { 0, 0, -1 };
+//	Vector3D up = { 0, -1, 0 };
 	Matrix4x4 trans[] = {getTranslationMatrix(0, 0, 200), getZRotationMatrix(0,0)};
 	Matrix4x4 camToWorld = getTransformationMatrix(trans, 2);
 	
-	printf("Orig pos: (%f, %f, %f)\n", pos.x,pos.y,pos.z);
+//	printf("Orig pos: (%f, %f, %f)\n", pos.x,pos.y,pos.z);
 
 //	camera.pos = applyTransformation(pos,camToWorld);
 //	camera.dir = applyTransformation(dir,camToWorld);
 //	camera.up = applyTransformation(up,camToWorld);
-	camera.pos = pos;
-	camera.dir = dir;
-	camera.up = up;
+//	camera.pos = pos;
+//	camera.dir = dir;
+//	camera.up = up;
 	camera.screenZ = 60;
 	camera.cameraToWorld = camToWorld;
 
@@ -105,13 +105,13 @@ void rayTraceDemo() {
 	Vector3D fc = {0, -50, -100};
 	Triangle3D temp5 = {&ac, &bc, &cc, 0, 50, 50, 200, 0, .25f, .25f};
 	Triangle3D temp6 = {&dc, &ec, &fc, 0, 50, 50, 200, 0, .25f, .25f};
-	Vector3D ad = {0, 0, 0};
-	Vector3D bd = {50, -30, 60};
-	Vector3D cd = {50, 30, 60};
-	Vector3D dd = {0, 0, 0};
-	Vector3D ed = {-50, 50, 40};
-	Vector3D fd = {-50, -50, 40};
-	Triangle3D temp7 = {&ad, &bd, &cd, 0, 20, 20, 20, 0, .25f, .1f};
+	Vector3D ad = {0, -10, 10};
+	Vector3D bd = {50, -60, -20};
+	Vector3D cd = {50, -10, -20};
+	Vector3D dd = {0, -10, 10};
+	Vector3D ed = {-50, -10, -20};
+	Vector3D fd = {-50, -60, -20};
+	Triangle3D temp7 = {&ad, &bd, &cd, 0, 80, 80, 80, 0.25, .25f, .1f};
 	Triangle3D temp8 = {&dd, &ed, &fd, 0, 50, 50, 200, 0, .25f, .25f};
 
 	t[0] = temp1;
@@ -133,38 +133,33 @@ void rayTraceDemo() {
 	scene.nTriangles = 8;
 
 	PointLight pointLights[4];
-	Vector3D pointLightLoc1 = {0, 20, -50};
+	Vector3D pointLightLoc1 = {0, -40, -50};
 	pointLights[0].point = &pointLightLoc1;
-	pointLights[0].intensity = 8;
-	Vector3D pointLightCoeffs1 = {2, .06f, .005f};
+	pointLights[0].intensity = 10;
+	Vector3D pointLightCoeffs1 = {2, .01f, .005f};
 	pointLights[0].attenuationCoeffs = &pointLightCoeffs1;
-
-	Vector3D pointLightLoc2 = {0, 0, 1};
-	pointLights[1].point = &pointLightLoc2;
-	pointLights[1].intensity = 10;
-	Vector3D pointLightCoeffs2 = {1, .02f, .002f};
-	pointLights[1].attenuationCoeffs = &pointLightCoeffs2;
 
 	scene.pointLights = &pointLights[0];
 
 	DirectionalLight dirLights[4];
-	Vector3D dirLightDir0 = {-1, 0, 0};
+	Vector3D dirLightDir0 = {0, -1, -1};
 	dirLights[0].direction = norm(&dirLightDir0, &dirLightDir0);
 	dirLights[0].intensity = .5f;
 
 	scene.directionalLights = dirLights;
 
 	SpotLight spotLights[4];
-	Vector3D spotLightLoc0 = {-10, 75, 50};
+	Vector3D spotLightLoc0 = {-20, -20, 50};
 	Vector3D spotLightDir0 = {1, -.25f, 0};
 	Vector3D spotLightCoeffs0 = {1, 0, 6.0f};
 	spotLights[0].point = &spotLightLoc0;
 	spotLights[0].direction = norm(&spotLightDir0, &spotLightDir0);
 	spotLights[0].attenuationCoeffs = &spotLightCoeffs0;
-	spotLights[0].intensity =	800.0f;
-	Vector3D spotLightLoc1 = {20, 75, 50};
+	spotLights[0].intensity =	1000.0f;
+
+	Vector3D spotLightLoc1 = {20, -20, 50};
 	Vector3D spotLightDir1 = {-1, -.25f, 0};
-	Vector3D spotLightCoeffs1 = {1, 4, 8.0f};
+	Vector3D spotLightCoeffs1 = {1, 0, 6.0f};
 	spotLights[1].point = &spotLightLoc1;
 	spotLights[1].direction = norm(&spotLightDir1, &spotLightDir1);
 	spotLights[1].attenuationCoeffs = &spotLightCoeffs1;
@@ -173,7 +168,7 @@ void rayTraceDemo() {
 	scene.spotLights = spotLights;
 
 	// *** light counts
-	scene.nPointLights = 2;
+	scene.nPointLights = 1;
 	scene.nDirectionalLights = 1;
 	scene.nSpotLights = 2;
 

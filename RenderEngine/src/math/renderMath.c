@@ -72,7 +72,7 @@ Vector3D *cross(Vector3D *a, Vector3D *b, Vector3D *out) {
 }
 
 float dist(Vector3D *a, Vector3D *b) {
-	return sqrtf(powf(b->x - a->x, 2) + powf(b->x - a->y, 2) +
+	return sqrtf(powf(b->x - a->x, 2) + powf(b->y - a->y, 2) +
 							 powf(b->z - a->z, 2));
 }
 

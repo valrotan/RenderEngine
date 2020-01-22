@@ -42,10 +42,9 @@ The source code is split into 3 main modules.
 - [ ] Clean source code from debugging code
 - [x] Fix negative lighting bug
 - [x] Triangle orientation - agnostic code
-- [ ] Moving camera and update camera pos and dir
 - [ ] Do not convert float to char and back for reflections
 - [ ] Anti aliasing
-- [ ] Shadows
+- [x] Shadows
 - [ ] Test with different view points
 - [ ] Test with different lights in different locations
 

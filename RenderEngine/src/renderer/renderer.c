@@ -230,20 +230,21 @@ void calcPointLights(Scene *scene, Intersection3D *intersection,
 	for (int i = 0; i < scene->nPointLights; i++) {
 
 		PointLight *pl = &scene->pointLights[i];
-		float d = dist(pl->point, intersection->point);
+		float d = dist(intersection->point, pl->point);
+
+		// shadows
 		Ray3D lightToInter;
-		lightToInter.v = (Vector3D *)malloc(sizeof(Vector3D));
-		sub(intersection->point, pl->point, lightToInter.v);
-		lightToInter.p = pl->point;
-		Intersection3D *inter = findIntersection(scene, &lightToInter);
-
-		if (inter != 0 && dist(inter->point, intersection->point) < d) {
-			//			continue; // not count this light source
-		}
-
 		Vector3D l;
-		sub(intersection->point, scene->pointLights[i].point, &l);
+		sub(intersection->point, pl->point, &l);
 		norm(&l, &l);
+
+		lightToInter.v = &l;
+		lightToInter.p = pl->point;
+
+		Intersection3D *inter = findIntersection(scene, &lightToInter);
+		if (inter != 0 && dist(inter->point, pl->point) < d - .001f) {
+			continue; // not count this light source
+		}
 
 		// check if light behind triangle
 		if (dot(&l, normal) > 0) {
@@ -284,6 +285,18 @@ void calcDirectionalLights(Scene *scene, Intersection3D *intersection,
 			continue;
 		}
 
+		// shadows
+		Ray3D lightToInter;
+		lightToInter.v = (Vector3D *)malloc(sizeof(Vector3D));
+		mul(dl->direction, -1, lightToInter.v);
+		add(intersection->point, mul(normal, 1.001f, lightToInter.p),
+				lightToInter.p);
+
+		Intersection3D *inter = findIntersection(scene, &lightToInter);
+		if (inter != 0) {
+			continue; // not count this light source
+		}
+
 		Vector3D lightReflectedVector;
 		sub(dl->direction,
 				mul(normal, 2 * dot(dl->direction, normal), &lightReflectedVector),
@@ -310,6 +323,7 @@ void calcSpotLights(Scene *scene, Intersection3D *intersection,
 	for (int i = 0; i < scene->nSpotLights; i++) {
 
 		SpotLight *sl = &scene->spotLights[i];
+		float d = dist(sl->point, intersection->point);
 
 		Vector3D lightReflectedVector;
 		sub(sl->direction,
@@ -325,7 +339,16 @@ void calcSpotLights(Scene *scene, Intersection3D *intersection,
 			continue;
 		}
 
-		float d = dist(sl->point, intersection->point);
+		// shadows
+		Ray3D lightToInterRay;
+		lightToInterRay.v = &lightToInter;
+		lightToInterRay.p = sl->point;
+
+		Intersection3D *inter = findIntersection(scene, &lightToInterRay);
+		if (inter != 0 && dist(inter->point, sl->point) < d - .001f) {
+			continue; // not count this light source
+		}
+
 		Vector3D dvec = {1, d, d * d};
 		float il = sl->intensity; // intensity of light
 		il /= dot(sl->attenuationCoeffs, &dvec);
