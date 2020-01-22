@@ -41,7 +41,7 @@ The source code is split into 3 main modules.
 - [ ] Data structures for scene representation
 - [ ] Clean source code from debugging code
 - [x] Fix negative lighting bug
-- [ ] Triangle orientation - agnostic code
+- [x] Triangle orientation - agnostic code
 - [ ] Moving camera and update camera pos and dir
 - [ ] Do not convert float to char and back for reflections
 - [ ] Anti aliasing
