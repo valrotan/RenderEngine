@@ -1,6 +1,7 @@
 #include "renderMath.h"
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 
 float dot(Vector3D *a, Vector3D *b) {
 	return a->x * b->x + a->y * b->y + a->z * b->z;
@@ -75,16 +76,24 @@ float dist(Vector3D *a, Vector3D *b) {
 							 powf(b->z - a->z, 2));
 }
 
-// TODO: reflection + refraction + ...
+// Finds an intersection between the given ray and the triangle
+// Sets i->exists to 0 if intersection is not found or does not exist
 Intersection3D *intersect(Ray3D *r, Triangle3D *t, Intersection3D *i) {
-	i->triangle = t;
-	i->originalRay = r;
 
-	float denom = dot(r->v, t->plane->v);
-	float u = -(dot(r->p, t->plane->v) + t->plane->d) / denom;
+	// Using Ray : P = P0 + Vu
+	// and Plane : P * N + d = 0
+	// we get    : u = -(P0 . N + d) / (V . N)
+	// Intersection point is therefore :
+	// P = P0 + Vu
+	float u = -(dot(r->p, t->plane->v) + t->plane->d) / dot(r->v, t->plane->v);
 	if (isinf(u) || isnan(u) ||
 			u == 0.0f) { // u == 0.0f prevents intersection at exactly camera point
 									 // (when y = 0 for all 3 pts)
+		i->exists = 0;
+		return i;
+	}
+	// do not intersect behind ray origin
+	if (u < 0) {
 		i->exists = 0;
 		return i;
 	}
@@ -115,14 +124,21 @@ Intersection3D *intersect(Ray3D *r, Triangle3D *t, Intersection3D *i) {
 
 	int c = 0;
 	if (o1 < d1) {
-		i->exists = 0;
+		c++;
 	}
 	if (o2 < d2) {
-		i->exists = 0;
+		c++;
 	}
 	if (o3 < d3) {
-		i->exists = 0;
+		c++;
 	}
+	if (c == 1 || c == 2) {
+		i->exists = 0;
+		return i;
+	}
+
+	i->triangle = t;
+	i->originalRay = r;
 
 	return i;
 }
@@ -151,7 +167,7 @@ Matrix4x4 getScaleMatrix(float xScale, float yScale, float zScale) {
 }
 
 float getRad(float angle) {
-	const float PI = 3.14159265359;
+	const float PI = 3.14159265359f;
 	angle = angle * PI / 180;
 	return angle;
 }
@@ -163,8 +179,8 @@ Matrix4x4 getXRotationMatrix(float angle, int rad) {
 	Matrix4x4 rotateX;
 	float x[4][4]= {
 						{1,0,0,0},
-						{0,cos(angle),-sin(angle),0},
-						{0,sin(angle),cos(angle),0},
+						{0,cosf(angle),-sinf(angle),0},
+						{0,sinf(angle),cosf(angle),0},
 						{0,0,0,1}};
 	memcpy(rotateX.matrix, x, sizeof(x));
 
@@ -177,9 +193,9 @@ Matrix4x4 getYRotationMatrix(float angle, int rad) {
 
 	Matrix4x4 rotateY;
 
-	float temp[4][4] = {{cos(angle), 0, sin(angle), 0},
+	float temp[4][4] = {{cosf(angle), 0, sinf(angle), 0},
 						{0, 1, 0, 0},
-						{-sin(angle), 0, cos(angle), 0},
+						{-sinf(angle), 0, cosf(angle), 0},
 						{0,0,0,1}};
 
 	//assert(sizeof(temp) == sizeof(rotateY.matrix));
@@ -194,8 +210,8 @@ Matrix4x4 getZRotationMatrix(float angle, int rad) {
 	
 	Matrix4x4 rotateZ;
 
-	float temp[4][4] = { {cos(angle), -sin(angle), 0, 0},
-						{sin(angle), cos(angle), 0, 0},
+	float temp[4][4] = { {cosf(angle), -sinf(angle), 0, 0},
+						{sinf(angle), cosf(angle), 0, 0},
 						{0,0,1,0},
 						{0,0,0,1} };
 

@@ -14,13 +14,6 @@ void rendererInit(Renderer *renderer) {
 		t->plane->v = (Vector3D *)malloc(sizeof(Vector3D));
 		cross(&v1, &v2, t->plane->v);
 		norm(t->plane->v, t->plane->v);
-
-		if (dot(&renderer->camera->dir, t->plane->v) > 0) {
-			sub(&ORIGIN_3D, t->plane->v, t->plane->v);
-			Vector3D *temp = t->p2;
-			t->p2 = t->p3;
-			t->p3 = temp;
-		}
 		t->plane->d = -dot(t->p1, t->plane->v);
 
 		printf("init triangle : N (%.2f, %.2f, %.2f) d %.2f \n", t->plane->v->x,
@@ -36,9 +29,6 @@ void rayTrace(Camera *camera, Scene *scene, unsigned char *screen, int width,
 	Ray3D *ray;
 	unsigned char *p = screen;
 
-	int halfWidth = width / 2;
-	int halfHeight = height / 2;
-
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
 			ray = constructRayThroughPixel(camera, x, y, width, height);
@@ -46,9 +36,9 @@ void rayTrace(Camera *camera, Scene *scene, unsigned char *screen, int width,
 			// ray->p->z); 			printf("   V (%.2f, %.2f, %.2f) \n", ray->v->x,
 			// ray->v->y, ray->v->z);
 
-//			printf("(%.2f, %.2f) \n", ray->v->x, ray->v->y, ray->v->z);
+			//			printf("(%.2f, %.2f) \n", ray->v->x, ray->v->y, ray->v->z);
 
-			unsigned char *i = traceRay(camera, scene, ray, 0, 3); // 3
+			unsigned char *i = traceRay(camera, scene, ray, 3);
 			*p++ = i[0];
 			*p++ = i[1];
 			*p++ = i[2];
@@ -57,79 +47,54 @@ void rayTrace(Camera *camera, Scene *scene, unsigned char *screen, int width,
 	}
 }
 
-// TODO change basically everything
-Ray3D* constructRayThroughPixel(Camera* camera, int x, int y, int imageWidth, int imageHeight) {
-	Ray3D* ray = (Ray3D*)malloc(sizeof(Ray3D));
-	float imageAspectRatio = (float)imageWidth / (float)imageHeight; // assuming width > height 
-	float scale = (float)tan(getRad(camera->screenZ / 2));
+// Constructs a ray that originates at the camera position and shoots through
+// the given pixel (x,y)
+Ray3D *constructRayThroughPixel(Camera *camera, int x, int y, int imageWidth,
+																int imageHeight) {
+	Ray3D *ray = (Ray3D *)malloc(sizeof(Ray3D));
+	float aspectRatio = (float)imageWidth / imageHeight;
+	float scale = tanf(getRad(camera->screenZ / 2));
 
-	float Px = (2 * (x + 0.5f) / (float)imageWidth - 1) * scale * imageAspectRatio;
-	float Py = (1 - 2 * (y + 0.5f) / (float)imageHeight) * scale;
+	float Px = (2 * (x + 0.5f) / imageWidth - 1) * scale * aspectRatio;
+	float Py = (1 - 2 * (y + 0.5f) / imageHeight) * scale;
 
-	Vector3D origin = { 0,0,0 };
+	Vector3D origin = {0, 0, 0};
 	origin = applyTransformation(origin, camera->cameraToWorld);
-	Vector3D pWorld = { Px,Py, -1 };
+	Vector3D pWorld = {Px, Py, -1};
 	pWorld = applyTransformation(pWorld, camera->cameraToWorld);
 
-	/*printf("Printing all of the info: \n");
-	printf("CASTING TO: %f %f %f\n", pWorld.x, pWorld.y, pWorld.z);
-	printf("(x,y): (%d %d)\n", x, y);
-	printf("PxPY : (%0.3f, %0.3f)\n\n", Px, Py);
-	printf("OxOY : (%0.3f, %0.3f)\n\n", origin.x, origin.y);*/
-
-	
-
-
-	ray->p = (Vector3D*)malloc(sizeof(Vector3D));
+	ray->p = (Vector3D *)malloc(sizeof(Vector3D));
 	ray->p->x = origin.x;
 	ray->p->y = origin.y;
 	ray->p->z = origin.z;
 
-	ray->v = (Vector3D*)malloc(sizeof(Vector3D));
-	ray->v->x = pWorld.x - origin.x;
-	ray->v->y = pWorld.y - origin.y;
-	ray->v->z = pWorld.z - origin.z;
+	ray->v = (Vector3D *)malloc(sizeof(Vector3D));
+	sub(&pWorld, &origin, ray->v);
 	norm(ray->v, ray->v);
-
-	//Vec3f rayOriginWorld, rayPixelWorld;
-	//cameraToWorld.multVectMatrix(rayOrigin, rayOriginWorld);
-	//cameraToWorld.multVectMatrix(Vec3f(Px, Py, -1), rayPixelWorld);
-	//
-	//Vec3f rayDirection = rayPWorld - rayOriginWorld;
-	//rayDirection.normalize(); // it's a direction so don't forget to normalize 
-
-
-	/*ray->p = &camera->pos;
-	ray->v = (Vector3D*)malloc(sizeof(Vector3D));
-	ray->v->x = camera->dir.x;
-	ray->v->y = camera->dir.y;
-	ray->v->z = camera->dir.z;
-	norm(ray->v, ray->v);*/
-	// suppose camera is pointing at origin from +z axis
-
 
 	return ray;
 }
 
-unsigned char *traceRay(Camera *camera, Scene *scene, Ray3D *ray, int curDepth,
-												int maxDepth) {
+// recursive ray tracing for depth levels
+unsigned char *traceRay(Camera *camera, Scene *scene, Ray3D *ray, int depth) {
 
 	Intersection3D *intersection = findIntersection(scene, ray);
 	unsigned char *color;
 	//	printf("tr1 \n");
 	if (intersection != 0) {
-		color = getColor(camera, scene, intersection, curDepth, maxDepth);
+		color = getColor(camera, scene, intersection, depth);
+		free(intersection);
 	} else {
 		color = (unsigned char *)malloc(sizeof(char) * 3);
 		color[0] = scene->bkgR; // background light
 		color[1] = scene->bkgG; // background light
 		color[2] = scene->bkgB; // background light
 	}
-	free(intersection);
 	return color;
 	//	return 0;
 }
 
+// deep copy an intersection object
 Intersection3D *copyIntersection(Intersection3D *o, Intersection3D *i) {
 
 	o->point->x = i->point->x;
@@ -142,6 +107,8 @@ Intersection3D *copyIntersection(Intersection3D *o, Intersection3D *i) {
 	return o;
 }
 
+// finds an intersection between the ray and the scene
+// returns 0 if no intersection found.
 Intersection3D *findIntersection(Scene *scene, Ray3D *ray) {
 
 	Intersection3D *intersection =
@@ -172,9 +139,10 @@ Intersection3D *findIntersection(Scene *scene, Ray3D *ray) {
 	return intersection->exists ? intersection : 0;
 }
 
+// gets a color from a specific intersection and calls rayTrace recursively
+// handles all light in the program
 unsigned char *getColor(Camera *camera, Scene *scene,
-												Intersection3D *intersection, int curDepth,
-												int maxDepth) {
+												Intersection3D *intersection, int depth) {
 	// I = Ie + Ka Ial + Kd (N * L) Il + Ks (V * R)^n Ii
 
 	//	printf("gc1 \n");
@@ -183,9 +151,11 @@ unsigned char *getColor(Camera *camera, Scene *scene,
 
 	Triangle3D *t = intersection->triangle;
 
-	Vector3D *normal = t->plane->v; // normal
-	Vector3D view;
-	sub(intersection->point, &camera->pos, &view);
+	Vector3D normal = *t->plane->v; // normal
+	if (dot(intersection->originalRay->v, &normal) > 0) {
+		sub(&ORIGIN_3D, &normal, &normal);
+	}
+	Vector3D *view = intersection->originalRay->v;
 	//	printf("gc2 \n");
 
 	float ia = scene->ambientLight;
@@ -194,9 +164,9 @@ unsigned char *getColor(Camera *camera, Scene *scene,
 	float id = 0;
 	float is = 0;
 
-	calcPointLights(scene, intersection, normal, &view, &id, &is);
-	calcDirectionalLights(scene, intersection, normal, &view, &id, &is);
-	calcSpotLights(scene, intersection, normal, &view, &id, &is);
+	calcPointLights(scene, intersection, &normal, view, &id, &is);
+	calcDirectionalLights(scene, intersection, &normal, view, &id, &is);
+	calcSpotLights(scene, intersection, &normal, view, &id, &is);
 
 	// TODO: refraction
 
@@ -204,21 +174,20 @@ unsigned char *getColor(Camera *camera, Scene *scene,
 	float ir_r = 0;
 	float ir_g = 0;
 	float ir_b = 0;
-	if (curDepth < maxDepth) {
+	if (depth > 0) {
 		Vector3D reflectedVector;
-		sub(&view, mul(normal, 2 * dot(&view, normal), &reflectedVector),
+		sub(view, mul(&normal, 2 * dot(view, &normal), &reflectedVector),
 				&reflectedVector);
 		Ray3D reflectedRay;
 		Vector3D rrp, rrv;
 		reflectedRay.p = &rrp;
 		reflectedRay.v = &rrv;
 		Vector3D eps;
-		add(intersection->point, mul(normal, -.0001f, &eps),
-				reflectedRay.p);               // not sure why negative
+		add(intersection->point, mul(&normal, .0001f, &eps), reflectedRay.p);
 		reflectedRay.v = &reflectedVector; // might need to multiply by -1, idk
 
 		unsigned char *reflectedColors =
-				traceRay(camera, scene, &reflectedRay, curDepth + 1, maxDepth);
+				traceRay(camera, scene, &reflectedRay, depth - 1);
 
 		ir_r = t->k_s * reflectedColors[0] / 255;
 		ir_g = t->k_s * reflectedColors[1] / 255;
@@ -263,13 +232,13 @@ void calcPointLights(Scene *scene, Intersection3D *intersection,
 		PointLight *pl = &scene->pointLights[i];
 		float d = dist(pl->point, intersection->point);
 		Ray3D lightToInter;
-		lightToInter.v = (Vector3D*)malloc(sizeof(Vector3D));
+		lightToInter.v = (Vector3D *)malloc(sizeof(Vector3D));
 		sub(intersection->point, pl->point, lightToInter.v);
 		lightToInter.p = pl->point;
-		Intersection3D* inter = findIntersection(scene, &lightToInter);
+		Intersection3D *inter = findIntersection(scene, &lightToInter);
 
 		if (inter != 0 && dist(inter->point, intersection->point) < d) {
-//			continue; // not count this light source
+			//			continue; // not count this light source
 		}
 
 		Vector3D l;
@@ -277,7 +246,7 @@ void calcPointLights(Scene *scene, Intersection3D *intersection,
 		norm(&l, &l);
 
 		// check if light behind triangle
-		if (dot(&l, intersection->triangle->plane->v) > 0) {
+		if (dot(&l, normal) > 0) {
 			continue;
 		}
 
@@ -311,12 +280,13 @@ void calcDirectionalLights(Scene *scene, Intersection3D *intersection,
 		DirectionalLight *dl = &scene->directionalLights[i];
 
 		// check if light behind triangle
-		if (dot(dl->direction, intersection->triangle->plane->v) > 0) {
+		if (dot(dl->direction, normal) > 0) {
 			continue;
 		}
 
 		Vector3D lightReflectedVector;
-		sub(dl->direction, mul(normal, 2 * dot(dl->direction, normal), &lightReflectedVector),
+		sub(dl->direction,
+				mul(normal, 2 * dot(dl->direction, normal), &lightReflectedVector),
 				&lightReflectedVector);
 		norm(&lightReflectedVector, &lightReflectedVector);
 
@@ -342,7 +312,8 @@ void calcSpotLights(Scene *scene, Intersection3D *intersection,
 		SpotLight *sl = &scene->spotLights[i];
 
 		Vector3D lightReflectedVector;
-		sub(sl->direction, mul(normal, 2 * dot(sl->direction, normal), &lightReflectedVector),
+		sub(sl->direction,
+				mul(normal, 2 * dot(sl->direction, normal), &lightReflectedVector),
 				&lightReflectedVector);
 		norm(&lightReflectedVector, &lightReflectedVector);
 
@@ -350,10 +321,7 @@ void calcSpotLights(Scene *scene, Intersection3D *intersection,
 		sub(intersection->point, sl->point, &lightToInter);
 
 		// check if light behind triangle
-		if (dot(&lightToInter, intersection->triangle->plane->v) > 0) {
-			continue;
-		}
-		if (dot(sl->direction, intersection->triangle->plane->v) > 0) {
+		if (dot(&lightToInter, normal) > 0 || dot(sl->direction, normal) > 0) {
 			continue;
 		}
 
@@ -368,7 +336,7 @@ void calcSpotLights(Scene *scene, Intersection3D *intersection,
 
 		// specular reflection
 		float N = 3; // specular light exponent
-		float is_temp = -dot(norm(view, view), &lightReflectedVector);
+		float is_temp = -dot(view, &lightReflectedVector);
 		if (is_temp > 0) {
 			*is += intersection->triangle->k_s * powf(is_temp, N) * il;
 		}

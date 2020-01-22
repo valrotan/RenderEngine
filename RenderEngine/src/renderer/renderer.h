@@ -64,16 +64,15 @@ void rendererInit(Renderer *renderer);
 void rayTrace(Camera *camera, Scene *scene, unsigned char *screen, int width,
 							int height);
 
-Ray3D *constructRayThroughPixel(Camera *camera, int x, int y, int width, int height);
+Ray3D *constructRayThroughPixel(Camera *camera, int x, int y, int width,
+																int height);
 
-unsigned char *traceRay(Camera *camera, Scene *scene, Ray3D *ray, int curDepth,
-												int maxDepth);
+unsigned char *traceRay(Camera *camera, Scene *scene, Ray3D *ray, int depth);
 
 Intersection3D *findIntersection(Scene *scene, Ray3D *ray);
 
 unsigned char *getColor(Camera *camera, Scene *scene,
-												Intersection3D *intersection, int curDepth,
-												int maxDepth);
+												Intersection3D *intersection, int depth);
 
 void calcPointLights(Scene *scene, Intersection3D *intersection,
 										 Vector3D *normal, Vector3D *view, float *id, float *is);
