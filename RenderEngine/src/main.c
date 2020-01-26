@@ -50,11 +50,11 @@ void rayTraceDemo() {
 	Triangle3D temp5 = {&ac, &bc, &cc, 0, 50, 50, 200, 0, .25f, .25f};
 	Triangle3D temp6 = {&dc, &ec, &fc, 0, 50, 50, 200, 0, .25f, .25f};
 	Vector3D ad = {0, -10, 10};
-	Vector3D bd = {50, -60, -20};
-	Vector3D cd = {50, -10, -20};
+	Vector3D bd = {60, -60, -20};
+	Vector3D cd = {60, -10, -20};
 	Vector3D dd = {0, -10, 10};
-	Vector3D ed = {-50, -10, -20};
-	Vector3D fd = {-50, -60, -20};
+	Vector3D ed = {-60, -10, -20};
+	Vector3D fd = {-60, -60, -20};
 	Triangle3D temp7 = {&ad, &bd, &cd, 0, 80, 80, 80, 0.25, .25f, .1f};
 	Triangle3D temp8 = {&dd, &ed, &fd, 0, 50, 50, 200, 0, .25f, .25f};
 

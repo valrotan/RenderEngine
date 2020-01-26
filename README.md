@@ -47,6 +47,8 @@ The source code is split into 3 main modules.
 - [x] Shadows
 - [ ] Test with different view points
 - [ ] Test with different lights in different locations
+- [ ] Check the performance of Windows devices with doubles
 
-## Render times benchmarks (HD):
+## Render times benchmarks:
 - MacBookPro 2019 2.30 GHZ i5 : 1400ms
+- Dell XPS 15 2.20 GHZ i7: 1520ms
