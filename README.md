@@ -48,5 +48,5 @@ The source code is split into 3 main modules.
 - [ ] Test with different view points
 - [ ] Test with different lights in different locations
 
-## Render times benchmarks:
-- MacBookPro 2019 2.30 GHZ i5 : 426ms
+## Render times benchmarks (HD):
+- MacBookPro 2019 2.30 GHZ i5 : 1400ms

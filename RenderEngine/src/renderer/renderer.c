@@ -53,8 +53,9 @@ Ray3D *constructRayThroughPixel(Camera *camera, int x, int y, int imageWidth,
 																int imageHeight) {
 	Ray3D *ray = (Ray3D *)malloc(sizeof(Ray3D));
 	float aspectRatio = (float)imageWidth / imageHeight;
-	float scale = tanf(getRad(camera->screenZ / 2));
+	float scale = tanf(getRad(camera->fov / 2));
 
+	// TODO: move all the constants to the loop in rayTrace
 	float Px = (2 * (x + 0.5f) / imageWidth - 1) * scale * aspectRatio;
 	float Py = (1 - 2 * (y + 0.5f) / imageHeight) * scale;
 
@@ -76,6 +77,7 @@ Ray3D *constructRayThroughPixel(Camera *camera, int x, int y, int imageWidth,
 }
 
 // recursive ray tracing for depth levels
+// TODO: prevent excess dynamic allocation for pixel
 unsigned char *traceRay(Camera *camera, Scene *scene, Ray3D *ray, int depth) {
 
 	Intersection3D *intersection = findIntersection(scene, ray);
@@ -94,9 +96,11 @@ unsigned char *traceRay(Camera *camera, Scene *scene, Ray3D *ray, int depth) {
 	//	return 0;
 }
 
+// Gets called 236k times
+// Copies 24 bytes
+// = 5.6 megabytes for HD
 // deep copy an intersection object
 Intersection3D *copyIntersection(Intersection3D *o, Intersection3D *i) {
-
 	o->point->x = i->point->x;
 	o->point->y = i->point->y;
 	o->point->z = i->point->z;
@@ -109,6 +113,7 @@ Intersection3D *copyIntersection(Intersection3D *o, Intersection3D *i) {
 
 // finds an intersection between the ray and the scene
 // returns 0 if no intersection found.
+// TODO: prevent dynamic allocation of intersection objects
 Intersection3D *findIntersection(Scene *scene, Ray3D *ray) {
 
 	Intersection3D *intersection =
@@ -184,7 +189,7 @@ unsigned char *getColor(Camera *camera, Scene *scene,
 		reflectedRay.v = &rrv;
 		Vector3D eps;
 		add(intersection->point, mul(&normal, .0001f, &eps), reflectedRay.p);
-		reflectedRay.v = &reflectedVector; // might need to multiply by -1, idk
+		reflectedRay.v = &reflectedVector;
 
 		unsigned char *reflectedColors =
 				traceRay(camera, scene, &reflectedRay, depth - 1);
@@ -227,9 +232,13 @@ unsigned char *getColor(Camera *camera, Scene *scene,
 void calcPointLights(Scene *scene, Intersection3D *intersection,
 										 Vector3D *normal, Vector3D *view, float *id, float *is) {
 
+//	printf("%p %p \n", pl, scene->pointLights);
+//	printf("(%.2f, %.2f, %.2f)", scene->pointLights->point->x, scene->pointLights->point->y, scene->pointLights->point->z);
 	for (int i = 0; i < scene->nPointLights; i++) {
 
-		PointLight *pl = &scene->pointLights[i];
+		 PointLight *pl;
+		pl = &(scene->pointLights[i]);
+
 		float d = dist(intersection->point, pl->point);
 
 		// shadows

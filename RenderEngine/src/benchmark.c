@@ -7,7 +7,7 @@
 void rayTraceDemo() {
 	printf("Starting render engine...\n");
 
-	int WIDTH = 1280, HEIGHT = 720;
+	int WIDTH = 1280, HEIGHT = 720; // HD
 
 	printf("Initializing visualizer...\n");
 	visInit(WIDTH, HEIGHT);

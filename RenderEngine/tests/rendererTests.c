@@ -3,15 +3,6 @@
 // TODO: come up with tests
 void runRendererTests() {
 
-	Camera camera;
-	Vector3D pos = {0, 0, 150};
-	Vector3D dir = {0, 0, -1};
-	Vector3D up = {0, 1, 0};
-	camera.pos = pos;
-	camera.dir = dir;
-	camera.up = up;
-	camera.screenZ = 150;
-
 //	Ray3D *ray = constructRayThroughPixel(&camera, 0, 0);
 //	printf("Ray (%f, %f, %f) towards <%f, %f, %f>\n", ray->p.x, ray->p.y,
 //				 ray->p.z, ray->v.x, ray->v.y, ray->v.z);

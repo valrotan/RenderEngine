@@ -88,7 +88,6 @@ Intersection3D *intersect(Ray3D *r, Triangle3D *t, Intersection3D *i) {
 	float u = -(dot(r->p, t->plane->v) + t->plane->d) / dot(r->v, t->plane->v);
 	if (isinf(u) || isnan(u) ||
 			u == 0.0f) { // u == 0.0f prevents intersection at exactly camera point
-									 // (when y = 0 for all 3 pts)
 		i->exists = 0;
 		return i;
 	}
@@ -97,9 +96,9 @@ Intersection3D *intersect(Ray3D *r, Triangle3D *t, Intersection3D *i) {
 		i->exists = 0;
 		return i;
 	}
-	add(r->p, mul(r->v, u, i->point), i->point);
+	Vector3D cameraToInter;
+	add(r->p, mul(r->v, u, &cameraToInter), i->point);
 
-	// out of bounds check for ray within triangle
 	Vector3D v1;
 	sub(t->p1, r->p, &v1);
 	Vector3D v2;
@@ -113,23 +112,18 @@ Intersection3D *intersect(Ray3D *r, Triangle3D *t, Intersection3D *i) {
 	Vector3D n3;
 	cross(&v2, &v3, &n3);
 
-	float o1 = dot(i->point, &n1);
-	float o2 = dot(i->point, &n2);
-	float o3 = dot(i->point, &n3);
-	float d1 = dot(r->p, &n1);
-	float d2 = dot(r->p, &n2);
-	float d3 = dot(r->p, &n3);
-
-//	printf("%.2f %.2f ; %.2f %.2f ; %.2f %.2f \n", o1, d1, o2, d2, o3, d3);
+	float o1 = dot(&cameraToInter, &n1);
+	float o2 = dot(&cameraToInter, &n2);
+	float o3 = dot(&cameraToInter, &n3);
 
 	int c = 0;
-	if (o1 < d1) {
+	if (o1 < 0) {
 		c++;
 	}
-	if (o2 < d2) {
+	if (o2 < 0) {
 		c++;
 	}
-	if (o3 < d3) {
+	if (o3 < 0) {
 		c++;
 	}
 	if (c == 1 || c == 2) {

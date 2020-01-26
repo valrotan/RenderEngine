@@ -4,23 +4,9 @@
 
 // todo: change screenZ to fov
 typedef struct {
-	Vector3D pos;
-	Vector3D dir;
-	Vector3D up;
-	//	float xfov;
-	//	float yfov;
 	Matrix4x4 cameraToWorld;
-	// distance of screen from camera point
-	// makes ray through pixel calculation easier
-	// for 256x256 150 is a good value
-	int screenZ;
+	float fov;
 } Camera;
-
-// sample camera:
-// (150,0,0)
-// (-150,0,0)
-// (0,0,1)
-// 150
 
 typedef struct {
 	float intensity;
@@ -44,6 +30,7 @@ typedef struct {
 typedef struct {
 	float ambientLight;
 	unsigned char bkgR, bkgG, bkgB;
+	float kSpecularExponent;
 	Triangle3D *triangles;
 	int nTriangles;
 	PointLight *pointLights;
