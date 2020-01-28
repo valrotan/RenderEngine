@@ -45,11 +45,31 @@ void *rayTraceSegment(void *pSegment) {
 			ray = constructRayThroughPixel(rSegment->renderer->camera, x, y,
 																		 rSegment->width, rSegment->height);
 
-			unsigned char *i = traceRay(rSegment->renderer->camera,
-																	rSegment->renderer->scene, ray, 3);
-			*p++ = i[0];
-			*p++ = i[1];
-			*p++ = i[2];
+			float rgb[3];
+			traceRay(rSegment->renderer->camera, rSegment->renderer->scene, ray, 3,
+							 rgb);
+
+			if (rgb[0] > 1) {
+				*p++ = 255;
+			} else if (rgb[0] < 0) {
+				*p++ = 0;
+			} else {
+				*p++ = (unsigned char)(rgb[0] * 255);
+			}
+			if (rgb[1] > 1) {
+				*p++ = 255;
+			} else if (rgb[1] < 0) {
+				*p++ = 0;
+			} else {
+				*p++ = (unsigned char)(rgb[1] * 255);
+			}
+			if (rgb[2] > 1) {
+				*p++ = 255;
+			} else if (rgb[2] < 0) {
+				*p++ = 0;
+			} else {
+				*p++ = (unsigned char)(rgb[2] * 255);
+			}
 		}
 	}
 	return NULL;
@@ -109,22 +129,20 @@ Ray3D *constructRayThroughPixel(Camera *camera, int x, int y, int imageWidth,
 
 // recursive ray tracing for depth levels
 // TODO: prevent excess dynamic allocation for pixel
-unsigned char *traceRay(Camera *camera, Scene *scene, Ray3D *ray, int depth) {
+float *traceRay(Camera *camera, Scene *scene, Ray3D *ray, int depth,
+								float *rgb) {
 
 	Intersection3D *intersection = findIntersection(scene, ray);
-	unsigned char *color;
-	//	printf("tr1 \n");
+
 	if (intersection != 0) {
-		color = getColor(camera, scene, intersection, depth);
+		getColor(camera, scene, intersection, depth, rgb);
 		free(intersection);
 	} else {
-		color = (unsigned char *)malloc(sizeof(char) * 3);
-		color[0] = scene->bkgR; // background light
-		color[1] = scene->bkgG; // background light
-		color[2] = scene->bkgB; // background light
+		rgb[0] = scene->bkgR; // background light
+		rgb[1] = scene->bkgG; // background light
+		rgb[2] = scene->bkgB; // background light
 	}
-	return color;
-	//	return 0;
+	return rgb;
 }
 
 // Gets called 236k times
@@ -177,13 +195,11 @@ Intersection3D *findIntersection(Scene *scene, Ray3D *ray) {
 
 // gets a color from a specific intersection and calls rayTrace recursively
 // handles all light in the program
-unsigned char *getColor(Camera *camera, Scene *scene,
-												Intersection3D *intersection, int depth) {
+float *getColor(Camera *camera, Scene *scene, Intersection3D *intersection,
+								int depth, float *rgb) {
 	// I = Ie + Ka Ial + Kd (N * L) Il + Ks (V * R)^n Ii
 
 	//	printf("gc1 \n");
-
-	float i[3];
 
 	Triangle3D *t = intersection->triangle;
 
@@ -222,42 +238,19 @@ unsigned char *getColor(Camera *camera, Scene *scene,
 		add(intersection->point, mul(&normal, .0001f, &eps), reflectedRay.p);
 		reflectedRay.v = &reflectedVector;
 
-		unsigned char *reflectedColors =
-				traceRay(camera, scene, &reflectedRay, depth - 1);
+		float reflectedColors[3];
+		traceRay(camera, scene, &reflectedRay, depth - 1, reflectedColors);
 
-		ir_r = t->k_s * reflectedColors[0] / 255;
-		ir_g = t->k_s * reflectedColors[1] / 255;
-		ir_b = t->k_s * reflectedColors[2] / 255;
+		ir_r = t->k_s * reflectedColors[0];
+		ir_g = t->k_s * reflectedColors[1];
+		ir_b = t->k_s * reflectedColors[2];
 	}
 
-	i[0] = t->colorR * (ia + id + ie) / 255.0f + is + ir_r;
-	i[1] = t->colorG * (ia + id + ie) / 255.0f + is + ir_g;
-	i[2] = t->colorB * (ia + id + ie) / 255.0f + is + ir_b;
+	rgb[0] = t->colorR * (ia + id + ie) + is + ir_r;
+	rgb[1] = t->colorG * (ia + id + ie) + is + ir_g;
+	rgb[2] = t->colorB * (ia + id + ie) + is + ir_b;
 
-	unsigned char *i_char = (unsigned char *)malloc(sizeof(char) * 3);
-	if (i[0] > 1) {
-		i_char[0] = 255;
-	} else if (i[0] < 0) {
-		i_char[0] = 0;
-	} else {
-		i_char[0] = (unsigned char)(i[0] * 255);
-	}
-	if (i[1] > 1) {
-		i_char[1] = 255;
-	} else if (i[1] < 0) {
-		i_char[1] = 0;
-	} else {
-		i_char[1] = (unsigned char)(i[1] * 255);
-	}
-	if (i[2] > 1) {
-		i_char[2] = 255;
-	} else if (i[2] < 0) {
-		i_char[2] = 0;
-	} else {
-		i_char[2] = (unsigned char)(i[2] * 255);
-	}
-
-	return i_char;
+	return rgb;
 }
 
 void calcPointLights(Scene *scene, Intersection3D *intersection,

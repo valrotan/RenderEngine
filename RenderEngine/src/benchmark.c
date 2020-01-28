@@ -7,7 +7,7 @@
 void rayTraceDemo() {
 	printf("Starting render engine...\n");
 
-	int WIDTH = 1280, HEIGHT = 720; // HD
+	int WIDTH = 1280, HEIGHT = 720;
 
 	printf("Initializing visualizer...\n");
 	visInit(WIDTH, HEIGHT);
@@ -50,11 +50,11 @@ void rayTraceDemo() {
 	Triangle3D temp5 = {&ac, &bc, &cc, 0, 50, 50, 200, 0, .25f, .25f};
 	Triangle3D temp6 = {&dc, &ec, &fc, 0, 50, 50, 200, 0, .25f, .25f};
 	Vector3D ad = {0, -10, 10};
-	Vector3D bd = {50, -60, -20};
-	Vector3D cd = {50, -10, -20};
+	Vector3D bd = {60, -60, -20};
+	Vector3D cd = {60, -10, -20};
 	Vector3D dd = {0, -10, 10};
-	Vector3D ed = {-50, -10, -20};
-	Vector3D fd = {-50, -60, -20};
+	Vector3D ed = {-60, -10, -20};
+	Vector3D fd = {-60, -60, -20};
 	Triangle3D temp7 = {&ad, &bd, &cd, 0, 80, 80, 80, 0.25, .25f, .1f};
 	Triangle3D temp8 = {&dd, &ed, &fd, 0, 50, 50, 200, 0, .25f, .25f};
 
@@ -117,7 +117,8 @@ void rayTraceDemo() {
 	scene.nDirectionalLights = 1;
 	scene.nSpotLights = 2;
 
-	Renderer renderer = {&camera, &scene};
+	Renderer renderer = {&camera, &scene, 0};
+	renderer.nThreads = 32;
 
 	rendererInit(&renderer);
 
@@ -127,7 +128,7 @@ void rayTraceDemo() {
 	int diff;
 	ftime(&start);
 
-	rayTrace(&camera, &scene, screen, WIDTH, HEIGHT);
+	rayTrace(&renderer, screen, WIDTH, HEIGHT);
 	ftime(&end);
 	diff =
 			(int)(1000.0 * (end.time - start.time) + (end.millitm - start.millitm));

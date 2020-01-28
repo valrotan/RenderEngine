@@ -31,32 +31,32 @@ void rayTraceDemo() {
 	Vector3D d = {0, -50, 0};
 	Vector3D e = {0, -100, 0};
 	Vector3D f = {50, -100, -50};
-	Triangle3D temp1 = {&a, &b, &c, 0, 200, 0, 0, 0, .25f, .25f};
-	Triangle3D temp2 = {&d, &e, &f, 0, 200, 0, 0, 0, .25f, .25f};
+	Triangle3D temp1 = {&a, &b, &c, 0, 200/255.0f, 0, 0, 0, .25f, .25f};
+	Triangle3D temp2 = {&d, &e, &f, 0, 200/255.0f, 0, 0, 0, .25f, .25f};
 	Vector3D ab = {0, -50, 0};
 	Vector3D bb = {-50, -50, -50};
 	Vector3D cb = {-50, -100, -50};
 	Vector3D db = {0, -50, 0};
 	Vector3D eb = {-50, -100, -50};
 	Vector3D fb = {0, -100, 0};
-	Triangle3D temp3 = {&ab, &bb, &cb, 0, 50, 200, 50, 0, .25f, .25f};
-	Triangle3D temp4 = {&db, &eb, &fb, 0, 50, 200, 50, 0, .25f, .25f};
+	Triangle3D temp3 = {&ab, &bb, &cb, 0, 50/255.0f, 200/255.0f, 50/255.0f, 0, .25f, .25f};
+	Triangle3D temp4 = {&db, &eb, &fb, 0, 50/255.0f, 200/255.0f, 50/255.0f, 0, .25f, .25f};
 	Vector3D ac = {0, -50, 0};
 	Vector3D bc = {-50, -50, -50};
 	Vector3D cc = {0, -50, -100};
 	Vector3D dc = {0, -50, 0};
 	Vector3D ec = {50, -50, -50};
 	Vector3D fc = {0, -50, -100};
-	Triangle3D temp5 = {&ac, &bc, &cc, 0, 50, 50, 200, 0, .25f, .25f};
-	Triangle3D temp6 = {&dc, &ec, &fc, 0, 50, 50, 200, 0, .25f, .25f};
+	Triangle3D temp5 = {&ac, &bc, &cc, 0, 50/255.0f, 50/255.0f, 200/255.0f, 0, .25f, .25f};
+	Triangle3D temp6 = {&dc, &ec, &fc, 0, 50/255.0f, 50/255.0f, 200/255.0f, 0, .25f, .25f};
 	Vector3D ad = {0, -10, 10};
 	Vector3D bd = {60, -60, -20};
 	Vector3D cd = {60, -10, -20};
 	Vector3D dd = {0, -10, 10};
 	Vector3D ed = {-60, -10, -20};
 	Vector3D fd = {-60, -60, -20};
-	Triangle3D temp7 = {&ad, &bd, &cd, 0, 80, 80, 80, 0.25, .25f, .1f};
-	Triangle3D temp8 = {&dd, &ed, &fd, 0, 50, 50, 200, 0, .25f, .25f};
+	Triangle3D temp7 = {&ad, &bd, &cd, 0, 80/255.0f, 80/255.0f, 80/255.0f, 0.25, .25f, .1f};
+	Triangle3D temp8 = {&dd, &ed, &fd, 0, 50/255.0f, 50/255.0f, 200/255.0f, 0, .25f, .25f};
 
 	t[0] = temp1;
 	t[1] = temp2;
@@ -68,9 +68,9 @@ void rayTraceDemo() {
 	t[7] = temp8;
 
 	Scene scene;
-	scene.bkgR = 100;
-	scene.bkgG = 100;
-	scene.bkgB = 100;
+	scene.bkgR = .3f;
+	scene.bkgG = .3f;
+	scene.bkgB = .3f;
 	scene.ambientLight = .25f;
 	scene.kSpecularExponent = 3;
 
@@ -118,7 +118,7 @@ void rayTraceDemo() {
 	scene.nSpotLights = 2;
 
 	Renderer renderer = {&camera, &scene, 0};
-	renderer.nThreads = 32;
+	renderer.nThreads = 64;
 
 	rendererInit(&renderer);
 

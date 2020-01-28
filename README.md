@@ -41,7 +41,7 @@ The source code is split into 3 main modules.
 - [ ] Clean source code from debugging code
 - [x] Fix negative lighting bug
 - [x] Triangle orientation - agnostic code
-- [ ] Do not convert float to char and back for reflections
+- [x] Do not convert float to char and back for reflections
 - [ ] Anti aliasing
 - [x] Shadows
 - [ ] Test with different view points
@@ -50,5 +50,5 @@ The source code is split into 3 main modules.
 - [ ] Try parametric ray-plane intersects
 
 ## Render times benchmarks:
-- MacBookPro 2019 2.30 GHZ i5 : 280ms
+- MacBookPro 2019 2.30 GHZ i5 : 270ms
 - Dell XPS 15 2.20 GHZ i7: 1520ms *not updated*

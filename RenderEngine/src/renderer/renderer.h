@@ -29,7 +29,7 @@ typedef struct {
 // Only triangles for now I guess
 typedef struct {
 	float ambientLight;
-	unsigned char bkgR, bkgG, bkgB;
+	float bkgR, bkgG, bkgB;
 	float kSpecularExponent;
 	Triangle3D *triangles;
 	int nTriangles;
@@ -54,12 +54,13 @@ void rayTrace(Renderer *renderer, unsigned char *screen, int width, int height);
 Ray3D *constructRayThroughPixel(Camera *camera, int x, int y, int width,
 																int height);
 
-unsigned char *traceRay(Camera *camera, Scene *scene, Ray3D *ray, int depth);
+float *traceRay(Camera *camera, Scene *scene, Ray3D *ray, int depth,
+								float *rgb);
 
 Intersection3D *findIntersection(Scene *scene, Ray3D *ray);
 
-unsigned char *getColor(Camera *camera, Scene *scene,
-												Intersection3D *intersection, int depth);
+float *getColor(Camera *camera, Scene *scene, Intersection3D *intersection,
+								int depth, float *rgb);
 
 void calcPointLights(Scene *scene, Intersection3D *intersection,
 										 Vector3D *normal, Vector3D *view, float *id, float *is);
