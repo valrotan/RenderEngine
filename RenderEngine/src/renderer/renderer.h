@@ -44,12 +44,12 @@ typedef struct {
 typedef struct {
 	Camera *camera;
 	Scene *scene;
+	int nThreads;
 } Renderer;
 
 void rendererInit(Renderer *renderer);
 
-void rayTrace(Camera *camera, Scene *scene, unsigned char *screen, int width,
-							int height);
+void rayTrace(Renderer *renderer, unsigned char *screen, int width, int height);
 
 Ray3D *constructRayThroughPixel(Camera *camera, int x, int y, int width,
 																int height);

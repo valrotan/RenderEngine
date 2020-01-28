@@ -117,7 +117,8 @@ void rayTraceDemo() {
 	scene.nDirectionalLights = 1;
 	scene.nSpotLights = 2;
 
-	Renderer renderer = {&camera, &scene};
+	Renderer renderer = {&camera, &scene, 0};
+	renderer.nThreads = 32;
 
 	rendererInit(&renderer);
 
@@ -127,7 +128,7 @@ void rayTraceDemo() {
 	int diff;
 	ftime(&start);
 
-	rayTrace(&camera, &scene, screen, WIDTH, HEIGHT);
+	rayTrace(&renderer, screen, WIDTH, HEIGHT);
 	ftime(&end);
 	diff =
 			(int)(1000.0 * (end.time - start.time) + (end.millitm - start.millitm));

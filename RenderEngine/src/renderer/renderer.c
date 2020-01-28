@@ -1,6 +1,7 @@
 #include "renderer.h"
 #include <float.h>
 #include <math.h>
+#include <pthread.h>
 #include <stdlib.h>
 
 void rendererInit(Renderer *renderer) {
@@ -23,27 +24,57 @@ void rendererInit(Renderer *renderer) {
 	}
 }
 
-void rayTrace(Camera *camera, Scene *scene, unsigned char *screen, int width,
-							int height) {
+typedef struct {
+	Renderer *renderer;
+	unsigned char *screen;
+	int width;
+	int height;
+	int startLine;
+	int stopLine;
+} RendererSegment;
+
+void *rayTraceSegment(void *pSegment) {
+
+	RendererSegment *rSegment = (RendererSegment *)pSegment;
 
 	Ray3D *ray;
-	unsigned char *p = screen;
+	unsigned char *p = rSegment->screen;
 
-	for (int y = 0; y < height; y++) {
-		for (int x = 0; x < width; x++) {
-			ray = constructRayThroughPixel(camera, x, y, width, height);
-			//			printf(" - P (%.2f, %.2f, %.2f) \n", ray->p->x, ray->p->y,
-			// ray->p->z); 			printf("   V (%.2f, %.2f, %.2f) \n", ray->v->x,
-			// ray->v->y, ray->v->z);
+	for (int y = rSegment->startLine; y < rSegment->stopLine; y++) {
+		for (int x = 0; x < rSegment->width; x++) {
+			ray = constructRayThroughPixel(rSegment->renderer->camera, x, y,
+																		 rSegment->width, rSegment->height);
 
-			//			printf("(%.2f, %.2f) \n", ray->v->x, ray->v->y, ray->v->z);
-
-			unsigned char *i = traceRay(camera, scene, ray, 3);
+			unsigned char *i = traceRay(rSegment->renderer->camera,
+																	rSegment->renderer->scene, ray, 3);
 			*p++ = i[0];
 			*p++ = i[1];
 			*p++ = i[2];
-			//	  printf("%d %d %d \n", i[0], i[1], i[2]);
 		}
+	}
+	return NULL;
+}
+
+void rayTrace(Renderer *renderer, unsigned char *screen, int width,
+							int height) {
+
+	pthread_t *threads =
+			(pthread_t *)malloc(sizeof(pthread_t) * renderer->nThreads);
+	RendererSegment *rSegments =
+			(RendererSegment *)malloc(sizeof(RendererSegment) * renderer->nThreads);
+	float lines = (float)height / renderer->nThreads;
+
+	for (int i = 0; i < renderer->nThreads; i++, rSegments++) {
+		rSegments->renderer = renderer;
+		rSegments->screen = screen + 3 * width * (int)(i * lines + .5f);
+		rSegments->width = width;
+		rSegments->height = height;
+		rSegments->startLine = (int)(i * lines + .5f);
+		rSegments->stopLine = (int)((i + 1) * lines + .5f);
+		pthread_create(threads + i, NULL, rayTraceSegment, (void *)rSegments);
+	}
+	for (int i = 0; i < renderer->nThreads; i++) {
+		pthread_join(threads[i], NULL);
 	}
 }
 
@@ -232,11 +263,12 @@ unsigned char *getColor(Camera *camera, Scene *scene,
 void calcPointLights(Scene *scene, Intersection3D *intersection,
 										 Vector3D *normal, Vector3D *view, float *id, float *is) {
 
-//	printf("%p %p \n", pl, scene->pointLights);
-//	printf("(%.2f, %.2f, %.2f)", scene->pointLights->point->x, scene->pointLights->point->y, scene->pointLights->point->z);
+	//	printf("%p %p \n", pl, scene->pointLights);
+	//	printf("(%.2f, %.2f, %.2f)", scene->pointLights->point->x,
+	// scene->pointLights->point->y, scene->pointLights->point->z);
 	for (int i = 0; i < scene->nPointLights; i++) {
 
-		 PointLight *pl;
+		PointLight *pl;
 		pl = &(scene->pointLights[i]);
 
 		float d = dist(intersection->point, pl->point);
@@ -297,7 +329,7 @@ void calcDirectionalLights(Scene *scene, Intersection3D *intersection,
 		// shadows
 		Ray3D lightToInter;
 		lightToInter.v = (Vector3D *)malloc(sizeof(Vector3D));
-		lightToInter.p = (Vector3D*)malloc(sizeof(Vector3D));
+		lightToInter.p = (Vector3D *)malloc(sizeof(Vector3D));
 		mul(dl->direction, -1, lightToInter.v);
 		add(intersection->point, mul(normal, 1.001f, lightToInter.p),
 				lightToInter.p);
