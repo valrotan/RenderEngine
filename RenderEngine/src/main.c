@@ -15,8 +15,8 @@ void rayTraceDemo() {
 
 	printf("Initializing renderer...\n");
 	Camera camera;
-	Matrix4x4 trans[] = {getXRotationMatrix(-360, 0),
-											 getTranslationMatrix(0, 0, 200)};
+	Matrix4x4 trans[] = {getXRotationMatrix(0, 0),
+											 getTranslationMatrix(0, -20, 170)};
 	Matrix4x4 camToWorld = getTransformationMatrix(trans, 2);
 
 	camera.fov = 60;
@@ -55,7 +55,7 @@ void rayTraceDemo() {
 	Vector3D dd = {0, -10, 10};
 	Vector3D ed = {-60, -10, -20};
 	Vector3D fd = {-60, -60, -20};
-	Triangle3D temp7 = {&ad, &bd, &cd, 0, 80/255.0f, 80/255.0f, 80/255.0f, 0.25, .25f, .1f};
+	Triangle3D temp7 = {&ad, &bd, &cd, 0, 80/255.0f, 80/255.0f, 80/255.0f, 0.25f, .25f, .1f};
 	Triangle3D temp8 = {&dd, &ed, &fd, 0, 50/255.0f, 50/255.0f, 200/255.0f, 0, .25f, .25f};
 
 	t[0] = temp1;
@@ -74,7 +74,7 @@ void rayTraceDemo() {
 	scene.ambientLight = .25f;
 	scene.kSpecularExponent = 3;
 
-	scene.triangles = &t[0];
+	scene.triangles = t;
 	scene.nTriangles = 8;
 
 	PointLight *pointLights = (PointLight *)malloc(sizeof(PointLight));
@@ -118,7 +118,7 @@ void rayTraceDemo() {
 	scene.nSpotLights = 2;
 
 	Renderer renderer = {&camera, &scene, 0};
-	renderer.nThreads = 64;
+	renderer.nThreads = 48;
 
 	rendererInit(&renderer);
 

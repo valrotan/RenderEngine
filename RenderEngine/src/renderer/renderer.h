@@ -47,6 +47,23 @@ typedef struct {
 	int nThreads;
 } Renderer;
 
+typedef struct {
+	Renderer *renderer;
+	unsigned char *screen;
+	int width;
+	int height;
+	int startLine;
+	int stopLine;
+} RendererSegment;
+
+typedef struct BoundingVolume {
+	struct BoundingVolume *children;
+	int nChildren;
+	Triangle3D **triangles;
+	int nTriangles;
+	Vector3D low, high;
+} BoundingVolume;
+
 void rendererInit(Renderer *renderer);
 
 void rayTrace(Renderer *renderer, unsigned char *screen, int width, int height);
@@ -71,3 +88,5 @@ void calcDirectionalLights(Scene *scene, Intersection3D *intersection,
 
 void calcSpotLights(Scene *scene, Intersection3D *intersection,
 										Vector3D *normal, Vector3D *view, float *id, float *is);
+
+BoundingVolume *constructBoundingVolumes(BoundingVolume *bv);

@@ -4,6 +4,22 @@
 #include <pthread.h>
 #include <stdlib.h>
 
+void printBoundingVolume(BoundingVolume *bv) {
+	for (int i = 0; i < bv->nChildren; i++) {
+		printBoundingVolume(bv->children + i);
+	}
+//	printf("-----\n");
+	//	for (int i = 0; i < bv->nTriangles; i++) {
+	static char c = 'A';
+	printf("%c = [%.2f, %.2f, %.2f] \n", c, bv->low.x, bv->low.y, bv->low.z);
+	c++;
+	printf("%c = [%.2f, %.2f, %.2f] \n", c, bv->high.x, bv->high.y, bv->high.z);
+	c++;
+	printf("drawBox(%c, %c) \n", c - 2, c - 1);
+	//	}
+//	printf("-----\n");
+}
+
 void rendererInit(Renderer *renderer) {
 	for (int i = 0; i < renderer->scene->nTriangles; i++) {
 		Triangle3D *t = &renderer->scene->triangles[i];
@@ -19,19 +35,25 @@ void rendererInit(Renderer *renderer) {
 
 		printf("init triangle : N (%.2f, %.2f, %.2f) d %.2f \n", t->plane->v->x,
 					 t->plane->v->y, t->plane->v->z, t->plane->d);
-		printf("  color : C (%d, %d, %d) \n", t->colorR, t->colorG, t->colorB);
+		printf("  color : C (%f, %f, %f) \n", t->colorR, t->colorG, t->colorB);
 		printf("  refl  : C (%.2f, %.2f, %.2f) \n", t->k_d, t->k_e, t->k_s);
 	}
+	BoundingVolume *bv = malloc(sizeof(BoundingVolume));
+	// convert scene triangles to double pointers to triangles
+	Triangle3D **triangles =
+			malloc(sizeof(Triangle3D *) * (size_t)renderer->scene->nTriangles);
+	for (int i = 0; i < renderer->scene->nTriangles; i++) {
+		triangles[i] = renderer->scene->triangles + i;
+	}
+	bv->triangles = triangles;
+	bv->nTriangles = renderer->scene->nTriangles;
+	constructBoundingVolumes(bv);
+	printf("%d \n", bv->nChildren);
+	printf("%d \n", bv->children->nChildren);
+	printBoundingVolume(bv);
+	//	printf("low  (%.2f, %.2f, %.2f) \n", bv->low.x, bv->low.y, bv->low.z);
+	//	printf("high (%.2f, %.2f, %.2f) \n", bv->high.x, bv->high.y, bv->high.z);
 }
-
-typedef struct {
-	Renderer *renderer;
-	unsigned char *screen;
-	int width;
-	int height;
-	int startLine;
-	int stopLine;
-} RendererSegment;
 
 void *rayTraceSegment(void *pSegment) {
 
@@ -79,9 +101,9 @@ void rayTrace(Renderer *renderer, unsigned char *screen, int width,
 							int height) {
 
 	pthread_t *threads =
-			(pthread_t *)malloc(sizeof(pthread_t) * renderer->nThreads);
-	RendererSegment *rSegments =
-			(RendererSegment *)malloc(sizeof(RendererSegment) * renderer->nThreads);
+			(pthread_t *)malloc(sizeof(pthread_t) * (size_t)renderer->nThreads);
+	RendererSegment *rSegments = (RendererSegment *)malloc(
+			sizeof(RendererSegment) * (size_t)renderer->nThreads);
 	float lines = (float)height / renderer->nThreads;
 
 	for (int i = 0; i < renderer->nThreads; i++, rSegments++) {
@@ -145,6 +167,237 @@ float *traceRay(Camera *camera, Scene *scene, Ray3D *ray, int depth,
 	return rgb;
 }
 
+// generate bounding volumes
+// in: scene
+// create node around all triangles
+// if width > height
+//   find triangle number n/2 x-wise
+//   child 1 = triangles 0 to n/2
+//   child 2 = triangles n/2 to n
+//   recurse into children
+// else
+//   find triangle number n/2 y-wise
+//   child 1 = triangles 0 to n/2
+//   child 2 = triangles n/2 to n
+//   recurse into children
+BoundingVolume *constructBoundingVolumes(BoundingVolume *bv) {
+
+	// determine own bounding volume points
+	{
+		Triangle3D *cur;
+		bv->low = ORIGIN_3D;
+		bv->high = ORIGIN_3D;
+		for (int i = 0; i < bv->nTriangles; i++) {
+			cur = bv->triangles[i];
+			bv->low.x =
+					fminf(bv->low.x, fminf(fminf(cur->p1->x, cur->p2->x), cur->p3->x));
+			bv->low.y =
+					fminf(bv->low.y, fminf(fminf(cur->p1->y, cur->p2->y), cur->p3->y));
+			bv->low.z =
+					fminf(bv->low.z, fminf(fminf(cur->p1->z, cur->p2->z), cur->p3->z));
+			bv->high.x =
+					fmaxf(bv->high.x, fmaxf(fmaxf(cur->p1->x, cur->p2->x), cur->p3->x));
+			bv->high.y =
+					fmaxf(bv->high.y, fmaxf(fmaxf(cur->p1->y, cur->p2->y), cur->p3->y));
+			bv->high.z =
+					fmaxf(bv->high.z, fmaxf(fmaxf(cur->p1->z, cur->p2->z), cur->p3->z));
+		}
+	}
+	bv->nChildren = 0;
+
+	// end at 2 triangles per volume
+	if (bv->nTriangles > 2) {
+		int nLow = bv->nTriangles / 2;
+		Triangle3D **low =
+				(Triangle3D **)malloc(sizeof(Triangle3D *) * (size_t)nLow);
+		int nHigh = (int)((bv->nTriangles + .5f) / 2);
+		Triangle3D **high = (Triangle3D **)malloc( //
+				sizeof(Triangle3D *) * (size_t)nHigh);
+
+		Vector3D bvDims;
+		sub(&bv->high, &bv->low, &bvDims);
+		printf("dims (%.2f, %.2f, %.2f) \n", bvDims.x, bvDims.y, bvDims.z);
+
+		if (bvDims.x >= bvDims.y && bvDims.x >= bvDims.z) { // split along x
+			printf("splitting along x \n");
+			// sort using x
+			// only sort the first half because we simply need to split it into two
+			for (int i = 0; i < bv->nTriangles / 2; i++) {
+				float min = INFINITY;
+				float max = -INFINITY;
+				int minInd = 0, maxInd = 0;
+				for (int j = 2 * i; j < bv->nTriangles; j++) {
+					// centroid c in axis (if you divide by 3)
+					float c = (*(bv->triangles + j))->p1->x + (*(bv->triangles + j))->p2->x +
+										(*(bv->triangles + j))->p3->x;
+					printf("%d %d %.2f \n", i, j, c);
+					if (c > max) {
+						max = c;
+						maxInd = j;
+					}
+					if (c < min) {
+						min = c;
+						minInd = j;
+					}
+				}
+				printf("low (%.2f %.2f %.2f) \n", (*(bv->triangles + minInd))->p1->x, (*(bv->triangles + minInd))->p1->y, (*(bv->triangles + minInd))->p1->z);
+				printf("    (%.2f %.2f %.2f) \n", (*(bv->triangles + minInd))->p2->x, (*(bv->triangles + minInd))->p2->y, (*(bv->triangles + minInd))->p2->z);
+				printf("    (%.2f %.2f %.2f) \n", (*(bv->triangles + minInd))->p3->x, (*(bv->triangles + minInd))->p3->y, (*(bv->triangles + minInd))->p3->z);
+				printf("max (%.2f %.2f %.2f) \n", (*(bv->triangles + maxInd))->p1->x, (*(bv->triangles + maxInd))->p1->y, (*(bv->triangles + maxInd))->p1->z);
+				printf("    (%.2f %.2f %.2f) \n", (*(bv->triangles + maxInd))->p2->x, (*(bv->triangles + maxInd))->p2->y, (*(bv->triangles + maxInd))->p2->z);
+				printf("    (%.2f %.2f %.2f) \n", (*(bv->triangles + maxInd))->p3->x, (*(bv->triangles + maxInd))->p3->y, (*(bv->triangles + maxInd))->p3->z);
+				*(low + i) = *(bv->triangles + minInd);
+				*(high + i) = *(bv->triangles + maxInd);
+				// swap to get rid of those elements in the bucket
+//				printf("swap %d into %d \n", 2 * i, minInd);
+//				printf("swap %d into %d \n", 2 * i + 1, maxInd);
+
+//				float a = (*(bv->triangles + minInd))->p2->x;
+//				float b = (*(bv->triangles + 2 * i))->p2->x;
+//				printf("%2.f %.2f \n", a, b);
+
+				*(bv->triangles + minInd) = *(bv->triangles + 2 * i);
+				*(bv->triangles + maxInd) = *(bv->triangles + 2 * i + 1);
+
+//				a = (*(bv->triangles + minInd))->p2->x;
+//				b = (*(bv->triangles + 2 * i))->p2->x;
+//				printf("%2.f %.2f \n", a, b);
+			}
+			for (int i = 0; i < nLow; i++) {
+				printf("lows (%.2f %.2f %.2f) \n", low[i]->p1->x, low[i]->p1->y, low[i]->p1->z);
+				printf("    (%.2f %.2f %.2f) \n", low[i]->p2->x, low[i]->p2->y, low[i]->p2->z);
+				printf("    (%.2f %.2f %.2f) \n", low[i]->p3->x, low[i]->p3->y, low[i]->p3->z);
+			}
+		} else if (bvDims.y >= bvDims.x && bvDims.y >= bvDims.z) { // split along y
+			printf("splitting along y \n");
+			// sort using y distance
+			// only sort the first half because we simply need to split it into two
+			for (int i = 0; i < bv->nTriangles / 2; i++) {
+				float min = INFINITY;
+				float max = -INFINITY;
+				int minInd = 0, maxInd = 0;
+				for (int j = 2 * i; j < bv->nTriangles; j++) {
+					// centroid c in axis (if you divide by 3)
+					float c = (*(bv->triangles + j))->p1->y + (*(bv->triangles + j))->p2->y +
+										(*(bv->triangles + j))->p3->y;
+					printf("%d %d %.2f \n", i, j, c);
+					if (c > max) {
+						max = c;
+						maxInd = j;
+					}
+					if (c < min) {
+						min = c;
+						minInd = j;
+					}
+				}
+				printf("low (%.2f %.2f %.2f) \n", (*(bv->triangles + minInd))->p1->x, (*(bv->triangles + minInd))->p1->y, (*(bv->triangles + minInd))->p1->z);
+				printf("    (%.2f %.2f %.2f) \n", (*(bv->triangles + minInd))->p2->x, (*(bv->triangles + minInd))->p2->y, (*(bv->triangles + minInd))->p2->z);
+				printf("    (%.2f %.2f %.2f) \n", (*(bv->triangles + minInd))->p3->x, (*(bv->triangles + minInd))->p3->y, (*(bv->triangles + minInd))->p3->z);
+				printf("max (%.2f %.2f %.2f) \n", (*(bv->triangles + maxInd))->p1->x, (*(bv->triangles + maxInd))->p1->y, (*(bv->triangles + maxInd))->p1->z);
+				printf("    (%.2f %.2f %.2f) \n", (*(bv->triangles + maxInd))->p2->x, (*(bv->triangles + maxInd))->p2->y, (*(bv->triangles + maxInd))->p2->z);
+				printf("    (%.2f %.2f %.2f) \n", (*(bv->triangles + maxInd))->p3->x, (*(bv->triangles + maxInd))->p3->y, (*(bv->triangles + maxInd))->p3->z);
+				*(low + i) = *(bv->triangles + minInd);
+				*(high + i) = *(bv->triangles + maxInd);
+				// swap to get rid of those elements in the bucket
+//				printf("swap %d into %d \n", 2 * i, minInd);
+//				printf("swap %d into %d \n", 2 * i + 1, maxInd);
+
+//				float a = (*(bv->triangles + minInd))->p2->x;
+//				float b = (*(bv->triangles + 2 * i))->p2->x;
+//				printf("%2.f %.2f \n", a, b);
+
+				*(bv->triangles + minInd) = *(bv->triangles + 2 * i);
+				*(bv->triangles + maxInd) = *(bv->triangles + 2 * i + 1);
+
+//				a = (*(bv->triangles + minInd))->p2->x;
+//				b = (*(bv->triangles + 2 * i))->p2->x;
+//				printf("%2.f %.2f \n", a, b);
+			}
+			for (int i = 0; i < nLow; i++) {
+				printf("lows (%.2f %.2f %.2f) \n", low[i]->p1->x, low[i]->p1->y, low[i]->p1->z);
+				printf("    (%.2f %.2f %.2f) \n", low[i]->p2->x, low[i]->p2->y, low[i]->p2->z);
+				printf("    (%.2f %.2f %.2f) \n", low[i]->p3->x, low[i]->p3->y, low[i]->p3->z);
+			}
+		} else { // split along z
+			// only sort the first half because we simply need to split it into two
+			for (int i = 0; i < bv->nTriangles / 2; i++) {
+				float min = INFINITY;
+				float max = -INFINITY;
+				int minInd = 0, maxInd = 0;
+				for (int j = 2 * i; j < bv->nTriangles; j++) {
+					// centroid c in axis (if you divide by 3)
+					float c = (*(bv->triangles + j))->p1->z + (*(bv->triangles + j))->p2->z +
+										(*(bv->triangles + j))->p3->z;
+					printf("%d %d %.2f \n", i, j, c);
+					if (c > max) {
+						max = c;
+						maxInd = j;
+					}
+					if (c < min) {
+						min = c;
+						minInd = j;
+					}
+				}
+				printf("low (%.2f %.2f %.2f) \n", (*(bv->triangles + minInd))->p1->x, (*(bv->triangles + minInd))->p1->y, (*(bv->triangles + minInd))->p1->z);
+				printf("    (%.2f %.2f %.2f) \n", (*(bv->triangles + minInd))->p2->x, (*(bv->triangles + minInd))->p2->y, (*(bv->triangles + minInd))->p2->z);
+				printf("    (%.2f %.2f %.2f) \n", (*(bv->triangles + minInd))->p3->x, (*(bv->triangles + minInd))->p3->y, (*(bv->triangles + minInd))->p3->z);
+				printf("max (%.2f %.2f %.2f) \n", (*(bv->triangles + maxInd))->p1->x, (*(bv->triangles + maxInd))->p1->y, (*(bv->triangles + maxInd))->p1->z);
+				printf("    (%.2f %.2f %.2f) \n", (*(bv->triangles + maxInd))->p2->x, (*(bv->triangles + maxInd))->p2->y, (*(bv->triangles + maxInd))->p2->z);
+				printf("    (%.2f %.2f %.2f) \n", (*(bv->triangles + maxInd))->p3->x, (*(bv->triangles + maxInd))->p3->y, (*(bv->triangles + maxInd))->p3->z);
+				*(low + i) = *(bv->triangles + minInd);
+				*(high + i) = *(bv->triangles + maxInd);
+				// swap to get rid of those elements in the bucket
+//				printf("swap %d into %d \n", 2 * i, minInd);
+//				printf("swap %d into %d \n", 2 * i + 1, maxInd);
+
+//				float a = (*(bv->triangles + minInd))->p2->x;
+//				float b = (*(bv->triangles + 2 * i))->p2->x;
+//				printf("%2.f %.2f \n", a, b);
+
+				*(bv->triangles + minInd) = *(bv->triangles + 2 * i);
+				*(bv->triangles + maxInd) = *(bv->triangles + 2 * i + 1);
+
+//				a = (*(bv->triangles + minInd))->p2->x;
+//				b = (*(bv->triangles + 2 * i))->p2->x;
+//				printf("%2.f %.2f \n", a, b);
+			}
+			for (int i = 0; i < nLow; i++) {
+				printf("lows (%.2f %.2f %.2f) \n", low[i]->p1->x, low[i]->p1->y, low[i]->p1->z);
+				printf("    (%.2f %.2f %.2f) \n", low[i]->p2->x, low[i]->p2->y, low[i]->p2->z);
+				printf("    (%.2f %.2f %.2f) \n", low[i]->p3->x, low[i]->p3->y, low[i]->p3->z);
+			}
+		}
+
+		BoundingVolume *children =
+				(BoundingVolume *)malloc(sizeof(BoundingVolume) * 2);
+
+		children[0].triangles = low;
+		children[0].nTriangles = nLow;
+		children[1].triangles = high;
+		children[1].nTriangles = nHigh;
+
+		bv->children = children;
+		bv->nChildren = 2;
+		bv->nTriangles = 0;
+
+		constructBoundingVolumes(children + 0);
+		constructBoundingVolumes(children + 1);
+	}
+
+	return bv;
+}
+
+// find intersection recursive
+// in: scene, ray, node
+// if (node is leaf)
+//   intersect both and check
+// if (ray.intersects node) {
+//   find intersection (node.child 1)
+//   find intersection (node.child 2)
+// }
+Intersection3D *findIntersectionBV(BoundingVolume *scene, Ray3D *ray) {
+}
+
 // Gets called 236k times
 // Copies 24 bytes
 // = 5.6 megabytes for HD
@@ -153,8 +406,6 @@ Intersection3D *copyIntersection(Intersection3D *o, Intersection3D *i) {
 	o->point->x = i->point->x;
 	o->point->y = i->point->y;
 	o->point->z = i->point->z;
-	o->triangle = i->triangle;
-	o->originalRay = i->originalRay;
 	o->exists = i->exists;
 
 	return o;
@@ -179,16 +430,21 @@ Intersection3D *findIntersection(Scene *scene, Ray3D *ray) {
 
 	for (int i = 0; i < scene->nTriangles; i++) {
 		tempIntersection->exists = 1;
-		intersect(ray, &scene->triangles[i], tempIntersection);
+		intersect(ray, scene->triangles + i, tempIntersection);
 
 		if (tempIntersection->exists) {
 			tempDist = dist(tempIntersection->point, ray->p);
 			if (tempDist < minDist) {
 				copyIntersection(intersection, tempIntersection);
+				intersection->triangle = scene->triangles + i;
 				minDist = tempDist;
 			}
 		}
 	}
+
+	free(tempIntersection);
+
+	intersection->originalRay = ray;
 
 	return intersection->exists ? intersection : 0;
 }
@@ -220,7 +476,7 @@ float *getColor(Camera *camera, Scene *scene, Intersection3D *intersection,
 	calcDirectionalLights(scene, intersection, &normal, view, &id, &is);
 	calcSpotLights(scene, intersection, &normal, view, &id, &is);
 
-	// TODO: refraction
+	// TODO: refraction/transparency
 
 	// reflection
 	float ir_r = 0;
@@ -256,9 +512,6 @@ float *getColor(Camera *camera, Scene *scene, Intersection3D *intersection,
 void calcPointLights(Scene *scene, Intersection3D *intersection,
 										 Vector3D *normal, Vector3D *view, float *id, float *is) {
 
-	//	printf("%p %p \n", pl, scene->pointLights);
-	//	printf("(%.2f, %.2f, %.2f)", scene->pointLights->point->x,
-	// scene->pointLights->point->y, scene->pointLights->point->z);
 	for (int i = 0; i < scene->nPointLights; i++) {
 
 		PointLight *pl;
@@ -272,21 +525,23 @@ void calcPointLights(Scene *scene, Intersection3D *intersection,
 		sub(intersection->point, pl->point, &l);
 		norm(&l, &l);
 
+		float lightNormalDot = dot(&l, normal);
+		// check if light behind triangle
+		if (lightNormalDot > 0) { // light points into triangle
+			continue;
+		}
+
 		lightToInter.v = &l;
 		lightToInter.p = pl->point;
 
+		// shadow
 		Intersection3D *inter = findIntersection(scene, &lightToInter);
 		if (inter != 0 && dist(inter->point, pl->point) < d - .001f) {
 			continue; // not count this light source
 		}
 
-		// check if light behind triangle
-		if (dot(&l, normal) > 0) {
-			continue;
-		}
-
 		Vector3D lightReflectedVector;
-		sub(&l, mul(normal, 2 * dot(&l, normal), &lightReflectedVector),
+		sub(&l, mul(normal, 2 * lightNormalDot, &lightReflectedVector),
 				&lightReflectedVector);
 		norm(&lightReflectedVector, &lightReflectedVector);
 
@@ -298,10 +553,10 @@ void calcPointLights(Scene *scene, Intersection3D *intersection,
 		*id += -intersection->triangle->k_d * dot(normal, &l) * il;
 
 		// specular reflection
-		float N = 3; // specular light exponent
 		float is_temp = -dot(norm(view, view), &lightReflectedVector);
 		if (is_temp > 0) {
-			*is += intersection->triangle->k_s * powf(is_temp, N) * il;
+			*is += intersection->triangle->k_s *
+						 powf(is_temp, scene->kSpecularExponent) * il;
 		}
 	}
 }
@@ -321,8 +576,10 @@ void calcDirectionalLights(Scene *scene, Intersection3D *intersection,
 
 		// shadows
 		Ray3D lightToInter;
-		lightToInter.v = (Vector3D *)malloc(sizeof(Vector3D));
-		lightToInter.p = (Vector3D *)malloc(sizeof(Vector3D));
+		Vector3D ltiv;
+		Vector3D ltip;
+		lightToInter.v = &ltiv;
+		lightToInter.p = &ltip;
 		mul(dl->direction, -1, lightToInter.v);
 		add(intersection->point, mul(normal, 1.001f, lightToInter.p),
 				lightToInter.p);
@@ -344,10 +601,10 @@ void calcDirectionalLights(Scene *scene, Intersection3D *intersection,
 		*id += -intersection->triangle->k_d * dot(normal, dl->direction) * il;
 
 		// specular reflection
-		float N = 3; // specular light exponent
 		float is_temp = -dot(norm(view, view), &lightReflectedVector);
 		if (is_temp > 0) {
-			*is += intersection->triangle->k_s * powf(is_temp, N) * il;
+			*is += intersection->triangle->k_s *
+						 powf(is_temp, scene->kSpecularExponent) * il;
 		}
 	}
 }
@@ -378,7 +635,6 @@ void calcSpotLights(Scene *scene, Intersection3D *intersection,
 		Ray3D lightToInterRay;
 		lightToInterRay.v = &lightToInter;
 		lightToInterRay.p = sl->point;
-
 		Intersection3D *inter = findIntersection(scene, &lightToInterRay);
 		if (inter != 0 && dist(inter->point, sl->point) < d - .001f) {
 			continue; // not count this light source
@@ -393,13 +649,10 @@ void calcSpotLights(Scene *scene, Intersection3D *intersection,
 		*id += -intersection->triangle->k_d * dot(normal, sl->direction) * il;
 
 		// specular reflection
-		float N = 3; // specular light exponent
 		float is_temp = -dot(view, &lightReflectedVector);
 		if (is_temp > 0) {
-			*is += intersection->triangle->k_s * powf(is_temp, N) * il;
+			*is += intersection->triangle->k_s *
+						 powf(is_temp, scene->kSpecularExponent) * il;
 		}
 	}
 }
-
-// TODO change the structure so the light helper functions only calculate the
-// illuminosity
