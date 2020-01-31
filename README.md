@@ -50,5 +50,5 @@ The source code is split into 3 main modules.
 - [ ] Try parametric ray-plane intersects
 
 ## Render times benchmarks:
-- MacBookPro 2019 2.30 GHZ i5 : 270ms
+- MacBookPro 2019 2.30 GHZ i5 : 230ms
 - Dell XPS 15 2.20 GHZ i7: 1520ms *not updated*

@@ -76,7 +76,14 @@ float dist(Vector3D *a, Vector3D *b) {
 
 // Finds an intersection between the given ray and the triangle
 // Sets i->exists to 0 if intersection is not found or does not exist
+// ~2300000 calls with BVH
+// ~9400000 calls without BVH
 Intersection3D *intersect(Ray3D *r, Triangle3D *t, Intersection3D *i) {
+//	static int count = 0;
+//	count ++;
+//	if (count % 100000 == 0) {
+//		printf("%d \n", count);
+//	}
 
 	// Using Ray : P = P0 + Vu
 	// and Plane : P * N + d = 0
@@ -126,6 +133,7 @@ Intersection3D *intersect(Ray3D *r, Triangle3D *t, Intersection3D *i) {
 		return i;
 	}
 
+	i->exists = 1;
 	return i;
 }
 

@@ -58,6 +58,9 @@ Matrix4x4 getTransformationMatrix(Matrix4x4 matrices[], int size);
 Vector3D applyTransformation(Vector3D originVec, Matrix4x4 transform);
 
 static Vector3D ORIGIN_3D = {0, 0, 0};
+static Vector3D AXIS_X = {1, 0, 0};
+static Vector3D AXIS_Y = {0, 1, 0};
+static Vector3D AXIS_Z = {0, 0, 1};
 
 float dot(Vector3D *a, Vector3D *b);
 float dot2D(Vector2D *a, Vector2D *b);

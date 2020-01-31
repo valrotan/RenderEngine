@@ -26,6 +26,14 @@ typedef struct {
 	Vector3D *attenuationCoeffs;
 } SpotLight;
 
+typedef struct BoundingVolume {
+	struct BoundingVolume *children;
+	int nChildren;
+	Triangle3D **triangles;
+	int nTriangles;
+	Vector3D low, high;
+} BoundingVolume;
+
 // Only triangles for now I guess
 typedef struct {
 	float ambientLight;
@@ -39,6 +47,7 @@ typedef struct {
 	int nDirectionalLights;
 	SpotLight *spotLights;
 	int nSpotLights;
+	BoundingVolume *bv;
 } Scene;
 
 typedef struct {
@@ -55,14 +64,6 @@ typedef struct {
 	int startLine;
 	int stopLine;
 } RendererSegment;
-
-typedef struct BoundingVolume {
-	struct BoundingVolume *children;
-	int nChildren;
-	Triangle3D **triangles;
-	int nTriangles;
-	Vector3D low, high;
-} BoundingVolume;
 
 void rendererInit(Renderer *renderer);
 
@@ -90,3 +91,5 @@ void calcSpotLights(Scene *scene, Intersection3D *intersection,
 										Vector3D *normal, Vector3D *view, float *id, float *is);
 
 BoundingVolume *constructBoundingVolumes(BoundingVolume *bv);
+
+Intersection3D *findIntersectionBV(BoundingVolume *bv, Ray3D *ray);
