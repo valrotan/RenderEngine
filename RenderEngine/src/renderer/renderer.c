@@ -164,7 +164,7 @@ float *traceRay(Camera *camera, Scene *scene, Ray3D *ray, int depth,
 								float *rgb) {
 
 	Intersection3D *intersection = findIntersectionBV(scene->bv, ray);
-	//		Intersection3D *intersection = findIntersection(scene, ray);
+	//			Intersection3D *intersection = findIntersection(scene, ray);
 
 	if (intersection != 0) {
 		getColor(camera, scene, intersection, depth, rgb);
@@ -176,8 +176,6 @@ float *traceRay(Camera *camera, Scene *scene, Ray3D *ray, int depth,
 	}
 	return rgb;
 }
-
-void sortTriangles() {}
 
 // generate bounding volumes
 // in: scene
@@ -393,6 +391,48 @@ int checkInterBV(BoundingVolume *bv, Ray3D *ray) {
 	return 0;
 }
 
+// inspiration: http://www.cs.utah.edu/~awilliam/box/box.pdf
+int smitsBoxIntersect(BoundingVolume *bv, Ray3D *ray) {
+	float tmin, tmax, tymin, tymax, tzmin, tzmax;
+	float divx = 1 / ray->v->x;
+	if (divx >= 0) {
+		tmin = (bv->low.x - ray->p->x) * divx;
+		tmax = (bv->high.x - ray->p->x) * divx;
+	} else {
+		tmin = (bv->high.x - ray->p->x) * divx;
+		tmax = (bv->low.x - ray->p->x) * divx;
+	}
+	float divy = 1 / ray->v->y;
+	if (divy >= 0) {
+		tymin = (bv->low.y - ray->p->y) * divy;
+		tymax = (bv->high.y - ray->p->y) * divy;
+	} else {
+		tymin = (bv->high.y - ray->p->y) * divy;
+		tymax = (bv->low.y - ray->p->y) * divy;
+	}
+	if ((tmin > tymax) || (tymin > tmax))
+		return 0;
+	if (tymin > tmin)
+		tmin = tymin;
+	if (tymax < tmax)
+		tmax = tymax;
+	float divz = 1 / ray->v->z;
+	if (divz >= 0) {
+		tzmin = (bv->low.z - ray->p->z) * divz;
+		tzmax = (bv->high.z - ray->p->z) * divz;
+	} else {
+		tzmin = (bv->high.z - ray->p->z) * divz;
+		tzmax = (bv->low.z - ray->p->z) * divz;
+	}
+	if ((tmin > tzmax) || (tzmin > tmax))
+		return 0;
+	if (tzmin > tmin)
+		tmin = tzmin;
+	if (tzmax < tmax)
+		tmax = tzmax;
+	return (tmax > 0);
+}
+
 // deep copy an intersection object
 Intersection3D *copyIntersection(Intersection3D *o, Intersection3D *i) {
 	//	static int count = 0;
@@ -416,7 +456,8 @@ Intersection3D *copyIntersection(Intersection3D *o, Intersection3D *i) {
 //   find min intersection with bounding volumes
 // return min
 Intersection3D *findIntersectionBV(BoundingVolume *bv, Ray3D *ray) {
-	if (checkInterBV(bv, ray)) {
+	//	 if (checkInterBV(bv, ray)) {
+	if (smitsBoxIntersect(bv, ray)) {
 
 		Intersection3D *intersection =
 				(Intersection3D *)malloc(sizeof(Intersection3D));
@@ -445,7 +486,7 @@ Intersection3D *findIntersectionBV(BoundingVolume *bv, Ray3D *ray) {
 			}
 		}
 
-		Intersection3D* pTempIntersection;
+		Intersection3D *pTempIntersection;
 		// children intersections
 		for (int i = 0; i < bv->nChildren; i++) {
 			pTempIntersection = findIntersectionBV(bv->children + i, ray);

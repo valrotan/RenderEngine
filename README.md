@@ -37,7 +37,7 @@ The source code is split into 3 main modules.
 - [x] Reflections going the wrong way (see cube render)
 - [x] Fix triangle points have to be clockwise
 - [ ] Create a 3d file reader module
-- [ ] Data structures for scene representation
+- [x] Data structures for scene representation
 - [ ] Clean source code from debugging code
 - [x] Fix negative lighting bug
 - [x] Triangle orientation - agnostic code
@@ -47,8 +47,9 @@ The source code is split into 3 main modules.
 - [ ] Test with different view points
 - [ ] Test with different lights in different locations
 - [ ] Check the performance of Windows devices with doubles
-- [ ] Try parametric ray-plane intersects
+- [x] Try parametric ray-plane intersects
+- [ ] Investigate potential bug on with shadows dependent on camera position
 
 ## Render times benchmarks:
-- MacBookPro 2019 2.30 GHZ i5 : 230ms
+- MacBookPro 2019 2.30 GHZ i5 : 160ms
 - Dell XPS 15 2.20 GHZ i7: 1520ms *not updated*
