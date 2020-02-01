@@ -68,16 +68,19 @@ void *rayTraceSegment(void *pSegment) {
 
 	RendererSegment *rSegment = (RendererSegment *)pSegment;
 
-	Ray3D *ray;
+	Ray3D ray;
+	Vector3D rp, rv;
+	ray.p = &rp;
+	ray.v = &rv;
 	unsigned char *p = rSegment->screen;
 
 	for (int y = rSegment->startLine; y < rSegment->stopLine; y++) {
 		for (int x = 0; x < rSegment->width; x++) {
-			ray = constructRayThroughPixel(rSegment->renderer->camera, x, y,
-																		 rSegment->width, rSegment->height);
+			constructRayThroughPixel(rSegment->renderer->camera, x, y,
+															 rSegment->width, rSegment->height, &ray);
 
 			float rgb[3];
-			traceRay(rSegment->renderer->camera, rSegment->renderer->scene, ray, 3,
+			traceRay(rSegment->renderer->camera, rSegment->renderer->scene, &ray, 3,
 							 rgb);
 
 			if (rgb[0] > 1) {
@@ -106,11 +109,14 @@ void *rayTraceSegment(void *pSegment) {
 	return NULL;
 }
 
+// TODO: split in grid maybe to utilize threads more
+// Fun thing to try: plot execution time of thread vs line number to see
+//     how threads are utilized when split this way
 void rayTrace(Renderer *renderer, unsigned char *screen, int width,
 							int height) {
 
-	pthread_t *threads =
-			(pthread_t *)malloc(sizeof(pthread_t) * (size_t)renderer->nThreads);
+	pthread_t *threads = (pthread_t *)malloc(sizeof(pthread_t) * //
+																					 (size_t)renderer->nThreads);
 	RendererSegment *rSegments = (RendererSegment *)malloc(
 			sizeof(RendererSegment) * (size_t)renderer->nThreads);
 	float lines = (float)height / renderer->nThreads;
@@ -132,8 +138,8 @@ void rayTrace(Renderer *renderer, unsigned char *screen, int width,
 // Constructs a ray that originates at the camera position and shoots through
 // the given pixel (x,y)
 Ray3D *constructRayThroughPixel(Camera *camera, int x, int y, int imageWidth,
-																int imageHeight) {
-	Ray3D *ray = (Ray3D *)malloc(sizeof(Ray3D));
+																int imageHeight, Ray3D *ray) {
+
 	float aspectRatio = (float)imageWidth / imageHeight;
 	float scale = tanf(getRad(camera->fov / 2));
 
@@ -146,12 +152,10 @@ Ray3D *constructRayThroughPixel(Camera *camera, int x, int y, int imageWidth,
 	Vector3D pWorld = {Px, Py, -1};
 	pWorld = applyTransformation(pWorld, camera->cameraToWorld);
 
-	ray->p = (Vector3D *)malloc(sizeof(Vector3D));
 	ray->p->x = origin.x;
 	ray->p->y = origin.y;
 	ray->p->z = origin.z;
 
-	ray->v = (Vector3D *)malloc(sizeof(Vector3D));
 	sub(&pWorld, &origin, ray->v);
 	norm(ray->v, ray->v);
 
@@ -163,12 +167,14 @@ Ray3D *constructRayThroughPixel(Camera *camera, int x, int y, int imageWidth,
 float *traceRay(Camera *camera, Scene *scene, Ray3D *ray, int depth,
 								float *rgb) {
 
-	Intersection3D *intersection = findIntersectionBV(scene->bv, ray);
-	//			Intersection3D *intersection = findIntersection(scene, ray);
+	Intersection3D intersection;
+	intersection.exists = 0;
 
-	if (intersection != 0) {
-		getColor(camera, scene, intersection, depth, rgb);
-		free(intersection);
+	findIntersectionBV(scene->bv, ray, &intersection);
+	intersection.originalRay = ray;
+
+	if (intersection.exists) {
+		getColor(camera, scene, &intersection, depth, rgb);
 	} else {
 		rgb[0] = scene->bkgR; // background light
 		rgb[1] = scene->bkgG; // background light
@@ -325,72 +331,6 @@ BoundingVolume *constructBoundingVolumes(BoundingVolume *bv) {
 	return bv;
 }
 
-Intersection3D *findInterPlane(Vector3D *axis, float d, Ray3D *ray,
-															 Intersection3D *inter) {
-	float u = -(dot(ray->p, axis) + d) / dot(ray->v, axis);
-	if (isinf(u) || isnan(u) ||
-			u == 0.0f || // u == 0.0f prevents intersection at exactly camera point
-			u < 0) {     // do not intersect behind ray origin
-		inter->exists = 0;
-		return inter;
-	}
-	add(ray->p, mul(ray->v, u, inter->point), inter->point);
-	inter->exists = 1;
-	return inter;
-}
-
-// return 1 if inter exists
-int checkInterBV(BoundingVolume *bv, Ray3D *ray) {
-
-	Intersection3D inter;
-	inter.point = (Vector3D *)malloc(sizeof(Vector3D));
-
-	findInterPlane(&AXIS_X, -bv->low.x, ray, &inter);
-	if (inter.exists) {
-		if (inter.point->y > bv->low.y && inter.point->y < bv->high.y && //
-				inter.point->z > bv->low.z && inter.point->z < bv->high.z) {
-			return 1;
-		}
-	}
-	findInterPlane(&AXIS_X, -bv->high.x, ray, &inter);
-	if (inter.exists) {
-		if (inter.point->y > bv->low.y && inter.point->y < bv->high.y && //
-				inter.point->z > bv->low.z && inter.point->z < bv->high.z) {
-			return 1;
-		}
-	}
-	findInterPlane(&AXIS_Y, -bv->low.y, ray, &inter);
-	if (inter.exists) {
-		if (inter.point->x > bv->low.x && inter.point->x < bv->high.x && //
-				inter.point->z > bv->low.z && inter.point->z < bv->high.z) {
-			return 1;
-		}
-	}
-	findInterPlane(&AXIS_Y, -bv->high.y, ray, &inter);
-	if (inter.exists) {
-		if (inter.point->x > bv->low.x && inter.point->x < bv->high.x && //
-				inter.point->z > bv->low.z && inter.point->z < bv->high.z) {
-			return 1;
-		}
-	}
-	findInterPlane(&AXIS_Z, -bv->low.z, ray, &inter);
-	if (inter.exists) {
-		if (inter.point->x > bv->low.x && inter.point->x < bv->high.x && //
-				inter.point->y > bv->low.y && inter.point->y < bv->high.y) {
-			return 1;
-		}
-	}
-	findInterPlane(&AXIS_Z, -bv->high.z, ray, &inter);
-	if (inter.exists) {
-		if (inter.point->x > bv->low.x && inter.point->x < bv->high.x && //
-				inter.point->y > bv->low.y && inter.point->y < bv->high.y) {
-			return 1;
-		}
-	}
-
-	return 0;
-}
-
 // inspiration: http://www.cs.utah.edu/~awilliam/box/box.pdf
 int smitsBoxIntersect(BoundingVolume *bv, Ray3D *ray) {
 	float tmin, tmax, tymin, tymax, tzmin, tzmax;
@@ -433,114 +373,56 @@ int smitsBoxIntersect(BoundingVolume *bv, Ray3D *ray) {
 	return (tmax > 0);
 }
 
-// deep copy an intersection object
-Intersection3D *copyIntersection(Intersection3D *o, Intersection3D *i) {
-	//	static int count = 0;
-	//	count ++;
-	//	if (count % 100000 == 0) {
-	//		printf("%d \n", count);
-	//	}
-
-	o->point->x = i->point->x;
-	o->point->y = i->point->y;
-	o->point->z = i->point->z;
-	o->exists = i->exists;
-
-	return o;
-}
-
 // if intersects bounding volume:
 // if bv.nTriangles > 0
 //   find min intersection with triangles
 // if bv.nChildren > 0
 //   find min intersection with bounding volumes
 // return min
-Intersection3D *findIntersectionBV(BoundingVolume *bv, Ray3D *ray) {
-	//	 if (checkInterBV(bv, ray)) {
+Intersection3D *findIntersectionBV(BoundingVolume *bv, Ray3D *ray,
+																	 Intersection3D *inter) {
+
 	if (smitsBoxIntersect(bv, ray)) {
 
-		Intersection3D *intersection =
-				(Intersection3D *)malloc(sizeof(Intersection3D));
-		intersection->point = (Vector3D *)malloc(sizeof(Vector3D));
-		intersection->exists = 0;
-
 		Intersection3D tempIntersection;
-		Vector3D tip;
-		tempIntersection.point = &tip;
+		tempIntersection.exists = 0;
 
 		float minDist = FLT_MAX;
 		float tempDist;
 
 		// triangle intersections
 		for (int i = 0; i < bv->nTriangles; i++) {
-			tempIntersection.exists = 1;
 			intersect(ray, *(bv->triangles + i), &tempIntersection);
 
 			if (tempIntersection.exists) {
-				tempDist = dist(tempIntersection.point, ray->p);
+				tempDist = distSqrd(&tempIntersection.point, ray->p);
 				if (tempDist < minDist) {
-					copyIntersection(intersection, &tempIntersection);
-					intersection->triangle = *(bv->triangles + i);
+					inter->point = tempIntersection.point;
+					inter->triangle = *(bv->triangles + i);
+					inter->exists = 1;
 					minDist = tempDist;
 				}
 			}
 		}
 
-		Intersection3D *pTempIntersection;
 		// children intersections
 		for (int i = 0; i < bv->nChildren; i++) {
-			pTempIntersection = findIntersectionBV(bv->children + i, ray);
-			if (pTempIntersection) {
-				tempDist = dist(pTempIntersection->point, ray->p);
+			findIntersectionBV(bv->children + i, ray, &tempIntersection);
+			if (tempIntersection.exists) {
+				tempDist = distSqrd(&tempIntersection.point, ray->p);
 				if (tempDist < minDist) {
-					copyIntersection(intersection, pTempIntersection);
-					intersection->triangle = pTempIntersection->triangle;
+					inter->point = tempIntersection.point;
+					inter->triangle = tempIntersection.triangle;
+					inter->exists = 1;
 					minDist = tempDist;
 				}
 			}
 		}
 
-		intersection->originalRay = ray;
-		return intersection->exists ? intersection : 0;
+		return inter;
 	}
-	return 0;
-}
-
-// finds an intersection between the ray and the scene
-// returns 0 if no intersection found.
-// TODO: prevent dynamic allocation of intersection objects
-Intersection3D *findIntersection(Scene *scene, Ray3D *ray) {
-
-	Intersection3D *intersection =
-			(Intersection3D *)malloc(sizeof(Intersection3D));
-	intersection->point = (Vector3D *)malloc(sizeof(Vector3D));
-	intersection->exists = 0;
-
-	Intersection3D *tempIntersection =
-			(Intersection3D *)malloc(sizeof(Intersection3D));
-	tempIntersection->point = (Vector3D *)malloc(sizeof(Vector3D));
-
-	float minDist = FLT_MAX;
-	float tempDist;
-
-	for (int i = 0; i < scene->nTriangles; i++) {
-		tempIntersection->exists = 1;
-		intersect(ray, scene->triangles + i, tempIntersection);
-
-		if (tempIntersection->exists) {
-			tempDist = dist(tempIntersection->point, ray->p);
-			if (tempDist < minDist) {
-				copyIntersection(intersection, tempIntersection);
-				intersection->triangle = scene->triangles + i;
-				minDist = tempDist;
-			}
-		}
-	}
-
-	free(tempIntersection);
-	intersection->originalRay = ray;
-
-	return intersection->exists ? intersection : 0;
+	inter->exists = 0;
+	return inter;
 }
 
 // gets a color from a specific intersection and calls rayTrace recursively
@@ -549,8 +431,6 @@ float *getColor(Camera *camera, Scene *scene, Intersection3D *intersection,
 								int depth, float *rgb) {
 	// I = Ie + Ka Ial + Kd (N * L) Il + Ks (V * R)^n Ii
 
-	//	printf("gc1 \n");
-
 	Triangle3D *t = intersection->triangle;
 
 	Vector3D normal = *t->plane->v; // normal
@@ -558,10 +438,6 @@ float *getColor(Camera *camera, Scene *scene, Intersection3D *intersection,
 		sub(&ORIGIN_3D, &normal, &normal);
 	}
 	Vector3D *view = intersection->originalRay->v;
-	//	printf("gc2 \n");
-
-	float ia = scene->ambientLight;
-	float ie = t->k_e;
 
 	float id = 0;
 	float is = 0;
@@ -585,7 +461,7 @@ float *getColor(Camera *camera, Scene *scene, Intersection3D *intersection,
 		reflectedRay.p = &rrp;
 		reflectedRay.v = &rrv;
 		Vector3D eps;
-		add(intersection->point, mul(&normal, .0001f, &eps), reflectedRay.p);
+		add(&intersection->point, mul(&normal, .0001f, &eps), reflectedRay.p);
 		reflectedRay.v = &reflectedVector;
 
 		float reflectedColors[3];
@@ -596,9 +472,9 @@ float *getColor(Camera *camera, Scene *scene, Intersection3D *intersection,
 		ir_b = t->k_s * reflectedColors[2];
 	}
 
-	rgb[0] = t->colorR * (ia + id + ie) + is + ir_r;
-	rgb[1] = t->colorG * (ia + id + ie) + is + ir_g;
-	rgb[2] = t->colorB * (ia + id + ie) + is + ir_b;
+	rgb[0] = t->colorR * (scene->ambientLight + id + t->k_e) + is + ir_r;
+	rgb[1] = t->colorG * (scene->ambientLight + id + t->k_e) + is + ir_g;
+	rgb[2] = t->colorB * (scene->ambientLight + id + t->k_e) + is + ir_b;
 
 	return rgb;
 }
@@ -611,12 +487,12 @@ void calcPointLights(Scene *scene, Intersection3D *intersection,
 		PointLight *pl;
 		pl = &(scene->pointLights[i]);
 
-		float d = dist(intersection->point, pl->point);
+		float d = dist(&intersection->point, pl->point);
 
 		// shadows
 		Ray3D lightToInter;
 		Vector3D l;
-		sub(intersection->point, pl->point, &l);
+		sub(&intersection->point, pl->point, &l);
 		norm(&l, &l);
 
 		float lightNormalDot = dot(&l, normal);
@@ -629,8 +505,10 @@ void calcPointLights(Scene *scene, Intersection3D *intersection,
 		lightToInter.p = pl->point;
 
 		// shadow
-		Intersection3D *inter = findIntersection(scene, &lightToInter);
-		if (inter != 0 && dist(inter->point, pl->point) < d - .001f) {
+		Intersection3D inter;
+		inter.exists = 0;
+		findIntersectionBV(scene->bv, &lightToInter, &inter);
+		if (inter.exists && dist(&inter.point, pl->point) < d - .001f) {
 			continue; // not count this light source
 		}
 
@@ -675,11 +553,13 @@ void calcDirectionalLights(Scene *scene, Intersection3D *intersection,
 		lightToInter.v = &ltiv;
 		lightToInter.p = &ltip;
 		mul(dl->direction, -1, lightToInter.v);
-		add(intersection->point, mul(normal, 1.001f, lightToInter.p),
+		add(&intersection->point, mul(normal, 1.001f, lightToInter.p),
 				lightToInter.p);
 
-		Intersection3D *inter = findIntersection(scene, &lightToInter);
-		if (inter != 0) {
+		Intersection3D inter;
+		inter.exists = 0;
+		findIntersectionBV(scene->bv, &lightToInter, &inter);
+		if (inter.exists) {
 			continue; // not count this light source
 		}
 
@@ -709,7 +589,7 @@ void calcSpotLights(Scene *scene, Intersection3D *intersection,
 	for (int i = 0; i < scene->nSpotLights; i++) {
 
 		SpotLight *sl = &scene->spotLights[i];
-		float d = dist(sl->point, intersection->point);
+		float d = dist(sl->point, &intersection->point);
 
 		Vector3D lightReflectedVector;
 		sub(sl->direction,
@@ -718,7 +598,7 @@ void calcSpotLights(Scene *scene, Intersection3D *intersection,
 		norm(&lightReflectedVector, &lightReflectedVector);
 
 		Vector3D lightToInter;
-		sub(intersection->point, sl->point, &lightToInter);
+		sub(&intersection->point, sl->point, &lightToInter);
 
 		// check if light behind triangle
 		if (dot(&lightToInter, normal) > 0 || dot(sl->direction, normal) > 0) {
@@ -729,8 +609,11 @@ void calcSpotLights(Scene *scene, Intersection3D *intersection,
 		Ray3D lightToInterRay;
 		lightToInterRay.v = &lightToInter;
 		lightToInterRay.p = sl->point;
-		Intersection3D *inter = findIntersection(scene, &lightToInterRay);
-		if (inter != 0 && dist(inter->point, sl->point) < d - .001f) {
+
+		Intersection3D inter;
+		inter.exists = 0;
+		findIntersectionBV(scene->bv, &lightToInterRay, &inter);
+		if (inter.exists && dist(&inter.point, sl->point) < d - .001f) {
 			continue; // not count this light source
 		}
 

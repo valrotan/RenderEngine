@@ -70,7 +70,7 @@ void rendererInit(Renderer *renderer);
 void rayTrace(Renderer *renderer, unsigned char *screen, int width, int height);
 
 Ray3D *constructRayThroughPixel(Camera *camera, int x, int y, int width,
-																int height);
+																int height, Ray3D *ray);
 
 float *traceRay(Camera *camera, Scene *scene, Ray3D *ray, int depth,
 								float *rgb);
@@ -92,4 +92,7 @@ void calcSpotLights(Scene *scene, Intersection3D *intersection,
 
 BoundingVolume *constructBoundingVolumes(BoundingVolume *bv);
 
-Intersection3D *findIntersectionBV(BoundingVolume *bv, Ray3D *ray);
+int smitsBoxIntersect(BoundingVolume *bv, Ray3D *ray);
+
+Intersection3D *findIntersectionBV(BoundingVolume *bv, Ray3D *ray,
+																	 Intersection3D *inter);

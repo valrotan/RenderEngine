@@ -51,5 +51,5 @@ The source code is split into 3 main modules.
 - [ ] Investigate potential bug on with shadows dependent on camera position
 
 ## Render times benchmarks:
-- MacBookPro 2019 2.30 GHZ i5 : 160ms
-- Dell XPS 15 2.20 GHZ i7: 1520ms *not updated*
+- MacBookPro 2019 2.30 GHZ i5 : 83ms
+- Dell XPS 15 2.20 GHZ i7: 1520ms ***not updated***

@@ -8,12 +8,12 @@ float dot(Vector3D *a, Vector3D *b) {
 }
 
 float mag(Vector3D *v) {
-	return sqrtf(powf(v->x, 2) + powf(v->y, 2) + powf(v->z, 2));
+	return sqrtf(v->x * v->x + v->y * v->y + v->z * v->z);
 }
 
 float dot2D(Vector2D *a, Vector2D *b) { return a->x * b->x + a->y * b->y; }
 
-float mag2D(Vector2D *v) { return sqrtf(powf(v->x, 2) + powf(v->y, 2)); }
+float mag2D(Vector2D *v) { return sqrtf(v->x * v->x + v->y * v->y); }
 
 Vector3D *norm(Vector3D *v, Vector3D *out) {
 	float l = mag(v);
@@ -70,8 +70,17 @@ Vector3D *cross(Vector3D *a, Vector3D *b, Vector3D *out) {
 }
 
 float dist(Vector3D *a, Vector3D *b) {
-	return sqrtf(powf(b->x - a->x, 2) + powf(b->y - a->y, 2) +
-							 powf(b->z - a->z, 2));
+	float dx = (b->x - a->x);
+	float dy = (b->y - a->y);
+	float dz = (b->z - a->z);
+	return sqrtf(dx * dx + dy * dy + dz * dz);
+}
+
+float distSqrd(Vector3D *a, Vector3D *b) {
+	float dx = (b->x - a->x);
+	float dy = (b->y - a->y);
+	float dz = (b->z - a->z);
+	return dx * dx + dy * dy + dz * dz;
 }
 
 // Finds an intersection between the given ray and the triangle
@@ -79,11 +88,11 @@ float dist(Vector3D *a, Vector3D *b) {
 // ~2300000 calls with BVH
 // ~9400000 calls without BVH
 Intersection3D *intersect(Ray3D *r, Triangle3D *t, Intersection3D *i) {
-//	static int count = 0;
-//	count ++;
-//	if (count % 100000 == 0) {
-//		printf("%d \n", count);
-//	}
+	//	static int count = 0;
+	//	count ++;
+	//	if (count % 100000 == 0) {
+	//		printf("%d \n", count);
+	//	}
 
 	// Using Ray : P = P0 + Vu
 	// and Plane : P * N + d = 0
@@ -98,7 +107,7 @@ Intersection3D *intersect(Ray3D *r, Triangle3D *t, Intersection3D *i) {
 		return i;
 	}
 	Vector3D cameraToInter;
-	add(r->p, mul(r->v, u, &cameraToInter), i->point);
+	add(r->p, mul(r->v, u, &cameraToInter), &i->point);
 
 	// check if inside triangle bounds
 	Vector3D v1;

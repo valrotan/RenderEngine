@@ -118,9 +118,7 @@ void rayTraceDemo() {
 	scene.nSpotLights = 2;
 
 	Renderer renderer = {&camera, &scene, 0};
-	renderer.nThreads = 64;
-
-	rendererInit(&renderer);
+	renderer.nThreads = 96;
 
 	printf("Raycasting...\n");
 
@@ -128,6 +126,7 @@ void rayTraceDemo() {
 	int diff;
 	ftime(&start);
 
+	rendererInit(&renderer);
 	rayTrace(&renderer, screen, WIDTH, HEIGHT);
 	ftime(&end);
 	diff =

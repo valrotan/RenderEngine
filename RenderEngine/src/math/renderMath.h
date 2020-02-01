@@ -33,7 +33,7 @@ typedef struct {
 } Ray3D;
 
 typedef struct {
-	Vector3D *point;
+	Vector3D point;
 	Triangle3D *triangle;
 	Ray3D *originalRay;
 	int exists;
@@ -73,4 +73,5 @@ Vector3D *norm(Vector3D *v, Vector3D *out);
 float mag(Vector3D *v);
 float mag2D(Vector2D *v);
 float dist(Vector3D *a, Vector3D *b);
+float distSqrd(Vector3D *a, Vector3D *b);
 Intersection3D *intersect(Ray3D *r, Triangle3D *t, Intersection3D *out);
