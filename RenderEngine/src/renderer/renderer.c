@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <sys/timeb.h>
+#include <string.h>
 
 void printBoundingVolume(BoundingVolume *bv) {
 	for (int i = 0; i < bv->nChildren; i++) {
@@ -56,6 +57,7 @@ void rendererInit(Renderer *renderer) {
 	bv->nTriangles = renderer->scene->nTriangles;
 
 	renderer->scene->bv = constructBoundingVolumes(bv);
+//	printf("finished construction \n");
 
 	//	printf("%d \n", bv->nChildren);
 	//	printf("%d \n", bv->children->nChildren);
@@ -200,10 +202,16 @@ BoundingVolume *constructBoundingVolumes(BoundingVolume *bv) {
 
 	// determine own bounding volume points
 	{
-		Triangle3D *cur;
-		bv->low = ORIGIN_3D;
-		bv->high = ORIGIN_3D;
-		for (int i = 0; i < bv->nTriangles; i++) {
+		Triangle3D *cur = bv->triangles[0];
+
+		bv->low.x = fminf(fminf(cur->p1->x, cur->p2->x), cur->p3->x);
+		bv->low.y = fminf(fminf(cur->p1->y, cur->p2->y), cur->p3->y);
+		bv->low.z = fminf(fminf(cur->p1->z, cur->p2->z), cur->p3->z);
+		bv->high.x = fmaxf(fmaxf(cur->p1->x, cur->p2->x), cur->p3->x);
+		bv->high.y = fmaxf(fmaxf(cur->p1->y, cur->p2->y), cur->p3->y);
+		bv->high.z = fmaxf(fmaxf(cur->p1->z, cur->p2->z), cur->p3->z);
+
+		for (int i = 1; i < bv->nTriangles; i++) {
 			cur = bv->triangles[i];
 			bv->low.x =
 					fminf(bv->low.x, fminf(fminf(cur->p1->x, cur->p2->x), cur->p3->x));
@@ -221,12 +229,13 @@ BoundingVolume *constructBoundingVolumes(BoundingVolume *bv) {
 	}
 	bv->nChildren = 0;
 
-	// end at 2 triangles per volume
-	if (bv->nTriangles > 2) {
+	// end at n triangles per volume
+	if (bv->nTriangles > 1) {
 		int nLow = bv->nTriangles / 2;
+		int nHigh = bv->nTriangles - nLow;
+
 		Triangle3D **low =
 				(Triangle3D **)malloc(sizeof(Triangle3D *) * (size_t)nLow);
-		int nHigh = bv->nTriangles - nLow;
 		Triangle3D **high = (Triangle3D **)malloc( //
 				sizeof(Triangle3D *) * (size_t)nHigh);
 
@@ -236,82 +245,65 @@ BoundingVolume *constructBoundingVolumes(BoundingVolume *bv) {
 
 		if (bvDims.x >= bvDims.y && bvDims.x >= bvDims.z) { // split along x
 			// sort using x
-			// only sort the first half because we simply need to split it into two
-			for (int i = 0; i < bv->nTriangles / 2; i++) {
-				float max = -INFINITY;
-				int maxInd = 0;
+			for (int i = 0; i < bv->nTriangles - 1; i++) {
+				float min = INFINITY;
+				int minInd = i;
 				for (int j = i; j < bv->nTriangles; j++) {
 					// centroid c in axis (if you divide by 3)
-					float c = (*(bv->triangles + j))->p1->x + //
-										(*(bv->triangles + j))->p2->x + //
-										(*(bv->triangles + j))->p3->x;
-					if (c > max) {
-						max = c;
-						maxInd = j;
+					float c = bv->triangles[j]->p1->x + //
+										bv->triangles[j]->p2->x + //
+										bv->triangles[j]->p3->x;
+					if (c < min) {
+						min = c;
+						minInd = j;
 					}
 				}
-				Triangle3D *temp = bv->triangles[maxInd];
-				*(bv->triangles + maxInd) = bv->triangles[i];
-				bv->triangles[maxInd] = temp;
-			}
-			for (int i = 0; i < nLow; i++) {
-				low[i] = bv->triangles[i];
-			}
-			for (int i = 0; i < nHigh; i++) {
-				high[i] = bv->triangles[nLow + i];
+				Triangle3D *temp = bv->triangles[minInd];
+				bv->triangles[minInd] = bv->triangles[i];
+				bv->triangles[i] = temp;
 			}
 		} else if (bvDims.y >= bvDims.x && bvDims.y >= bvDims.z) { // split along y
-			// sort using x
-			for (int i = 0; i < bv->nTriangles / 2; i++) {
-				float max = -INFINITY;
-				int maxInd = 0;
+			// sort using y
+			for (int i = 0; i < bv->nTriangles - 1; i++) {
+				float min = INFINITY;
+				int minInd = i;
 				for (int j = i; j < bv->nTriangles; j++) {
 					// centroid c in axis (if you divide by 3)
-					float c = (*(bv->triangles + j))->p1->y + //
-										(*(bv->triangles + j))->p2->y + //
-										(*(bv->triangles + j))->p3->y;
-					if (c > max) {
-						max = c;
-						maxInd = j;
+					float c = bv->triangles[j]->p1->y + //
+										bv->triangles[j]->p2->y + //
+										bv->triangles[j]->p3->y;
+					if (c < min) {
+						min = c;
+						minInd = j;
 					}
 				}
-				Triangle3D *temp = bv->triangles[maxInd];
-				*(bv->triangles + maxInd) = bv->triangles[i];
-				bv->triangles[maxInd] = temp;
-			}
-			for (int i = 0; i < nLow; i++) {
-				low[i] = bv->triangles[i];
-			}
-			for (int i = nLow; i < bv->nTriangles; i++) {
-				high[i] = bv->triangles[i];
+				Triangle3D *temp = bv->triangles[minInd];
+				bv->triangles[minInd] = bv->triangles[i];
+				bv->triangles[i] = temp;
 			}
 		} else { // split along z
 			// sort using z
-			for (int i = 0; i < bv->nTriangles / 2; i++) {
-				float max = -INFINITY;
-				int maxInd = 0;
+			for (int i = 0; i < bv->nTriangles - 1; i++) {
+				float min = INFINITY;
+				int minInd = i;
 				for (int j = i; j < bv->nTriangles; j++) {
 					// centroid c in axis (if you divide by 3)
-					float c = (*(bv->triangles + j))->p1->z + //
-										(*(bv->triangles + j))->p2->z + //
-										(*(bv->triangles + j))->p3->z;
-					if (c > max) {
-						max = c;
-						maxInd = j;
+					float c = bv->triangles[j]->p1->z + //
+										bv->triangles[j]->p2->z + //
+										bv->triangles[j]->p3->z;
+					if (c < min) {
+						min = c;
+						minInd = j;
 					}
 				}
-				Triangle3D *temp = bv->triangles[maxInd];
-				*(bv->triangles + maxInd) = bv->triangles[i];
-				bv->triangles[maxInd] = temp;
-			}
-			for (int i = 0; i < nLow; i++) {
-				low[i] = bv->triangles[i];
-			}
-			for (int i = nLow; i < bv->nTriangles; i++) {
-				high[i] = bv->triangles[i];
+				Triangle3D *temp = bv->triangles[minInd];
+				bv->triangles[minInd] = bv->triangles[i];
+				bv->triangles[i] = temp;
 			}
 		}
 
+		memcpy(low, bv->triangles, sizeof (Triangle3D *) * (size_t)nLow);
+		memcpy(high, bv->triangles + nLow, sizeof (Triangle3D *) * (size_t)nHigh);
 		BoundingVolume *children =
 				(BoundingVolume *)malloc(sizeof(BoundingVolume) * 2);
 
@@ -324,7 +316,7 @@ BoundingVolume *constructBoundingVolumes(BoundingVolume *bv) {
 		bv->nChildren = 2;
 		bv->nTriangles = 0;
 
-		constructBoundingVolumes(children + 0);
+		constructBoundingVolumes(children);
 		constructBoundingVolumes(children + 1);
 	}
 
