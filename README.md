@@ -42,7 +42,6 @@ The source code is split into 3 main modules.
 - [x] Fix negative lighting bug
 - [x] Triangle orientation - agnostic code
 - [x] Do not convert float to char and back for reflections
-- [ ] Anti aliasing
 - [x] Shadows
 - [ ] Test with different view points
 - [ ] Test with different lights in different locations

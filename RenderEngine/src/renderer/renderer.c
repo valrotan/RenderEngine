@@ -3,8 +3,8 @@
 #include <math.h>
 #include <pthread.h>
 #include <stdlib.h>
-#include <sys/timeb.h>
 #include <string.h>
+#include <sys/timeb.h>
 
 void printBoundingVolume(BoundingVolume *bv) {
 	for (int i = 0; i < bv->nChildren; i++) {
@@ -57,7 +57,7 @@ void rendererInit(Renderer *renderer) {
 	bv->nTriangles = renderer->scene->nTriangles;
 
 	renderer->scene->bv = constructBoundingVolumes(bv);
-//	printf("finished construction \n");
+	//	printf("finished construction \n");
 
 	//	printf("%d \n", bv->nChildren);
 	//	printf("%d \n", bv->children->nChildren);
@@ -135,6 +135,7 @@ void rayTrace(Renderer *renderer, unsigned char *screen, int width,
 	for (int i = 0; i < renderer->nThreads; i++) {
 		pthread_join(threads[i], NULL);
 	}
+	free(threads);
 }
 
 // Constructs a ray that originates at the camera position and shoots through
@@ -302,8 +303,8 @@ BoundingVolume *constructBoundingVolumes(BoundingVolume *bv) {
 			}
 		}
 
-		memcpy(low, bv->triangles, sizeof (Triangle3D *) * (size_t)nLow);
-		memcpy(high, bv->triangles + nLow, sizeof (Triangle3D *) * (size_t)nHigh);
+		memcpy(low, bv->triangles, sizeof(Triangle3D *) * (size_t)nLow);
+		memcpy(high, bv->triangles + nLow, sizeof(Triangle3D *) * (size_t)nHigh);
 		BoundingVolume *children =
 				(BoundingVolume *)malloc(sizeof(BoundingVolume) * 2);
 
