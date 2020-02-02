@@ -62,11 +62,11 @@ unsigned char *getColor(Camera *camera, Scene *scene,
 												Intersection3D *intersection, int depth);
 
 void calcPointLights(Scene *scene, Intersection3D *intersection,
-										 Vector3D *normal, Vector3D *view, float *id, float *is);
+										 Vector3D *normal, Vector3D *view, double *id, double *is);
 
-void calcDirectionalLights(Scene *scene, Intersection3D *intersection,
-													 Vector3D *normal, Vector3D *view, float *id,
-													 float *is);
+void calcDirectionalLights(Scene* scene, Intersection3D* intersection,
+	Vector3D* normal, Vector3D* view, double* id,
+	double* is);
 
 void calcSpotLights(Scene *scene, Intersection3D *intersection,
-										Vector3D *normal, Vector3D *view, float *id, float *is);
+										Vector3D *normal, Vector3D *view, double*id, double*is);

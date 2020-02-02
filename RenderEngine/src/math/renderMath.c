@@ -3,22 +3,22 @@
 #include <math.h>
 #include <string.h>
 
-float dot(Vector3D *a, Vector3D *b) {
+double dot(Vector3D *a, Vector3D *b) {
 	return a->x * b->x + a->y * b->y + a->z * b->z;
 }
 
-float mag(Vector3D *v) {
+double mag(Vector3D *v) {
 	return sqrtf(powf(v->x, 2) + powf(v->y, 2) + powf(v->z, 2));
 }
 
-float dot2D(Vector2D *a, Vector2D *b) {
+double dot2D(Vector2D *a, Vector2D *b) {
 	return a->x * b->x + a->y * b->y;
 }
 
-float mag2D(Vector2D *v) { return sqrtf(powf(v->x, 2) + powf(v->y, 2)); }
+double mag2D(Vector2D *v) { return sqrtf(powf(v->x, 2) + powf(v->y, 2)); }
 
 Vector3D *norm(Vector3D *v, Vector3D *out) {
-	float l = mag(v);
+	double l = mag(v);
 	out->x = v->x / l;
 	out->y = v->y / l;
 	out->z = v->z / l;
@@ -43,7 +43,7 @@ Vector3D *sub(Vector3D *a, Vector3D *b, Vector3D *out) {
 	return out;
 }
 
-Vector3D *mul(Vector3D *v, float f, Vector3D *out) {
+Vector3D *mul(Vector3D *v, double f, Vector3D *out) {
 
 	out->x = v->x * f;
 	out->y = v->y * f;
@@ -52,7 +52,7 @@ Vector3D *mul(Vector3D *v, float f, Vector3D *out) {
 	return out;
 }
 
-Vector3D *divide(Vector3D *v, float f, Vector3D *out) {
+Vector3D *divide(Vector3D *v, double f, Vector3D *out) {
 
 	out->x = v->x / f;
 	out->y = v->y / f;
@@ -71,7 +71,7 @@ Vector3D *cross(Vector3D *a, Vector3D *b, Vector3D *out) {
 	return out;
 }
 
-float dist(Vector3D *a, Vector3D *b) {
+double dist(Vector3D *a, Vector3D *b) {
 	return sqrtf(powf(b->x - a->x, 2) + powf(b->y - a->y, 2) +
 							 powf(b->z - a->z, 2));
 }
@@ -85,7 +85,7 @@ Intersection3D *intersect(Ray3D *r, Triangle3D *t, Intersection3D *i) {
 	// we get    : u = -(P0 . N + d) / (V . N)
 	// Intersection point is therefore :
 	// P = P0 + Vu
-	float u = -(dot(r->p, t->plane->v) + t->plane->d) / dot(r->v, t->plane->v);
+	double u = -(dot(r->p, t->plane->v) + t->plane->d) / dot(r->v, t->plane->v);
 	if (isinf(u) || isnan(u) ||
 			u == 0.0f) { // u == 0.0f prevents intersection at exactly camera point
 		i->exists = 0;
@@ -112,9 +112,9 @@ Intersection3D *intersect(Ray3D *r, Triangle3D *t, Intersection3D *i) {
 	Vector3D n3;
 	cross(&v2, &v3, &n3);
 
-	float o1 = dot(&cameraToInter, &n1);
-	float o2 = dot(&cameraToInter, &n2);
-	float o3 = dot(&cameraToInter, &n3);
+	double o1 = dot(&cameraToInter, &n1);
+	double o2 = dot(&cameraToInter, &n2);
+	double o3 = dot(&cameraToInter, &n3);
 
 	int c = 0;
 	if (o1 < 0) {
@@ -138,9 +138,9 @@ Intersection3D *intersect(Ray3D *r, Triangle3D *t, Intersection3D *i) {
 }
 
 
-Matrix4x4 getTranslationMatrix(float x, float y, float z) {
+Matrix4x4 getTranslationMatrix(double x, double y, double z) {
 	Matrix4x4 translate;
-	float t[4][4]= {{1,0,0,x},
+	double t[4][4]= {{1,0,0,x},
 					{0,1,0,y},
 					{0,0,1,z},
 					{0,0,0,1}};
@@ -148,10 +148,10 @@ Matrix4x4 getTranslationMatrix(float x, float y, float z) {
 	return translate;
 }
 
-Matrix4x4 getScaleMatrix(float xScale, float yScale, float zScale) {
+Matrix4x4 getScaleMatrix(double xScale, double yScale, double zScale) {
 	Matrix4x4 scale; 
 	
-	float s[4][4] = {{xScale,0,0,0},
+	double s[4][4] = {{xScale,0,0,0},
 					{0,yScale,0,0},
 					{0,0,zScale,0},
 					{0,0,0,1}};
@@ -160,36 +160,36 @@ Matrix4x4 getScaleMatrix(float xScale, float yScale, float zScale) {
 	return scale;
 }
 
-float getRad(float angle) {
-	const float PI = 3.14159265359f;
+double getRad(double angle) {
+	const double PI = 3.14159265359f;
 	angle = angle * PI / 180;
 	return angle;
 }
 
-Matrix4x4 getXRotationMatrix(float angle, int rad) {
+Matrix4x4 getXRotationMatrix(double angle, int rad) {
 	if (rad != 1)
 		angle = getRad(angle);
 
 	Matrix4x4 rotateX;
-	float x[4][4]= {
+	double x[4][4]= {
 						{1,0,0,0},
-						{0,cosf(angle),-sinf(angle),0},
-						{0,sinf(angle),cosf(angle),0},
+						{0,cos(angle),-sin(angle),0},
+						{0,sin(angle),cos(angle),0},
 						{0,0,0,1}};
 	memcpy(rotateX.matrix, x, sizeof(x));
 
 	return rotateX;
 }
 
-Matrix4x4 getYRotationMatrix(float angle, int rad) {
+Matrix4x4 getYRotationMatrix(double angle, int rad) {
 	if (rad != 1)
 		angle = getRad(angle);
 
 	Matrix4x4 rotateY;
 
-	float temp[4][4] = {{cosf(angle), 0, sinf(angle), 0},
+	double temp[4][4] = {{cos(angle), 0, sin(angle), 0},
 						{0, 1, 0, 0},
-						{-sinf(angle), 0, cosf(angle), 0},
+						{-sin(angle), 0, cos(angle), 0},
 						{0,0,0,1}};
 
 	//assert(sizeof(temp) == sizeof(rotateY.matrix));
@@ -198,14 +198,14 @@ Matrix4x4 getYRotationMatrix(float angle, int rad) {
 	return rotateY;
 }
 
-Matrix4x4 getZRotationMatrix(float angle, int rad) {
+Matrix4x4 getZRotationMatrix(double angle, int rad) {
 	if (rad != 1)
 		angle = getRad(angle);
 	
 	Matrix4x4 rotateZ;
 
-	float temp[4][4] = { {cosf(angle), -sinf(angle), 0, 0},
-						{sinf(angle), cosf(angle), 0, 0},
+	double temp[4][4] = { {cos(angle), -sin(angle), 0, 0},
+						{sin(angle), cos(angle), 0, 0},
 						{0,0,1,0},
 						{0,0,0,1} };
 
@@ -219,7 +219,7 @@ Matrix4x4 getZRotationMatrix(float angle, int rad) {
 Matrix4x4 getEye() {
 	Matrix4x4 eye;
 
-	float temp[4][4] = {{1,0,0,0},
+	double temp[4][4] = {{1,0,0,0},
 						{0,1,0,0},
 						{0,0,1,0},
 						{0,0,0,1}};
@@ -238,11 +238,11 @@ Matrix4x4 getTransformationMatrix(Matrix4x4 matrices[], int size) {
 }
 
 Vector3D applyTransformation(Vector3D orig, Matrix4x4 transform) {
-	float pnt[4] = { orig.x, orig.y, orig.z, 1};
+	double pnt[4] = { orig.x, orig.y, orig.z, 1};
 	Vector3D result = {0,0,0};
-	float temp[4] = {0,0,0,0};
+	double temp[4] = {0,0,0,0};
 	for (int i = 0; i < 4; i++) {
-		float r = 0;
+		double r = 0;
 		for (int j = 0; j < 4; j++) {
 			r += transform.matrix[i][j] * pnt[j];
 		}
@@ -265,7 +265,7 @@ Matrix4x4 multiply4x4Matrices(Matrix4x4 a, Matrix4x4 b) {
 	*/
 	for (int i = 0; i < 4; i++) { // row in matrix a
  		for (int j = 0; j < 4; j++) { // current column in b
-			float r = 0;
+			double r = 0;
 			for (int k = 0; k < 4; k++) { // changin cols in a and rows in b
 				r += a.matrix[i][k] * b.matrix[k][j];
 			}

@@ -7,7 +7,7 @@
 void rayTraceDemo() {
 	printf("Starting render engine...\n");
 
-	int WIDTH = 1280, HEIGHT = 720;
+	int WIDTH = 512, HEIGHT = 512;
 
 	printf("Initializing visualizer...\n");
 	visInit(WIDTH, HEIGHT);
@@ -118,7 +118,7 @@ void rayTraceDemo() {
 	scene.nSpotLights = 2;
 
 	Renderer renderer = {&camera, &scene, 0};
-	renderer.nThreads = 32;
+	renderer.nThreads = 2;
 
 	rendererInit(&renderer);
 
