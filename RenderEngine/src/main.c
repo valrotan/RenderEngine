@@ -87,7 +87,7 @@ void rayTraceDemo() {
 	scene.kSpecularExponent = 3;
 
 	scene.triangles = t;
-	scene.nTriangles = 787;
+	scene.nTriangles = size;
 
 	PointLight *pointLights = (PointLight *)malloc(sizeof(PointLight));
 	Vector3D pointLightLoc1 = {0, -40, -50};

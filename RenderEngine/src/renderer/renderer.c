@@ -46,10 +46,10 @@ void rendererInit(Renderer *renderer) {
 		norm(t->plane->v, t->plane->v);
 		t->plane->d = -dot(t->p1, t->plane->v);
 
-		printf("init triangle : N (%.2f, %.2f, %.2f) d %.2f \n", t->plane->v->x,
-					 t->plane->v->y, t->plane->v->z, t->plane->d);
-		printf("  color : C (%f, %f, %f) \n", t->colorR, t->colorG, t->colorB);
-		printf("  refl  : C (%.2f, %.2f, %.2f) \n", t->k_d, t->k_e, t->k_s);
+//		printf("init triangle : N (%.2f, %.2f, %.2f) d %.2f \n", t->plane->v->x,
+//					 t->plane->v->y, t->plane->v->z, t->plane->d);
+//		printf("  color : C (%f, %f, %f) \n", t->colorR, t->colorG, t->colorB);
+//		printf("  refl  : C (%.2f, %.2f, %.2f) \n", t->k_d, t->k_e, t->k_s);
 	}
 	BoundingVolume *bv = malloc(sizeof(BoundingVolume));
 	// convert scene triangles to double pointers to triangles
