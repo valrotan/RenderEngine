@@ -46,10 +46,10 @@ void rendererInit(Renderer *renderer) {
 		norm(t->plane->v, t->plane->v);
 		t->plane->d = -dot(t->p1, t->plane->v);
 
-		printf("init triangle : N (%.2f, %.2f, %.2f) d %.2f \n", t->plane->v->x,
-					 t->plane->v->y, t->plane->v->z, t->plane->d);
-		printf("  color : C (%f, %f, %f) \n", t->colorR, t->colorG, t->colorB);
-		printf("  refl  : C (%.2f, %.2f, %.2f) \n", t->k_d, t->k_e, t->k_s);
+//		printf("init triangle : N (%.2f, %.2f, %.2f) d %.2f \n", t->plane->v->x,
+//					 t->plane->v->y, t->plane->v->z, t->plane->d);
+//		printf("  color : C (%f, %f, %f) \n", t->colorR, t->colorG, t->colorB);
+//		printf("  refl  : C (%.2f, %.2f, %.2f) \n", t->k_d, t->k_e, t->k_s);
 	}
 	BoundingVolume *bv = malloc(sizeof(BoundingVolume));
 	// convert scene triangles to double pointers to triangles
@@ -199,6 +199,12 @@ float *traceRay(Camera *camera, Scene *scene, Ray3D *ray, int depth,
 //   recurse into children
 BoundingVolume *constructBoundingVolumes(BoundingVolume *bv) {
 
+	if (bv->nTriangles == 0) {
+		bv->low = ORIGIN_3D;
+		bv->high = ORIGIN_3D;
+		bv->nChildren = 0;
+		return bv;
+	}
 	// determine own bounding volume points
 	{
 		Triangle3D *cur = bv->triangles[0];
