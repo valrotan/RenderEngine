@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "objParser.h"
 #include <stdio.h>
 
@@ -61,23 +62,23 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 
 				// printf("%d| VERTS: %d %d %d\n", facesCount, a, b, c);
 
-				Triangle3D trig = {aa,          bb,          cc,    0,    80 / 255.0f,
-													 80 / 255.0f, 80 / 255.0f, 0.25f, .25f, .1f};
+				Triangle3D trig = {aa, bb, cc, 0, 200 / 255.0f,
+												  20 / 255.0f, 60 / 255.0f, 0.25f, .25f, .1f};
 				faces[facesCount] = trig;
 				facesCount++;
 			}
 		}
 	}
 
-	printf("VERTC: %d\n", vertCount);
-	printf("FACEC: %d\n", facesCount);
+	//printf("VERTC: %d\n", vertCount);
+	//printf("FACEC: %d\n", facesCount);
 	*trigList = faces;
 	*size = facesCount;
 
 	line[0] = '\0';
-	printf("TRIG TEST: (%f, %f, %f)(%f, %f, %f)(%f, %f, %f)\n", faces[0].p1->x,
-				 faces[0].p1->y, faces[0].p1->z, faces[0].p2->x, faces[0].p2->y,
-				 faces[0].p2->z, faces[0].p3->x, faces[0].p3->y, faces[0].p3->z);
+	//printf("TRIG TEST: (%f, %f, %f)(%f, %f, %f)(%f, %f, %f)\n", faces[0].p1->x,
+	//			 faces[0].p1->y, faces[0].p1->z, faces[0].p2->x, faces[0].p2->y,
+	//			 faces[0].p2->z, faces[0].p3->x, faces[0].p3->y, faces[0].p3->z);
 	if (fclose(fpIn) != 0) {
 		exit(3);
 	}

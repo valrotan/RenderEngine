@@ -8,7 +8,7 @@
 void rayTraceDemo() {
 	printf("Starting render engine...\n");
 
-	int WIDTH = 520, HEIGHT = 520;
+	int WIDTH = 1080, HEIGHT = 750;
 
 	printf("Initializing visualizer...\n");
 	visInit(WIDTH, HEIGHT);
@@ -16,8 +16,8 @@ void rayTraceDemo() {
 
 	printf("Initializing renderer...\n");
 	Camera camera;
-	Matrix4x4 trans[] = {getXRotationMatrix(0, 0),
-											 getTranslationMatrix(0, -20, 170)};
+	Matrix4x4 trans[] = {getXRotationMatrix(-50, 0),
+											 getTranslationMatrix(10, 0, 100)};
 	Matrix4x4 camToWorld = getTransformationMatrix(trans, 2);
 
 	camera.width = WIDTH;
@@ -87,7 +87,7 @@ void rayTraceDemo() {
 	scene.kSpecularExponent = 3;
 
 	scene.triangles = t;
-	scene.nTriangles = 787;
+	scene.nTriangles = size;
 
 	PointLight *pointLights = (PointLight *)malloc(sizeof(PointLight));
 	Vector3D pointLightLoc1 = {0, -40, -50};
