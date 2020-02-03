@@ -205,7 +205,6 @@ BoundingVolume *constructBoundingVolumes(BoundingVolume *bv) {
 		bv->nChildren = 0;
 		return bv;
 	}
-
 	// determine own bounding volume points
 	{
 		Triangle3D *cur = bv->triangles[0];
