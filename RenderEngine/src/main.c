@@ -8,7 +8,7 @@
 void rayTraceDemo() {
 	printf("Starting render engine...\n");
 
-	int WIDTH = 1080, HEIGHT = 750;
+	int WIDTH = 1280, HEIGHT = 720;
 
 	printf("Initializing visualizer...\n");
 	visInit(WIDTH, HEIGHT);
@@ -16,8 +16,8 @@ void rayTraceDemo() {
 
 	printf("Initializing renderer...\n");
 	Camera camera;
-	Matrix4x4 trans[] = {getXRotationMatrix(-50, 0),
-											 getTranslationMatrix(10, 0, 100)};
+	Matrix4x4 trans[] = {getXRotationMatrix(-45, 0),
+											 getTranslationMatrix(10, 10, 75)};
 	Matrix4x4 camToWorld = getTransformationMatrix(trans, 2);
 
 	camera.width = WIDTH;
