@@ -205,6 +205,7 @@ BoundingVolume *constructBoundingVolumes(BoundingVolume *bv) {
 		bv->high = ORIGIN_3D;
 		for (int i = 0; i < bv->nTriangles; i++) {
 			cur = bv->triangles[i];
+			printf("cur (%f, %f), %f \n", cur->p1->x, cur->p2->x, bv->low.x);
 			bv->low.x =
 					fminf(bv->low.x, fminf(fminf(cur->p1->x, cur->p2->x), cur->p3->x));
 			bv->low.y =

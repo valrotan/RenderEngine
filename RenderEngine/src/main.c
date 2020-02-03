@@ -1,5 +1,6 @@
 #include "renderer/renderer.h"
 #include "visualizer/visualizer.h"
+#include "parsing\objParser.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/timeb.h>
@@ -7,7 +8,7 @@
 void rayTraceDemo() {
 	printf("Starting render engine...\n");
 
-	int WIDTH = 1280, HEIGHT = 720;
+	int WIDTH = 520, HEIGHT = 520;
 
 	printf("Initializing visualizer...\n");
 	visInit(WIDTH, HEIGHT);
@@ -23,49 +24,58 @@ void rayTraceDemo() {
 	camera.cameraToWorld = camToWorld;
 
 	Triangle3D t[8];
+	int size;
+	parseObj("RenderEngine/input/tinker.obj", &t, &size);
 
-	// cool triangles
-	Vector3D a = {0, -50, 0};
-	Vector3D b = {50, -50, -50};
-	Vector3D c = {50, -100, -50};
-	Vector3D d = {0, -50, 0};
-	Vector3D e = {0, -100, 0};
-	Vector3D f = {50, -100, -50};
-	Triangle3D temp1 = {&a, &b, &c, 0, 200/255.0f, 0, 0, 0, .25f, .25f};
-	Triangle3D temp2 = {&d, &e, &f, 0, 200/255.0f, 0, 0, 0, .25f, .25f};
-	Vector3D ab = {0, -50, 0};
-	Vector3D bb = {-50, -50, -50};
-	Vector3D cb = {-50, -100, -50};
-	Vector3D db = {0, -50, 0};
-	Vector3D eb = {-50, -100, -50};
-	Vector3D fb = {0, -100, 0};
-	Triangle3D temp3 = {&ab, &bb, &cb, 0, 50/255.0f, 200/255.0f, 50/255.0f, 0, .25f, .25f};
-	Triangle3D temp4 = {&db, &eb, &fb, 0, 50/255.0f, 200/255.0f, 50/255.0f, 0, .25f, .25f};
-	Vector3D ac = {0, -50, 0};
-	Vector3D bc = {-50, -50, -50};
-	Vector3D cc = {0, -50, -100};
-	Vector3D dc = {0, -50, 0};
-	Vector3D ec = {50, -50, -50};
-	Vector3D fc = {0, -50, -100};
-	Triangle3D temp5 = {&ac, &bc, &cc, 0, 50/255.0f, 50/255.0f, 200/255.0f, 0, .25f, .25f};
-	Triangle3D temp6 = {&dc, &ec, &fc, 0, 50/255.0f, 50/255.0f, 200/255.0f, 0, .25f, .25f};
-	Vector3D ad = {0, -10, 10};
-	Vector3D bd = {60, -60, -20};
-	Vector3D cd = {60, -10, -20};
-	Vector3D dd = {0, -10, 10};
-	Vector3D ed = {-60, -10, -20};
-	Vector3D fd = {-60, -60, -20};
-	Triangle3D temp7 = {&ad, &bd, &cd, 0, 80/255.0f, 80/255.0f, 80/255.0f, 0.25f, .25f, .1f};
-	Triangle3D temp8 = {&dd, &ed, &fd, 0, 50/255.0f, 50/255.0f, 200/255.0f, 0, .25f, .25f};
+	//for (int i = 0; i < size; i++) {
+	//	printf("%3d|TRIG TEST: (%f, %f, %f)(%f, %f, %f)(%f, %f, %f)\n",
+	//		i,t[i].p1->x, t[i].p1->y, t[i].p1->z,
+	//		t[i].p2->x, t[i].p2->y, t[i].p2->z,
+	//		t[i].p3->x, t[i].p3->y, t[i].p3->z);
+	//}
 
-	t[0] = temp1;
-	t[1] = temp2;
-	t[2] = temp3;
-	t[3] = temp4;
-	t[4] = temp5;
-	t[5] = temp6;
-	t[6] = temp7;
-	t[7] = temp8;
+	//// cool triangles
+	//Vector3D a = { 0, -50, 0 };
+	//Vector3D b = { 50, -50, -50 };
+	//Vector3D c = { 50, -100, -50 };
+	//Vector3D d = { 0, -50, 0 };
+	//Vector3D e = { 0, -100, 0 };
+	//Vector3D f = { 50, -100, -50 };
+	//Triangle3D temp1 = { &a, &b, &c, 0, 200 / 255.0f, 0, 0, 0, .25f, .25f };
+	//Triangle3D temp2 = { &d, &e, &f, 0, 200 / 255.0f, 0, 0, 0, .25f, .25f };
+	//Vector3D ab = { 0, -50, 0 };
+	//Vector3D bb = { -50, -50, -50 };
+	//Vector3D cb = { -50, -100, -50 };
+	//Vector3D db = { 0, -50, 0 };
+	//Vector3D eb = { -50, -100, -50 };
+	//Vector3D fb = { 0, -100, 0 };
+	//Triangle3D temp3 = { &ab, &bb, &cb, 0, 50 / 255.0f, 200 / 255.0f, 50 / 255.0f, 0, .25f, .25f };
+	//Triangle3D temp4 = { &db, &eb, &fb, 0, 50 / 255.0f, 200 / 255.0f, 50 / 255.0f, 0, .25f, .25f };
+	//Vector3D ac = { 0, -50, 0 };
+	//Vector3D bc = { -50, -50, -50 };
+	//Vector3D cc = { 0, -50, -100 };
+	//Vector3D dc = { 0, -50, 0 };
+	//Vector3D ec = { 50, -50, -50 };
+	//Vector3D fc = { 0, -50, -100 };
+	//Triangle3D temp5 = { &ac, &bc, &cc, 0, 50 / 255.0f, 50 / 255.0f, 200 / 255.0f, 0, .25f, .25f };
+	//Triangle3D temp6 = { &dc, &ec, &fc, 0, 50 / 255.0f, 50 / 255.0f, 200 / 255.0f, 0, .25f, .25f };
+	//Vector3D ad = { 0, -10, 10 };
+	//Vector3D bd = { 60, -60, -20 };
+	//Vector3D cd = { 60, -10, -20 };
+	//Vector3D dd = { 0, -10, 10 };
+	//Vector3D ed = { -60, -10, -20 };
+	//Vector3D fd = { -60, -60, -20 };
+	//Triangle3D temp7 = { &ad, &bd, &cd, 0, 80 / 255.0f, 80 / 255.0f, 80 / 255.0f, 0.25f, .25f, .1f };
+	//Triangle3D temp8 = { &dd, &ed, &fd, 0, 50 / 255.0f, 50 / 255.0f, 200 / 255.0f, 0, .25f, .25f };
+
+	//t[0] = temp1;
+	//t[1] = temp2;
+	//t[2] = temp3;
+	//t[3] = temp4;
+	//t[4] = temp5;
+	//t[5] = temp6;
+	//t[6] = temp7;
+	//t[7] = temp8;
 
 	Scene scene;
 	scene.bkgR = .3f;
@@ -141,5 +151,9 @@ void rayTraceDemo() {
 
 int main() {
 	rayTraceDemo();
+	//Triangle3D* trigs;
+	//int size;
+	//parseObj("RenderEngine/input/tinker.obj", &trigs, &size);
+	//printf("---------SIZE: %d\n", size);
 	return 0;
 }
