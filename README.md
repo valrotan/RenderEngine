@@ -14,8 +14,9 @@ Just open the Visual Studio project `RenderingEngine.sln`
 ```bash
 git clone https://github.com/valrotan/RenderEngine.git
 cd RenderEngine/RenderEngine
-cmake -S . -B build
+mkdir build
 cd build
+cmake ..
 make
 ./engineRun
 ```
@@ -50,5 +51,5 @@ The source code is split into 3 main modules.
 - [ ] Investigate potential bug on with shadows dependent on camera position
 
 ## Render times benchmarks:
-- MacBookPro 2019 2.30 GHZ i5 : 54ms
+- MacBookPro 2019 2.30 GHZ i5 : 52ms
 - Dell XPS 15 2.20 GHZ i7: 1520ms ***not updated***
