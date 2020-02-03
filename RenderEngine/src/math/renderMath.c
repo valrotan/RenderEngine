@@ -243,21 +243,25 @@ Matrix4x4 getTransformationMatrix(Matrix4x4 matrices[], int size) {
 	return result;
 }
 
-Vector3D applyTransformation(Vector3D orig, Matrix4x4 transform) {
-	float pnt[4] = {orig.x, orig.y, orig.z, 1};
-	Vector3D result = {0, 0, 0};
-	float temp[4] = {0, 0, 0, 0};
-	for (int i = 0; i < 4; i++) {
-		float r = 0;
-		for (int j = 0; j < 4; j++) {
-			r += transform.matrix[i][j] * pnt[j];
-		}
-		temp[i] = r;
+Vector3D *applyTransformation(Vector3D *orig, Matrix4x4 *transform,
+															Vector3D *out) {
+	float pnt[4] = {orig->x, orig->y, orig->z, 1};
+	float r = 0;
+	for (int j = 0; j < 4; j++) {
+		r += transform->matrix[0][j] * pnt[j];
 	}
-	result.x = temp[0];
-	result.y = temp[1];
-	result.z = temp[2];
-	return result;
+	out->x = r;
+	r = 0;
+	for (int j = 0; j < 4; j++) {
+		r += transform->matrix[1][j] * pnt[j];
+	}
+	out->y = r;
+	r = 0;
+	for (int j = 0; j < 4; j++) {
+		r += transform->matrix[2][j] * pnt[j];
+	}
+	out->z = r;
+	return out;
 }
 
 Matrix4x4 multiply4x4Matrices(Matrix4x4 a, Matrix4x4 b) {

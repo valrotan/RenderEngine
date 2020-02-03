@@ -19,6 +19,8 @@ void rayTraceDemo() {
 											 getTranslationMatrix(0, -20, 170)};
 	Matrix4x4 camToWorld = getTransformationMatrix(trans, 2);
 
+	camera.width = WIDTH;
+	camera.height = HEIGHT;
 	camera.fov = 60;
 	camera.cameraToWorld = camToWorld;
 
@@ -127,7 +129,7 @@ void rayTraceDemo() {
 	ftime(&start);
 
 	rendererInit(&renderer);
-	rayTrace(&renderer, screen, WIDTH, HEIGHT);
+	rayTrace(&renderer, screen);
 	ftime(&end);
 	diff =
 			(int)(1000.0 * (end.time - start.time) + (end.millitm - start.millitm));

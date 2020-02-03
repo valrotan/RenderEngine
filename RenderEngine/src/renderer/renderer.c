@@ -29,6 +29,11 @@ void printBoundingVolume(BoundingVolume *bv) {
 }
 
 void rendererInit(Renderer *renderer) {
+
+	Camera *cam = renderer->camera;
+	cam->scale = tanf(getRad(cam->fov / 2));
+	cam->aspectRatio = (float)(cam->width) / cam->height;
+
 	for (int i = 0; i < renderer->scene->nTriangles; i++) {
 		Triangle3D *t = &renderer->scene->triangles[i];
 		Vector3D v1;
@@ -74,14 +79,16 @@ void *rayTraceSegment(void *pSegment) {
 	Vector3D rp, rv;
 	ray.p = &rp;
 	ray.v = &rv;
+	applyTransformation(&ORIGIN_3D, &rSegment->renderer->camera->cameraToWorld, ray.p);
+
 	unsigned char *p = rSegment->screen;
 
+	float rgb[3];
 	for (int y = rSegment->startLine; y < rSegment->stopLine; y++) {
 		for (int x = 0; x < rSegment->width; x++) {
 			constructRayThroughPixel(rSegment->renderer->camera, x, y,
 															 rSegment->width, rSegment->height, &ray);
 
-			float rgb[3];
 			traceRay(rSegment->renderer->camera, rSegment->renderer->scene, &ray, 3,
 							 rgb);
 
@@ -114,20 +121,19 @@ void *rayTraceSegment(void *pSegment) {
 // TODO: split in grid maybe to utilize threads more
 // Fun thing to try: plot execution time of thread vs line number to see
 //     how threads are utilized when split this way
-void rayTrace(Renderer *renderer, unsigned char *screen, int width,
-							int height) {
+void rayTrace(Renderer *renderer, unsigned char *screen) {
 
 	pthread_t *threads = (pthread_t *)malloc(sizeof(pthread_t) * //
 																					 (size_t)renderer->nThreads);
 	RendererSegment *rSegments = (RendererSegment *)malloc(
 			sizeof(RendererSegment) * (size_t)renderer->nThreads);
-	float lines = (float)height / renderer->nThreads;
+	float lines = (float) (renderer->camera->height) / renderer->nThreads;
 
 	for (int i = 0; i < renderer->nThreads; i++, rSegments++) {
 		rSegments->renderer = renderer;
-		rSegments->screen = screen + 3 * width * (int)(i * lines + .5f);
-		rSegments->width = width;
-		rSegments->height = height;
+		rSegments->screen = screen + 3 * renderer->camera->width * (int)(i * lines + .5f);
+		rSegments->width = renderer->camera->width;
+		rSegments->height = renderer->camera->height;
 		rSegments->startLine = (int)(i * lines + .5f);
 		rSegments->stopLine = (int)((i + 1) * lines + .5f);
 		pthread_create(threads + i, NULL, rayTraceSegment, (void *)rSegments);
@@ -140,26 +146,18 @@ void rayTrace(Renderer *renderer, unsigned char *screen, int width,
 
 // Constructs a ray that originates at the camera position and shoots through
 // the given pixel (x,y)
+// MBP performance: ~50ms for HD on single threadb
 Ray3D *constructRayThroughPixel(Camera *camera, int x, int y, int imageWidth,
 																int imageHeight, Ray3D *ray) {
 
-	float aspectRatio = (float)imageWidth / imageHeight;
-	float scale = tanf(getRad(camera->fov / 2));
-
 	// TODO: move all the constants to the loop in rayTrace
-	float Px = (2 * (x + 0.5f) / imageWidth - 1) * scale * aspectRatio;
-	float Py = (1 - 2 * (y + 0.5f) / imageHeight) * scale;
+	float Px = (2 * (x + 0.5f) / imageWidth - 1) * camera->scale * camera->aspectRatio;
+	float Py = (1 - 2 * (y + 0.5f) / imageHeight) * camera->scale;
 
-	Vector3D origin = {0, 0, 0};
-	origin = applyTransformation(origin, camera->cameraToWorld);
 	Vector3D pWorld = {Px, Py, -1};
-	pWorld = applyTransformation(pWorld, camera->cameraToWorld);
+	applyTransformation(&pWorld, &camera->cameraToWorld, &pWorld);
 
-	ray->p->x = origin.x;
-	ray->p->y = origin.y;
-	ray->p->z = origin.z;
-
-	sub(&pWorld, &origin, ray->v);
+	sub(&pWorld, ray->p, ray->v);
 	norm(ray->v, ray->v);
 
 	return ray;
