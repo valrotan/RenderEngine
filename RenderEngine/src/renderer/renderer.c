@@ -3,6 +3,7 @@
 #include <math.h>
 #include <pthread.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/timeb.h>
 
 void printBoundingVolume(BoundingVolume *bv) {
@@ -28,6 +29,11 @@ void printBoundingVolume(BoundingVolume *bv) {
 }
 
 void rendererInit(Renderer *renderer) {
+
+	Camera *cam = renderer->camera;
+	cam->scale = tanf(getRad(cam->fov / 2));
+	cam->aspectRatio = (float)(cam->width) / cam->height;
+
 	for (int i = 0; i < renderer->scene->nTriangles; i++) {
 		Triangle3D *t = &renderer->scene->triangles[i];
 		Vector3D v1;
@@ -56,6 +62,7 @@ void rendererInit(Renderer *renderer) {
 	bv->nTriangles = renderer->scene->nTriangles;
 
 	renderer->scene->bv = constructBoundingVolumes(bv);
+	//	printf("finished construction \n");
 
 	//	printf("%d \n", bv->nChildren);
 	//	printf("%d \n", bv->children->nChildren);
@@ -72,14 +79,16 @@ void *rayTraceSegment(void *pSegment) {
 	Vector3D rp, rv;
 	ray.p = &rp;
 	ray.v = &rv;
+	applyTransformation(&ORIGIN_3D, &rSegment->renderer->camera->cameraToWorld, ray.p);
+
 	unsigned char *p = rSegment->screen;
 
+	float rgb[3];
 	for (int y = rSegment->startLine; y < rSegment->stopLine; y++) {
 		for (int x = 0; x < rSegment->width; x++) {
 			constructRayThroughPixel(rSegment->renderer->camera, x, y,
 															 rSegment->width, rSegment->height, &ray);
 
-			float rgb[3];
 			traceRay(rSegment->renderer->camera, rSegment->renderer->scene, &ray, 3,
 							 rgb);
 
@@ -112,20 +121,19 @@ void *rayTraceSegment(void *pSegment) {
 // TODO: split in grid maybe to utilize threads more
 // Fun thing to try: plot execution time of thread vs line number to see
 //     how threads are utilized when split this way
-void rayTrace(Renderer *renderer, unsigned char *screen, int width,
-							int height) {
+void rayTrace(Renderer *renderer, unsigned char *screen) {
 
 	pthread_t *threads = (pthread_t *)malloc(sizeof(pthread_t) * //
 																					 (size_t)renderer->nThreads);
 	RendererSegment *rSegments = (RendererSegment *)malloc(
 			sizeof(RendererSegment) * (size_t)renderer->nThreads);
-	float lines = (float)height / renderer->nThreads;
+	float lines = (float) (renderer->camera->height) / renderer->nThreads;
 
 	for (int i = 0; i < renderer->nThreads; i++, rSegments++) {
 		rSegments->renderer = renderer;
-		rSegments->screen = screen + 3 * width * (int)(i * lines + .5f);
-		rSegments->width = width;
-		rSegments->height = height;
+		rSegments->screen = screen + 3 * renderer->camera->width * (int)(i * lines + .5f);
+		rSegments->width = renderer->camera->width;
+		rSegments->height = renderer->camera->height;
 		rSegments->startLine = (int)(i * lines + .5f);
 		rSegments->stopLine = (int)((i + 1) * lines + .5f);
 		pthread_create(threads + i, NULL, rayTraceSegment, (void *)rSegments);
@@ -133,30 +141,23 @@ void rayTrace(Renderer *renderer, unsigned char *screen, int width,
 	for (int i = 0; i < renderer->nThreads; i++) {
 		pthread_join(threads[i], NULL);
 	}
+	free(threads);
 }
 
 // Constructs a ray that originates at the camera position and shoots through
 // the given pixel (x,y)
+// MBP performance: ~50ms for HD on single threadb
 Ray3D *constructRayThroughPixel(Camera *camera, int x, int y, int imageWidth,
 																int imageHeight, Ray3D *ray) {
 
-	float aspectRatio = (float)imageWidth / imageHeight;
-	float scale = tanf(getRad(camera->fov / 2));
-
 	// TODO: move all the constants to the loop in rayTrace
-	float Px = (2 * (x + 0.5f) / imageWidth - 1) * scale * aspectRatio;
-	float Py = (1 - 2 * (y + 0.5f) / imageHeight) * scale;
+	float Px = (2 * (x + 0.5f) / imageWidth - 1) * camera->scale * camera->aspectRatio;
+	float Py = (1 - 2 * (y + 0.5f) / imageHeight) * camera->scale;
 
-	Vector3D origin = {0, 0, 0};
-	origin = applyTransformation(origin, camera->cameraToWorld);
 	Vector3D pWorld = {Px, Py, -1};
-	pWorld = applyTransformation(pWorld, camera->cameraToWorld);
+	applyTransformation(&pWorld, &camera->cameraToWorld, &pWorld);
 
-	ray->p->x = origin.x;
-	ray->p->y = origin.y;
-	ray->p->z = origin.z;
-
-	sub(&pWorld, &origin, ray->v);
+	sub(&pWorld, ray->p, ray->v);
 	norm(ray->v, ray->v);
 
 	return ray;
@@ -198,14 +199,26 @@ float *traceRay(Camera *camera, Scene *scene, Ray3D *ray, int depth,
 //   recurse into children
 BoundingVolume *constructBoundingVolumes(BoundingVolume *bv) {
 
-	// determine own bounding volume points
-	{
-		Triangle3D *cur;
+	if (bv->nTriangles == 0) {
 		bv->low = ORIGIN_3D;
 		bv->high = ORIGIN_3D;
-		for (int i = 0; i < bv->nTriangles; i++) {
+		bv->nChildren = 0;
+		return bv;
+	}
+
+	// determine own bounding volume points
+	{
+		Triangle3D *cur = bv->triangles[0];
+
+		bv->low.x = fminf(fminf(cur->p1->x, cur->p2->x), cur->p3->x);
+		bv->low.y = fminf(fminf(cur->p1->y, cur->p2->y), cur->p3->y);
+		bv->low.z = fminf(fminf(cur->p1->z, cur->p2->z), cur->p3->z);
+		bv->high.x = fmaxf(fmaxf(cur->p1->x, cur->p2->x), cur->p3->x);
+		bv->high.y = fmaxf(fmaxf(cur->p1->y, cur->p2->y), cur->p3->y);
+		bv->high.z = fmaxf(fmaxf(cur->p1->z, cur->p2->z), cur->p3->z);
+
+		for (int i = 1; i < bv->nTriangles; i++) {
 			cur = bv->triangles[i];
-			printf("cur (%f, %f), %f \n", cur->p1->x, cur->p2->x, bv->low.x);
 			bv->low.x =
 					fminf(bv->low.x, fminf(fminf(cur->p1->x, cur->p2->x), cur->p3->x));
 			bv->low.y =
@@ -222,12 +235,13 @@ BoundingVolume *constructBoundingVolumes(BoundingVolume *bv) {
 	}
 	bv->nChildren = 0;
 
-	// end at 2 triangles per volume
-	if (bv->nTriangles > 2) {
+	// end at n triangles per volume
+	if (bv->nTriangles > 1) {
 		int nLow = bv->nTriangles / 2;
+		int nHigh = bv->nTriangles - nLow;
+
 		Triangle3D **low =
 				(Triangle3D **)malloc(sizeof(Triangle3D *) * (size_t)nLow);
-		int nHigh = bv->nTriangles - nLow;
 		Triangle3D **high = (Triangle3D **)malloc( //
 				sizeof(Triangle3D *) * (size_t)nHigh);
 
@@ -237,82 +251,65 @@ BoundingVolume *constructBoundingVolumes(BoundingVolume *bv) {
 
 		if (bvDims.x >= bvDims.y && bvDims.x >= bvDims.z) { // split along x
 			// sort using x
-			// only sort the first half because we simply need to split it into two
-			for (int i = 0; i < bv->nTriangles / 2; i++) {
-				float max = -INFINITY;
-				int maxInd = 0;
+			for (int i = 0; i < bv->nTriangles - 1; i++) {
+				float min = INFINITY;
+				int minInd = i;
 				for (int j = i; j < bv->nTriangles; j++) {
 					// centroid c in axis (if you divide by 3)
-					float c = (*(bv->triangles + j))->p1->x + //
-										(*(bv->triangles + j))->p2->x + //
-										(*(bv->triangles + j))->p3->x;
-					if (c > max) {
-						max = c;
-						maxInd = j;
+					float c = bv->triangles[j]->p1->x + //
+										bv->triangles[j]->p2->x + //
+										bv->triangles[j]->p3->x;
+					if (c < min) {
+						min = c;
+						minInd = j;
 					}
 				}
-				Triangle3D *temp = bv->triangles[maxInd];
-				*(bv->triangles + maxInd) = bv->triangles[i];
-				bv->triangles[maxInd] = temp;
-			}
-			for (int i = 0; i < nLow; i++) {
-				low[i] = bv->triangles[i];
-			}
-			for (int i = 0; i < nHigh; i++) {
-				high[i] = bv->triangles[nLow + i];
+				Triangle3D *temp = bv->triangles[minInd];
+				bv->triangles[minInd] = bv->triangles[i];
+				bv->triangles[i] = temp;
 			}
 		} else if (bvDims.y >= bvDims.x && bvDims.y >= bvDims.z) { // split along y
-			// sort using x
-			for (int i = 0; i < bv->nTriangles / 2; i++) {
-				float max = -INFINITY;
-				int maxInd = 0;
+			// sort using y
+			for (int i = 0; i < bv->nTriangles - 1; i++) {
+				float min = INFINITY;
+				int minInd = i;
 				for (int j = i; j < bv->nTriangles; j++) {
 					// centroid c in axis (if you divide by 3)
-					float c = (*(bv->triangles + j))->p1->y + //
-										(*(bv->triangles + j))->p2->y + //
-										(*(bv->triangles + j))->p3->y;
-					if (c > max) {
-						max = c;
-						maxInd = j;
+					float c = bv->triangles[j]->p1->y + //
+										bv->triangles[j]->p2->y + //
+										bv->triangles[j]->p3->y;
+					if (c < min) {
+						min = c;
+						minInd = j;
 					}
 				}
-				Triangle3D *temp = bv->triangles[maxInd];
-				*(bv->triangles + maxInd) = bv->triangles[i];
-				bv->triangles[maxInd] = temp;
-			}
-			for (int i = 0; i < nLow; i++) {
-				low[i] = bv->triangles[i];
-			}
-			for (int i = nLow; i < bv->nTriangles; i++) {
-				high[i] = bv->triangles[i];
+				Triangle3D *temp = bv->triangles[minInd];
+				bv->triangles[minInd] = bv->triangles[i];
+				bv->triangles[i] = temp;
 			}
 		} else { // split along z
 			// sort using z
-			for (int i = 0; i < bv->nTriangles / 2; i++) {
-				float max = -INFINITY;
-				int maxInd = 0;
+			for (int i = 0; i < bv->nTriangles - 1; i++) {
+				float min = INFINITY;
+				int minInd = i;
 				for (int j = i; j < bv->nTriangles; j++) {
 					// centroid c in axis (if you divide by 3)
-					float c = (*(bv->triangles + j))->p1->z + //
-										(*(bv->triangles + j))->p2->z + //
-										(*(bv->triangles + j))->p3->z;
-					if (c > max) {
-						max = c;
-						maxInd = j;
+					float c = bv->triangles[j]->p1->z + //
+										bv->triangles[j]->p2->z + //
+										bv->triangles[j]->p3->z;
+					if (c < min) {
+						min = c;
+						minInd = j;
 					}
 				}
-				Triangle3D *temp = bv->triangles[maxInd];
-				*(bv->triangles + maxInd) = bv->triangles[i];
-				bv->triangles[maxInd] = temp;
-			}
-			for (int i = 0; i < nLow; i++) {
-				low[i] = bv->triangles[i];
-			}
-			for (int i = nLow; i < bv->nTriangles; i++) {
-				high[i] = bv->triangles[i];
+				Triangle3D *temp = bv->triangles[minInd];
+				bv->triangles[minInd] = bv->triangles[i];
+				bv->triangles[i] = temp;
 			}
 		}
 
+		memcpy(low, bv->triangles, sizeof(Triangle3D *) * (size_t)nLow);
+		memcpy(high, bv->triangles + nLow, sizeof(Triangle3D *) * (size_t)nHigh);
 		BoundingVolume *children =
 				(BoundingVolume *)malloc(sizeof(BoundingVolume) * 2);
 
@@ -325,7 +322,7 @@ BoundingVolume *constructBoundingVolumes(BoundingVolume *bv) {
 		bv->nChildren = 2;
 		bv->nTriangles = 0;
 
-		constructBoundingVolumes(children + 0);
+		constructBoundingVolumes(children);
 		constructBoundingVolumes(children + 1);
 	}
 

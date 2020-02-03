@@ -7,10 +7,12 @@ project(RenderEngine LANGUAGES C)
 file( GLOB MATH_SOURCES src/math/*.c )
 file( GLOB RENDERER_SOURCES src/renderer/*.c )
 file( GLOB VISUALIZER_SOURCES src/visualizer/*.c )
+file( GLOB PARSING_SOURCES src/parsing/*.c )
 file( GLOB SRC_SOURCES
 	${MATH_SOURCES}
 	${RENDERER_SOURCES}
 	${VISUALIZER_SOURCES}
+	${PARSING_SOURCES}
 	)
 
 file( GLOB TEST_SOURCES tests/*.c )

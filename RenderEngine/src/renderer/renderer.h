@@ -5,7 +5,9 @@
 // todo: change screenZ to fov
 typedef struct {
 	Matrix4x4 cameraToWorld;
+	int width, height;
 	float fov;
+	float scale, aspectRatio;
 } Camera;
 
 typedef struct {
@@ -67,7 +69,7 @@ typedef struct {
 
 void rendererInit(Renderer *renderer);
 
-void rayTrace(Renderer *renderer, unsigned char *screen, int width, int height);
+void rayTrace(Renderer *renderer, unsigned char *screen);
 
 Ray3D *constructRayThroughPixel(Camera *camera, int x, int y, int width,
 																int height, Ray3D *ray);

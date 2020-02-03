@@ -1,35 +1,30 @@
-#define _CRT_SECURE_NO_WARNINGS
 #include "objParser.h"
+#include <stdio.h>
 
-char* my_strtok(char* s, const char* delm);
+char *trimwhitespace(char *str);
 
-char* trimwhitespace(char* str);
+void parseObj(char *path, Triangle3D **trigList, int *size) {
+	FILE *fpIn;
+	char *materialsPath[100];
 
-void parseObj(char* path, Triangle3D** trigList, int* size) {
-	FILE* fpIn;
-	char* materialsPath[100];
-
-	if (fopen_s(&fpIn, path, "r") == 2) {
+	if (!(fpIn = fopen(path, "r"))) {
 		printf("File was not found!\n");
 		exit(2);
 	}
-	char c = ' ';
 	char line[1000];
-	//char* pos = line;
+	// char* pos = line;
 
 	int sizeVerts = 500;
-	Vector3D* verts = (Vector3D*)malloc(sizeVerts * sizeof(Vector3D));
+	Vector3D *verts = (Vector3D *)malloc(sizeVerts * sizeof(Vector3D));
 	int vertCount = 0;
 
 	int sizeFaces = 1000;
-	Triangle3D* faces = (Triangle3D*)malloc(sizeFaces * sizeof(Triangle3D));
-	Triangle3D* tempFaces;
+	Triangle3D *faces = (Triangle3D *)malloc(sizeFaces * sizeof(Triangle3D));
+	Triangle3D *tempFaces;
 	int facesCount = 0;
 
-
-	while (fscanf(fpIn, "%s"
-		, line) != EOF) {
-		//printf("\'%s\'\n",line);
+	while (fscanf(fpIn, "%s", line) != EOF) {
+		// printf("\'%s\'\n",line);
 		if (strstr(line, "#")) {
 			fscanf(fpIn, "%[^\n]s", line);
 		}
@@ -41,19 +36,17 @@ void parseObj(char* path, Triangle3D** trigList, int* size) {
 			if (strstr(line, "o")) {
 				fscanf(fpIn, "%s", line);
 				printf("LINE: %s\n", line);
-			}
-			else if (strstr(line, "v")) {
+			} else if (strstr(line, "v")) {
 				if (vertCount >= sizeVerts) {
 					sizeVerts += 500;
 					verts = realloc(verts, sizeVerts);
 				}
 				float x, y, z;
 				fscanf(fpIn, "%f %f %f", &x, &y, &z);
-				Vector3D a = { x, y, z };
+				Vector3D a = {x, y, z};
 				verts[vertCount] = a;
 				vertCount++;
-			}
-			else if (strstr(line, "f")) {
+			} else if (strstr(line, "f")) {
 				if (facesCount >= sizeFaces) {
 					sizeFaces += 500;
 					printf("Realloocing + %d", sizeFaces);
@@ -62,13 +55,14 @@ void parseObj(char* path, Triangle3D** trigList, int* size) {
 				}
 				int a, b, c;
 				fscanf(fpIn, "%d %d %d", &a, &b, &c);
-				Vector3D* aa = verts + a - 1;
-				Vector3D* bb = verts + b - 1;
-				Vector3D* cc = verts + c - 1;
+				Vector3D *aa = verts + a - 1;
+				Vector3D *bb = verts + b - 1;
+				Vector3D *cc = verts + c - 1;
 
-				//printf("%d| VERTS: %d %d %d\n", facesCount, a, b, c);
+				// printf("%d| VERTS: %d %d %d\n", facesCount, a, b, c);
 
-				Triangle3D trig = { aa, bb, cc, 0, 80 / 255.0f, 80 / 255.0f, 80 / 255.0f, 0.25f, .25f, .1f };
+				Triangle3D trig = {aa,          bb,          cc,    0,    80 / 255.0f,
+													 80 / 255.0f, 80 / 255.0f, 0.25f, .25f, .1f};
 				faces[facesCount] = trig;
 				facesCount++;
 			}
@@ -81,43 +75,12 @@ void parseObj(char* path, Triangle3D** trigList, int* size) {
 	*size = facesCount;
 
 	line[0] = '\0';
-	printf("TRIG TEST: (%f, %f, %f)(%f, %f, %f)(%f, %f, %f)\n",
-		faces[0].p1->x, faces[0].p1->y, faces[0].p1->z,
-		faces[0].p2->x, faces[0].p2->y, faces[0].p2->z,
-		faces[0].p3->x, faces[0].p3->y, faces[0].p3->z);
+	printf("TRIG TEST: (%f, %f, %f)(%f, %f, %f)(%f, %f, %f)\n", faces[0].p1->x,
+				 faces[0].p1->y, faces[0].p1->z, faces[0].p2->x, faces[0].p2->y,
+				 faces[0].p2->z, faces[0].p3->x, faces[0].p3->y, faces[0].p3->z);
 	if (fclose(fpIn) != 0) {
 		exit(3);
 	}
-}
-
-char* my_strtok(char* s, char* delm)
-{
-	static int currIndex = 0;
-	if (!s || !delm || s[currIndex] == '\0')
-		return NULL;
-
-	char* pS = s;
-	char* W = (char*)malloc(100 * sizeof(char));
-	int i = currIndex, k = 0, j;
-	int br = 0; // bool
-	while (s[i] != '\0' && !br) {
-		j = 0;
-		while (delm[j]) {
-			if (s[i] != delm[j]) {
-				W[k] = s[i];
-				j++;
-				k++;
-			}
-			else {
-				br = 1;
-				break;
-			}
-		}
-		i++;
-	}
-	W[k] = '\0';
-	currIndex = i;
-	return W;
 }
 
 // Note: This function returns a pointer to a substring of the original string.
@@ -125,19 +88,20 @@ char* my_strtok(char* s, char* delm)
 // that pointer with the returned value, since the original pointer must be
 // deallocated using the same allocator with which it was allocated.  The return
 // value must NOT be deallocated using free() etc.
-char* trimwhitespace(char* str)
-{
-	char* end;
+char *trimwhitespace(char *str) {
+	char *end;
 
 	// Trim leading space
-	while (isspace((unsigned char)*str)) str++;
+	while (isspace((unsigned char)*str))
+		str++;
 
-	if (*str == 0)  // All spaces?
+	if (*str == 0) // All spaces?
 		return str;
 
 	// Trim trailing space
 	end = str + strlen(str) - 1;
-	while (end > str&& isspace((unsigned char)*end)) end--;
+	while (end > str && isspace((unsigned char)*end))
+		end--;
 
 	// Write new null terminator character
 	end[1] = '\0';

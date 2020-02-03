@@ -55,7 +55,8 @@ Matrix4x4 getYRotationMatrix(float angle,
 														 int rad); // specify if rad with rad = 1
 Matrix4x4 getZRotationMatrix(float angle, int rad); // else rad = 0
 Matrix4x4 getTransformationMatrix(Matrix4x4 matrices[], int size);
-Vector3D applyTransformation(Vector3D originVec, Matrix4x4 transform);
+Vector3D *applyTransformation(Vector3D *orig, Matrix4x4 *transform,
+															Vector3D *out);
 
 static Vector3D ORIGIN_3D = {0, 0, 0};
 static Vector3D AXIS_X = {1, 0, 0};
