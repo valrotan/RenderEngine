@@ -37,7 +37,8 @@ The source code is split into 3 main modules.
 - [x] Get rid of excessive dynamic allocation
 - [x] Reflections going the wrong way (see cube render)
 - [x] Fix triangle points have to be clockwise
-- [ ] Create a 3d file reader module
+- [x] Create a 3d file reader module
+- [ ] Add support for colors in the reader module
 - [x] Data structures for scene representation
 - [ ] Clean source code from debugging code
 - [x] Fix negative lighting bug
@@ -46,10 +47,10 @@ The source code is split into 3 main modules.
 - [x] Shadows
 - [ ] Test with different view points
 - [ ] Test with different lights in different locations
-- [ ] Check the performance of Windows devices with doubles
+- [x] Check the performance of Windows devices with doubles
 - [x] Try parametric ray-plane intersects
 - [ ] Investigate potential bug on with shadows dependent on camera position
 
 ## Render times benchmarks:
 - MacBookPro 2019 2.30 GHZ i5 : 52ms
-- Dell XPS 15 2.20 GHZ i7: 1520ms ***not updated***
+- Dell XPS 15 2.20 GHZ i7: 426 ms

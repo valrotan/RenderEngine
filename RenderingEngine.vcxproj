@@ -31,6 +31,9 @@
     <ClInclude Include="RenderEngine\src\renderer\renderer.h" />
     <ClInclude Include="RenderEngine\src\visualizer\visualizer.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{E90911DC-2809-4456-8FFE-D143791D9ADC}</ProjectGuid>
