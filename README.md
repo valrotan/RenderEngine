@@ -26,7 +26,7 @@ The source code is split into 3 main modules.
 - *math* - standalone module for geometric primitives, vector functions, and other geometric functions
 - *visualizer* - standalone module to visualize renders using the GTK+ toolkit
 - *renderer* - module responsible for tracking the scene state and performing raytracing. Depends on the *math* module.
-
+- *fileReader* - module to read in the .obj file with triangle verticies.
 
 ## TODO + Bug/Modification tracker:
 - [x] Camera orientations
