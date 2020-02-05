@@ -15,11 +15,11 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 	char line[1000];
 	// char* pos = line;
 
-	int sizeVerts = 10000;
+	int sizeVerts = 1000;
 	Vector3D *verts = (Vector3D *)malloc(sizeVerts * sizeof(Vector3D));
 	int vertCount = 0;
 
-	int sizeFaces = 10000;
+	int sizeFaces = 1000;
 	Triangle3D *faces = (Triangle3D *)malloc(sizeFaces * sizeof(Triangle3D));
 	Triangle3D *tempFaces;
 	int facesCount = 0;
@@ -36,22 +36,28 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 		if (strlen(line) == 1) {
 			if (strstr(line, "o")) {
 				fscanf(fpIn, "%s", line);
-				printf("LINE: %s\n", line);
+				//printf("LINE: %s\n", line);
 			} else if (strstr(line, "v")) {
 				if (vertCount >= sizeVerts) {
-					sizeVerts += 500;
-					verts = realloc(verts, sizeVerts);
+					sizeVerts *= 2;
+					Vector3D *temp = realloc(verts, sizeVerts * sizeof(Vector3D));
+					if (!temp) {
+						printf("SOME ERROR\n");
+					}
+					verts = temp;
 				}
 				float x, y, z;
-				fscanf(fpIn, "%f %f %f", &x, &y, &z);
+				fscanf(fpIn, "%f %f %f", &x, &y, &z); 
 				Vector3D a = {x, y, z};
 				verts[vertCount] = a;
 				vertCount++;
 			} else if (strstr(line, "f")) {
 				if (facesCount >= sizeFaces) {
-					sizeFaces += 500;
-					printf("Realloocing + %d", sizeFaces);
-					tempFaces = realloc(faces, sizeFaces);
+					sizeFaces *= 2;
+					tempFaces = realloc(faces, sizeFaces * sizeof(Triangle3D));
+					if (!tempFaces) {
+						printf("SOME ERROR\n");
+					}
 					faces = tempFaces;
 				}
 				int a, b, c;
