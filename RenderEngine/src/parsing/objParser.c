@@ -15,11 +15,11 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 	char line[1000];
 	// char* pos = line;
 
-	int sizeVerts = 500;
+	int sizeVerts = 10000;
 	Vector3D *verts = (Vector3D *)malloc(sizeVerts * sizeof(Vector3D));
 	int vertCount = 0;
 
-	int sizeFaces = 1000;
+	int sizeFaces = 10000;
 	Triangle3D *faces = (Triangle3D *)malloc(sizeFaces * sizeof(Triangle3D));
 	Triangle3D *tempFaces;
 	int facesCount = 0;
@@ -62,8 +62,8 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 
 				// printf("%d| VERTS: %d %d %d\n", facesCount, a, b, c);
 
-				Triangle3D trig = {aa, bb, cc, 0, 200 / 255.0f,
-												  20 / 255.0f, 60 / 255.0f, 0.25f, .25f, .1f};
+				Triangle3D trig = {aa, bb, cc, 0, 0 / 255.0f,
+												  0 / 255.0f, 225 / 255.0f, 0.25f, .25f, .1f};
 				faces[facesCount] = trig;
 				facesCount++;
 			}

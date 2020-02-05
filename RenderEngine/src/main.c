@@ -16,9 +16,9 @@ void rayTraceDemo() {
 
 	printf("Initializing renderer...\n");
 	Camera camera;
-	Matrix4x4 trans[] = {getXRotationMatrix(-45, 0),
-											 getTranslationMatrix(10, 10, 75)};
-	Matrix4x4 camToWorld = getTransformationMatrix(trans, 2);
+	Matrix4x4 trans[] = {getXRotationMatrix(-45, 0), getScaleMatrix(0.2,0.2,0.2),
+											 getTranslationMatrix(0, 10, 40)};
+	Matrix4x4 camToWorld = getTransformationMatrix(trans, 3);
 
 	camera.width = WIDTH;
 	camera.height = HEIGHT;
@@ -27,7 +27,7 @@ void rayTraceDemo() {
 
 	Triangle3D *t;
 	int size;
-	parseObj("RenderEngine/input/tinker.obj", &t, &size);
+	parseObj("RenderEngine/input/tea.obj", &t, &size);
 
 //	for (int i = 0; i < size; i++) {
 //		printf("%3d|TRIG TEST: (%f, %f, %f)(%f, %f, %f)(%f, %f, %f)\n",
@@ -130,7 +130,7 @@ void rayTraceDemo() {
 	scene.nSpotLights = 2;
 
 	Renderer renderer = {&camera, &scene, 0};
-	renderer.nThreads = 64;
+	renderer.nThreads = 128;
 
 	printf("Raycasting...\n");
 
