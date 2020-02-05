@@ -4,6 +4,18 @@
 
 char *trimwhitespace(char *str);
 
+/*
+	Similar to strtok, takes in string and delim, pass the same string to extract all of the tokens
+	does not change the string
+	PRE:	str - string to tokenize
+			delim - a set of character delimeters
+			newstr - bool val if want to parse the next string
+	POST:
+		token is extracted, currIndex is changed
+	returns: extracted token
+*/
+char* strtok_r(char* str, const char* delim, int newstr);
+
 void parseObj(char *path, Triangle3D **trigList, int *size) {
 	FILE *fpIn;
 	char *materialsPath[100];
@@ -114,4 +126,36 @@ char *trimwhitespace(char *str) {
 	end[1] = '\0';
 
 	return str;
+}
+
+
+char* strtok_r(char* str, const char* delim, int newstr) {
+	static int currIndex = 0;
+	if (newstr)
+		currIndex = 0;
+	if (!str || !delim || str[currIndex] == '\0')
+		return NULL;
+
+	char* pS = str;
+	char* W = (char*)malloc(100 * sizeof(char));
+	int i = currIndex, k = 0, j;
+	int br = 0; // bool
+	while (str[i] != '\0' && !br) {
+		j = 0;
+		while (delim[j]) {
+			if (str[i] != delim[j]) {
+				W[k] = str[i];
+				j++;
+				k++;
+			}
+			else {
+				br = 1;
+				break;
+			}
+		}
+		i++;
+	}
+	W[k] = '\0';
+	currIndex = i;
+	return W;
 }

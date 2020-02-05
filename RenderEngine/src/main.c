@@ -157,5 +157,6 @@ int main() {
 	//int size;
 	//parseObj("RenderEngine/input/tinker.obj", &trigs, &size);
 	//printf("---------SIZE: %d\n", size);
+
 	return 0;
 }
