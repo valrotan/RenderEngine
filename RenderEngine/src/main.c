@@ -17,8 +17,9 @@ void rayTraceDemo() {
 	printf("Initializing renderer...\n");
 	Camera camera;
 	Matrix4x4 trans[] = {getXRotationMatrix(-45, 0),
-											 getTranslationMatrix(10, 10, 75)};
-	Matrix4x4 camToWorld = getTransformationMatrix(trans, 2);
+											 getScaleMatrix(.75f, .75f, .75f),
+											 getTranslationMatrix(13, 8, 75)};
+	Matrix4x4 camToWorld = getTransformationMatrix(trans, 3);
 
 	camera.width = WIDTH;
 	camera.height = HEIGHT;
@@ -90,9 +91,9 @@ void rayTraceDemo() {
 	scene.nTriangles = size;
 
 	PointLight *pointLights = (PointLight *)malloc(sizeof(PointLight));
-	Vector3D pointLightLoc1 = {0, -40, -50};
+	Vector3D pointLightLoc1 = {40, 30, 20};
 	pointLights[0].point = &pointLightLoc1;
-	pointLights[0].intensity = 10;
+	pointLights[0].intensity = 6;
 	Vector3D pointLightCoeffs1 = {2, .01f, .005f};
 	pointLights[0].attenuationCoeffs = &pointLightCoeffs1;
 
@@ -127,7 +128,7 @@ void rayTraceDemo() {
 	// *** light counts
 	scene.nPointLights = 1;
 	scene.nDirectionalLights = 1;
-	scene.nSpotLights = 2;
+	scene.nSpotLights = 0;
 
 	Renderer renderer = {&camera, &scene, 0};
 	renderer.nThreads = 64;

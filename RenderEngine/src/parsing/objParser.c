@@ -63,7 +63,7 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 				// printf("%d| VERTS: %d %d %d\n", facesCount, a, b, c);
 
 				Triangle3D trig = {aa, bb, cc, 0, 200 / 255.0f,
-												  20 / 255.0f, 60 / 255.0f, 0.25f, .25f, .1f};
+													20 / 255.0f, 60 / 255.0f, 0.25f, .5f, 0.1f};
 				faces[facesCount] = trig;
 				facesCount++;
 			}
