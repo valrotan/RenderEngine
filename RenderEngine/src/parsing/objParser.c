@@ -68,12 +68,27 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 					sizeFaces *= 2;
 					tempFaces = realloc(faces, sizeFaces * sizeof(Triangle3D));
 					if (!tempFaces) {
-						printf("SOME ERROR\n");
+						printf("Error with allocation!\n");
 					}
 					faces = tempFaces;
 				}
+				fscanf(fpIn, "%s", line);
 				int a, b, c;
-				fscanf(fpIn, "%d %d %d", &a, &b, &c);
+				if (strstr(line, "/")) {
+					char* aStr = strtok_r(line, "/", 1);
+					fscanf(fpIn, "%s", line);
+					char* bStr = strtok_r(line, "/", 1);
+					fscanf(fpIn, "%s", line);
+					char* cStr = strtok_r(line, "/", 1);
+					sscanf(aStr, "%d", &a);
+					sscanf(bStr, "%d", &b);
+					sscanf(cStr, "%d", &c);
+				}
+				else {
+					sscanf(line, "%d", &a);
+				}
+				
+				fscanf(fpIn, "%d %d", &b, &c);
 				Vector3D *aa = verts + a - 1;
 				Vector3D *bb = verts + b - 1;
 				Vector3D *cc = verts + c - 1;
@@ -84,6 +99,7 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 												  0 / 255.0f, 225 / 255.0f, 0.25f, .25f, .1f};
 				faces[facesCount] = trig;
 				facesCount++;
+				fscanf(fpIn, "%[^\n]s", line); // to skip all of the other points if there's more than 3
 			}
 		}
 	}
