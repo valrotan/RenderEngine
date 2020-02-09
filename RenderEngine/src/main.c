@@ -4,11 +4,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/timeb.h>
+#include "imageUtil/imageUtil.h"
 
 void rayTraceDemo() {
 	printf("Starting render engine...\n");
 
-	int WIDTH = 1280, HEIGHT = 720;
+	int WIDTH = 6000, HEIGHT = 4000;
 
 	printf("Initializing visualizer...\n");
 	visInit(WIDTH, HEIGHT);
@@ -147,9 +148,11 @@ void rayTraceDemo() {
 
 	printf("Render took %u milliseconds \n", diff);
 
-	printf("Showing...\n");
+	printf("Writing...\n");
 
-	visShowStill();
+	printf("%d \n", saveToTGA("image.tga", screen, WIDTH, HEIGHT));
+
+//	visShowStill();
 }
 
 int main() {
