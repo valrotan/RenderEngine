@@ -17,9 +17,8 @@ void rayTraceDemo() {
 
 	printf("Initializing renderer...\n");
 	Camera camera;
-	Matrix4x4 trans[] = {getXRotationMatrix(-45, 0),
-											 getScaleMatrix(.75f, .75f, .75f),
-											 getTranslationMatrix(13, 8, 75)};
+	Matrix4x4 trans[] = {getXRotationMatrix(-45, 0), getScaleMatrix(0.2,0.2,0.2),
+											 getTranslationMatrix(0, 10, 40)};
 	Matrix4x4 camToWorld = getTransformationMatrix(trans, 3);
 
 	camera.width = WIDTH;
@@ -29,7 +28,7 @@ void rayTraceDemo() {
 
 	Triangle3D *t;
 	int size;
-	parseObj("RenderEngine/input/tinker.obj", &t, &size);
+	parseObj("RenderEngine/input/tea.obj", &t, &size);
 
 //	for (int i = 0; i < size; i++) {
 //		printf("%3d|TRIG TEST: (%f, %f, %f)(%f, %f, %f)(%f, %f, %f)\n",
@@ -92,9 +91,9 @@ void rayTraceDemo() {
 	scene.nTriangles = size;
 
 	PointLight *pointLights = (PointLight *)malloc(sizeof(PointLight));
-	Vector3D pointLightLoc1 = {40, 30, 20};
+	Vector3D pointLightLoc1 = {0, -40, -50};
 	pointLights[0].point = &pointLightLoc1;
-	pointLights[0].intensity = 6;
+	pointLights[0].intensity = 10;
 	Vector3D pointLightCoeffs1 = {2, .01f, .005f};
 	pointLights[0].attenuationCoeffs = &pointLightCoeffs1;
 
@@ -129,10 +128,10 @@ void rayTraceDemo() {
 	// *** light counts
 	scene.nPointLights = 1;
 	scene.nDirectionalLights = 1;
-	scene.nSpotLights = 0;
+	scene.nSpotLights = 2;
 
 	Renderer renderer = {&camera, &scene, 0};
-	renderer.nThreads = 64;
+	renderer.nThreads = 128;
 
 	printf("Raycasting...\n");
 
@@ -161,5 +160,6 @@ int main() {
 	//int size;
 	//parseObj("RenderEngine/input/tinker.obj", &trigs, &size);
 	//printf("---------SIZE: %d\n", size);
+
 	return 0;
 }

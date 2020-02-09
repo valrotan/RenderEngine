@@ -7,3 +7,4 @@
 #include "stdlib.h"
 
 void parseObj(char *path, Triangle3D **trigList, int *size);
+char* strtok_r(char* str, const char* delim, int newstr);
