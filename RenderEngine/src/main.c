@@ -9,7 +9,7 @@
 void rayTraceDemo() {
 	printf("Starting render engine...\n");
 
-	int WIDTH = 6000, HEIGHT = 4000;
+	int WIDTH = 1280, HEIGHT = 720;
 
 	printf("Initializing visualizer...\n");
 	visInit(WIDTH, HEIGHT);
@@ -93,7 +93,7 @@ void rayTraceDemo() {
 	PointLight *pointLights = (PointLight *)malloc(sizeof(PointLight));
 	Vector3D pointLightLoc1 = {0, -40, -50};
 	pointLights[0].point = &pointLightLoc1;
-	pointLights[0].intensity = 10;
+	pointLights[0].intensity = 20;
 	Vector3D pointLightCoeffs1 = {2, .01f, .005f};
 	pointLights[0].attenuationCoeffs = &pointLightCoeffs1;
 
@@ -102,7 +102,7 @@ void rayTraceDemo() {
 	DirectionalLight dirLights[4];
 	Vector3D dirLightDir0 = {0, -1, -1};
 	dirLights[0].direction = norm(&dirLightDir0, &dirLightDir0);
-	dirLights[0].intensity = .5f;
+	dirLights[0].intensity = .6f;
 
 	scene.directionalLights = dirLights;
 
@@ -113,7 +113,7 @@ void rayTraceDemo() {
 	spotLights[0].point = &spotLightLoc0;
 	spotLights[0].direction = norm(&spotLightDir0, &spotLightDir0);
 	spotLights[0].attenuationCoeffs = &spotLightCoeffs0;
-	spotLights[0].intensity = 1000.0f;
+	spotLights[0].intensity = 2000.0f;
 
 	Vector3D spotLightLoc1 = {60, -20, 100};
 	Vector3D spotLightDir1 = {-1, -.25f, 0};
@@ -121,7 +121,7 @@ void rayTraceDemo() {
 	spotLights[1].point = &spotLightLoc1;
 	spotLights[1].direction = norm(&spotLightDir1, &spotLightDir1);
 	spotLights[1].attenuationCoeffs = &spotLightCoeffs1;
-	spotLights[1].intensity = 1000.0f;
+	spotLights[1].intensity = 2000.0f;
 
 	scene.spotLights = spotLights;
 
@@ -151,7 +151,7 @@ void rayTraceDemo() {
 
 	printf("%d \n", saveToTGA("image.tga", screen, WIDTH, HEIGHT));
 
-//	visShowStill();
+	visShowStill();
 }
 
 int main() {
