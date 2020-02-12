@@ -17,8 +17,8 @@ void rayTraceDemo() {
 
 	printf("Initializing renderer...\n");
 	Camera camera;
-	Matrix4x4 trans[] = {getXRotationMatrix(-45, 0), getScaleMatrix(0.2f,0.2f,0.2f),
-											 getTranslationMatrix(0, 10, 40)};
+	Matrix4x4 trans[] = {getXRotationMatrix(0, 0), getScaleMatrix(0.5f,0.5f,0.5f),
+											 getTranslationMatrix(0, 25, 40)};
 	Matrix4x4 camToWorld = getTransformationMatrix(trans, 3);
 
 	camera.width = WIDTH;
@@ -28,7 +28,7 @@ void rayTraceDemo() {
 
 	Triangle3D *t;
 	int size;
-	parseObj("RenderEngine/input/tea.obj", &t, &size);
+	parseObj("RenderEngine/input/FinalBaseMesh.obj", &t, &size);
 
 	Scene scene;
 	scene.bkgR = .3f;
@@ -106,6 +106,9 @@ void rayTraceDemo() {
 
 int main() {
 	rayTraceDemo();
+	//Triangle3D* t;
+	//int size;
+	//parseObj("RenderEngine/input/test2.txt", &t, &size);
 
 	return 0;
 }

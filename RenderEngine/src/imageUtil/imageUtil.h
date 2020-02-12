@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdlib.h>
 
-int saveToTGA(const char *filename, unsigned char *pbuf, u_int16_t w, u_int16_t h);
+int saveToTGA(const char *filename, unsigned char *pbuf, unsigned char w, unsigned char h);
 

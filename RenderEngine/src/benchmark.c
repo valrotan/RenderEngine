@@ -6,7 +6,7 @@
 #include <sys/timeb.h>
 #include "imageUtil/imageUtil.h"
 
-void rayTraceDemo() {
+void rayTraceDemo1() {
 	printf("Starting render engine...\n");
 
 	int WIDTH = 1280, HEIGHT = 720;
@@ -28,6 +28,7 @@ void rayTraceDemo() {
 
 	Triangle3D *t;
 	int size;
+	//parseObj("RenderEngine/input/tea.obj", &t, &size);
 	parseObj("RenderEngine/input/tea.obj", &t, &size);
 
 	Scene scene;
@@ -104,8 +105,8 @@ void rayTraceDemo() {
 	visShowStill();
 }
 
-int main() {
-	rayTraceDemo();
+int main1() {
+	rayTraceDemo1();
 
 	return 0;
 }

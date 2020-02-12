@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RenderEngine\src\benchmark.c" />
+    <ClCompile Include="RenderEngine\src\imageUtil\imageUtil.c" />
     <ClCompile Include="RenderEngine\src\main.c" />
     <ClCompile Include="RenderEngine\src\math\renderMath.c" />
     <ClCompile Include="RenderEngine\src\parsing\objParser.c" />
@@ -27,6 +28,7 @@
     <ClCompile Include="RenderEngine\src\visualizer\visualizer.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="RenderEngine\src\imageUtil\imageUtil.h" />
     <ClInclude Include="RenderEngine\src\math\renderMath.h" />
     <ClInclude Include="RenderEngine\src\parsing\objParser.h" />
     <ClInclude Include="RenderEngine\src\renderer\renderer.h" />
@@ -34,6 +36,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="RenderEngine\input\FinalBaseMesh.obj" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
