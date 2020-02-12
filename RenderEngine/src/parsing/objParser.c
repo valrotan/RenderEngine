@@ -81,7 +81,7 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 					Vector3D *cc = verts + indexes[i + 1] - 1;
 					//printf("%3d| VERTS: %d %d %d\n", facesCount, indexes[i], indexes[i + 1], indexes[i + 2]);
 					Triangle3D trig = { aa, bb, cc, 0, 225 / 255.0f,
-													  225 / 255.0f, 225 / 255.0f, 0.25f, .25f, .1f};
+													  225 / 255.0f, 225 / 255.0f, 0.15f, .30f, .0f};
 					faces[facesCount] = trig;
 					facesCount++;
 				}
@@ -109,13 +109,12 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 void parseFaceLine(char* line, int* vertNumber, int **v) {
 	int spaces = 0;
 	for (int i = 0; line[i] != '\0'; i++) {
-		if (line[i] == ' ') {
+		if (line[i] == ' ' && line[i+1]!='\0') {
 			spaces++;
 		}
 	}
 	line += 1;
 	int* verts = (int*) malloc (spaces * sizeof(int));
-
 	for (int i = 0; i < spaces; i++) {
 		char temp[100];
 		sscanf(line,"%[^\040\t]s", temp);

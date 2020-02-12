@@ -89,7 +89,7 @@ void *rayTraceSegment(void *pSegment) {
 			constructRayThroughPixel(rSegment->renderer->camera, x, y,
 															 rSegment->width, rSegment->height, &ray);
 
-			traceRay(rSegment->renderer->camera, rSegment->renderer->scene, &ray, 3,
+			traceRay(rSegment->renderer->camera, rSegment->renderer->scene, &ray, 0,
 							 rgb);
 
 			if (rgb[0] > 1) {

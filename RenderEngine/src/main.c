@@ -17,9 +17,9 @@ void rayTraceDemo() {
 
 	printf("Initializing renderer...\n");
 	Camera camera;
-	Matrix4x4 trans[] = {getXRotationMatrix(0, 0), getScaleMatrix(0.5f,0.5f,0.5f),
-											 getTranslationMatrix(0, 25, 40)};
-	Matrix4x4 camToWorld = getTransformationMatrix(trans, 3);
+	Matrix4x4 trans[] = { getYRotationMatrix(0,0), getXRotationMatrix(-15, 0), getScaleMatrix(0.5f,0.5f,0.5f),
+											 getTranslationMatrix(0, 22, 46)};
+	Matrix4x4 camToWorld = getTransformationMatrix(trans, 4);
 
 	camera.width = WIDTH;
 	camera.height = HEIGHT;
@@ -28,7 +28,7 @@ void rayTraceDemo() {
 
 	Triangle3D *t;
 	int size;
-	parseObj("RenderEngine/input/FinalBaseMesh.obj", &t, &size);
+	parseObj("RenderEngine/input/human.obj", &t, &size);
 
 	Scene scene;
 	scene.bkgR = .3f;
@@ -53,6 +53,11 @@ void rayTraceDemo() {
 	Vector3D dirLightDir0 = {-1, -1, -1};
 	dirLights[0].direction = norm(&dirLightDir0, &dirLightDir0);
 	dirLights[0].intensity = 1;
+	
+	Vector3D dirLightDir1 = { 0, -1, .5 };
+	dirLights[1].direction = norm(&dirLightDir1, &dirLightDir1);
+	dirLights[1].intensity = 1.5;
+
 
 	scene.directionalLights = dirLights;
 
@@ -77,7 +82,7 @@ void rayTraceDemo() {
 
 	// *** light counts
 	scene.nPointLights = 0;
-	scene.nDirectionalLights = 1;
+	scene.nDirectionalLights = 2;
 	scene.nSpotLights = 0;
 
 	Renderer renderer = {&camera, &scene, 0};
@@ -108,7 +113,7 @@ int main() {
 	rayTraceDemo();
 	//Triangle3D* t;
 	//int size;
-	//parseObj("RenderEngine/input/test2.txt", &t, &size);
+	//parseObj("RenderEngine/input/test1.txt", &t, &size);
 
 	return 0;
 }
