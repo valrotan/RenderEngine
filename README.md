@@ -39,6 +39,7 @@ The source code is split into 3 main modules.
 - [x] Fix triangle points have to be clockwise
 - [x] Create a 3d file reader module
 - [ ] Add support for colors in the reader module
+- [ ] Add the support for any amount of points in faces in the reader
 - [x] Data structures for scene representation
 - [ ] Clean source code from debugging code
 - [x] Fix negative lighting bug

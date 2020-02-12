@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="RenderEngine\src\benchmark.c" />
     <ClCompile Include="RenderEngine\src\main.c" />
     <ClCompile Include="RenderEngine\src\math\renderMath.c" />
     <ClCompile Include="RenderEngine\src\parsing\objParser.c" />

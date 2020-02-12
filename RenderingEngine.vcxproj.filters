@@ -30,6 +30,9 @@
     <ClCompile Include="RenderEngine\src\parsing\objParser.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="RenderEngine\src\benchmark.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RenderEngine\src\math\renderMath.h">
