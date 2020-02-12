@@ -52,6 +52,6 @@ The source code is split into 3 main modules.
 - [x] Try parametric ray-plane intersects
 - [ ] Investigate potential bug on with shadows dependent on camera position
 
-## Render times benchmarks:
-- MacBookPro 2019 2.30 GHZ i5 : 52ms
+## Render times benchmarks (HD Human):
+- MacBookPro 2019 2.30 GHZ i5 : 6359ms
 - Dell XPS 15 2.20 GHZ i7: 426 ms

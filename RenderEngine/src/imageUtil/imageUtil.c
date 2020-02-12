@@ -2,9 +2,9 @@
 #include "imageUtil.h"
 #include <stdio.h>
 
-int saveToTGA(const char *filename, unsigned char *pbuf, unsigned char w, unsigned char h) {
+int saveToTGA(const char *filename, unsigned char *pbuf, short int w, short int h) {
 	FILE* tga;
-	fopen_s(&tga, filename, "wb");
+	tga = fopen(filename, "wb");
 	if (tga == 0) {
 		return 0;
 	}
