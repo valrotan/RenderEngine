@@ -68,7 +68,7 @@ build/
 ##################
 ###  CMake
 ##################
-  
+
 CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles
@@ -84,3 +84,10 @@ _deps
 /src/.vs
 /x64/Debug
 /Debug
+
+##################
+### Custom
+##################
+
+image.tga
+torus.jpg

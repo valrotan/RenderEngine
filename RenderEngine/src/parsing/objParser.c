@@ -14,7 +14,6 @@ char *trimwhitespace(char *str);
 		token is extracted, currIndex is changed
 	returns: extracted token
 */
-char* strtok_r(char* str, const char* delim, int newstr);
 
 void parseObj(char *path, Triangle3D **trigList, int *size) {
 	FILE *fpIn;
@@ -75,11 +74,11 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 				fscanf(fpIn, "%s", line);
 				int a, b, c;
 				if (strstr(line, "/")) {
-					char* aStr = strtok_r(line, "/", 1);
+					char* aStr = parser_strtok_r(line, "/", 1);
 					fscanf(fpIn, "%s", line);
-					char* bStr = strtok_r(line, "/", 1);
+					char* bStr = parser_strtok_r(line, "/", 1);
 					fscanf(fpIn, "%s", line);
-					char* cStr = strtok_r(line, "/", 1);
+					char* cStr = parser_strtok_r(line, "/", 1);
 					sscanf(aStr, "%d", &a);
 					sscanf(bStr, "%d", &b);
 					sscanf(cStr, "%d", &c);
@@ -145,7 +144,7 @@ char *trimwhitespace(char *str) {
 }
 
 
-char* strtok_r(char* str, const char* delim, int newstr) {
+char* parser_strtok_r(char* str, const char* delim, int newstr) {
 	static int currIndex = 0;
 	if (newstr)
 		currIndex = 0;
