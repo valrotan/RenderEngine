@@ -74,13 +74,14 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 				//printf("%s\n", line);
 				int* indexes, vertNum;
 				parseFaceLine(line, &vertNum, &indexes);
-				for (int i = 0; i + 2 < vertNum; i++) {
-					Vector3D *aa = verts + indexes[i] - 1;
-					Vector3D *bb = verts + indexes[i + 1]  - 1;
-					Vector3D *cc = verts + indexes[i + 2] - 1;
+				int first = indexes[0];
+				for (int i = 1; i + 1 < vertNum; i++) {
+					Vector3D *aa = verts + first - 1;
+					Vector3D *bb = verts + indexes[i]  - 1;
+					Vector3D *cc = verts + indexes[i + 1] - 1;
 					//printf("%3d| VERTS: %d %d %d\n", facesCount, indexes[i], indexes[i + 1], indexes[i + 2]);
-					Triangle3D trig = { aa, bb, cc, 0, 0 / 255.0f,
-													  0 / 255.0f, 225 / 255.0f, 0.25f, .25f, .1f};
+					Triangle3D trig = { aa, bb, cc, 0, 225 / 255.0f,
+													  225 / 255.0f, 225 / 255.0f, 0.25f, .25f, .1f};
 					faces[facesCount] = trig;
 					facesCount++;
 				}
@@ -93,6 +94,7 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 	//printf("FACEC: %d\n", facesCount);
 	*trigList = faces;
 	*size = facesCount;
+	printf("Number of verts: %d\n", vertCount);
 	printf("Number of faces: %d\n", facesCount);
 
 	line[0] = '\0';
