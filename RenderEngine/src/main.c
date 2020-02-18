@@ -1,12 +1,13 @@
+#include "imageUtil/imageUtil.h"
+#include "parsing/objParser.h"
 #include "renderer/renderer.h"
 #include "visualizer/visualizer.h"
-#include "parsing/objParser.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/timeb.h>
-#include "imageUtil/imageUtil.h"
 
-void rayTraceDemo() {
+int main(int argc, char **argv) {
+
 	printf("Starting render engine...\n");
 
 	int WIDTH = 1280, HEIGHT = 720;
@@ -17,9 +18,9 @@ void rayTraceDemo() {
 
 	printf("Initializing renderer...\n");
 	Camera camera;
-	Matrix4x4 trans[] = {getXRotationMatrix(0, 0), getScaleMatrix(0.5f,0.5f,0.5f),
-											 getTranslationMatrix(0, 25, 40)};
-	Matrix4x4 camToWorld = getTransformationMatrix(trans, 3);
+	Matrix4x4 trans[] = {getTranslationMatrix(0, 20, 15),
+											 getXRotationMatrix(-20, 0)};
+	Matrix4x4 camToWorld = getTransformationMatrix(trans, 2);
 
 	camera.width = WIDTH;
 	camera.height = HEIGHT;
@@ -28,7 +29,11 @@ void rayTraceDemo() {
 
 	Triangle3D *t;
 	int size;
-	parseObj("RenderEngine/input/FinalBaseMesh.obj", &t, &size);
+	char *path = "RenderEngine/input/FinalBaseMesh.obj";
+	if (argc > 1) {
+		path = argv[1];
+	}
+	parseObj(path, &t, &size);
 
 	Scene scene;
 	scene.bkgR = .3f;
@@ -52,7 +57,13 @@ void rayTraceDemo() {
 	DirectionalLight dirLights[4];
 	Vector3D dirLightDir0 = {-1, -1, -1};
 	dirLights[0].direction = norm(&dirLightDir0, &dirLightDir0);
-	dirLights[0].intensity = 1;
+	dirLights[0].intensity = .5;
+	Vector3D dirLightDir1 = {1, -1, -1};
+	dirLights[1].direction = norm(&dirLightDir1, &dirLightDir1);
+	dirLights[1].intensity = .5;
+	Vector3D dirLightDir2 = {0, -1, 1};
+	dirLights[2].direction = norm(&dirLightDir2, &dirLightDir2);
+	dirLights[2].intensity = .5;
 
 	scene.directionalLights = dirLights;
 
@@ -77,7 +88,7 @@ void rayTraceDemo() {
 
 	// *** light counts
 	scene.nPointLights = 0;
-	scene.nDirectionalLights = 1;
+	scene.nDirectionalLights = 3;
 	scene.nSpotLights = 0;
 
 	Renderer renderer = {&camera, &scene, 0};
@@ -102,13 +113,6 @@ void rayTraceDemo() {
 	printf("%d \n", saveToTGA("image.tga", screen, WIDTH, HEIGHT));
 
 	visShowStill();
-}
-
-int main() {
-	rayTraceDemo();
-	//Triangle3D* t;
-	//int size;
-	//parseObj("RenderEngine/input/test2.txt", &t, &size);
 
 	return 0;
 }
