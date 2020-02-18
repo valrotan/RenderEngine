@@ -1,7 +1,11 @@
 # C Render Engine
----
 
 ### Minimalistic render engine in C without using any libraries (almost)
+This is a simple ray-tracing rendering engine in C. It is partially inspired by/based on [Princeton's computer graphics class from 2000](https://www.cs.princeton.edu/courses/archive/fall00/cs426/).
+
+The rendering engine supports most obj files and does not support color from materials yet. It does, however, have full rgb support if you hardcode the triangles write the code to parse material files.
+
+The only two non-standard C libraries used are pthread and gtk+. gtk is used to render output to the screen and is optional. pthread is to render faster, even though it is completely on a CPU and the goal is to demonstrate simple rendering techniques and not be high-performing.
 
 ## How to run
 ### Prerequisites:
@@ -18,7 +22,7 @@ mkdir build
 cd build
 cmake ..
 make
-./engineRun
+./engineRun [path to obj]
 ```
 
 ## How to use the source code
@@ -27,30 +31,6 @@ The source code is split into 3 main modules.
 - *visualizer* - standalone module to visualize renders using the GTK+ toolkit
 - *renderer* - module responsible for tracking the scene state and performing raytracing. Depends on the *math* module.
 - *fileReader* - module to read in the .obj file with triangle verticies.
-
-## TODO + Bug/Modification tracker:
-- [x] Camera orientations
-- [x] Camera fov
-- [x] Support multiple light sources
-- [x] Spot lights
-- [x] Directional lights
-- [x] Get rid of excessive dynamic allocation
-- [x] Reflections going the wrong way (see cube render)
-- [x] Fix triangle points have to be clockwise
-- [x] Create a 3d file reader module
-- [ ] Add support for colors in the reader module
-- [ ] Add the support for any amount of points in faces in the reader
-- [x] Data structures for scene representation
-- [ ] Clean source code from debugging code
-- [x] Fix negative lighting bug
-- [x] Triangle orientation - agnostic code
-- [x] Do not convert float to char and back for reflections
-- [x] Shadows
-- [ ] Test with different view points
-- [ ] Test with different lights in different locations
-- [x] Check the performance of Windows devices with doubles
-- [x] Try parametric ray-plane intersects
-- [ ] Investigate potential bug on with shadows dependent on camera position
 
 ## Render times benchmarks (HD Human):
 - MacBookPro 2019 2.30 GHZ i5 : 6359ms
