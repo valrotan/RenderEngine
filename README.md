@@ -3,7 +3,7 @@
 ### Minimalistic render engine in C without using any libraries (almost)
 This is a simple ray-tracing rendering engine in C. It is partially inspired by/based on [Princeton's computer graphics class from 2000](https://www.cs.princeton.edu/courses/archive/fall00/cs426/).
 
-The rendering engine supports most obj files and does not support color from materials yet. It does, however, have full rgb support if you hardcode the triangles write the code to parse material files.
+The rendering engine supports most obj files and does not support color from materials yet. It does, however, have full rgb support if you hardcode the triangles or write the code to parse material files.
 
 The only two non-standard C libraries used are pthread and gtk+. gtk is used to render output to the screen and is optional. pthread is to render faster, even though it is completely on a CPU and the goal is to demonstrate simple rendering techniques and not be high-performing.
 
