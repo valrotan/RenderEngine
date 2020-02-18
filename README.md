@@ -7,6 +7,9 @@ The rendering engine supports most obj files and does not support color from mat
 
 The only two non-standard C libraries used are pthread and gtk+. gtk is used to render output to the screen and is optional. pthread is to render faster, even though it is completely on a CPU and the goal is to demonstrate simple rendering techniques and not be high-performing.
 
+![](https://github.com/valrotan/RenderEngine/blob/master/human.jpg)
+![](https://github.com/valrotan/RenderEngine/blob/master/torus.jpg)
+
 ## How to run
 ### Prerequisites:
 - GTK+ needs to be installed for visualization. Without it, the visualization module will not work.
@@ -31,7 +34,8 @@ The source code is split into 3 main modules.
 - *visualizer* - standalone module to visualize renders using the GTK+ toolkit
 - *renderer* - module responsible for tracking the scene state and performing raytracing. Depends on the *math* module.
 - *fileReader* - module to read in the .obj file with triangle verticies.
+- main.c has a lot most of the needed sample code to get started with modifying the scene and extending the project
 
-## Render times benchmarks (HD Human):
+## Render times benchmarks (HD Human, dafault scene/obj):
 - MacBookPro 2019 2.30 GHZ i5 : 6359ms
-- Dell XPS 15 2.20 GHZ i7: 426 ms
+- Dell XPS 15 2.20 GHZ i7: 426 ms *not updated*
