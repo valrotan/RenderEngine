@@ -56,6 +56,7 @@ typedef struct {
 	Camera *camera;
 	Scene *scene;
 	int nThreads;
+	int nTraces;
 } Renderer;
 
 typedef struct {
