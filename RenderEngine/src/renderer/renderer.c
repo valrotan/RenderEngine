@@ -553,7 +553,7 @@ void calcDirectionalLights(Scene *scene, Intersection3D *intersection,
 		lightToInter.v = &ltiv;
 		lightToInter.p = &ltip;
 		mul(dl->direction, -1, lightToInter.v);
-		add(&intersection->point, mul(normal, 0.001f, lightToInter.p),
+		add(&intersection->point, mul(normal, 0.00001f, lightToInter.p),
 				lightToInter.p);
 
 		Intersection3D inter;

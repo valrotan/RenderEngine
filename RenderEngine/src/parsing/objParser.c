@@ -1,4 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS
 #include "objParser.h"
 #include <math.h>
 #include <stdio.h>
@@ -89,9 +88,9 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 							bb,
 							cc,
 							0,
-							.5f + sinf(cosf(centroid.x) + centroid.y) / 2,
-							.5f + sinf(cosf(centroid.y) + centroid.z) / 2,
-							.5f + sinf(cosf(centroid.z) + centroid.x) / 2,
+							1,//.5f + sinf(cosf(centroid.x) + centroid.y) / 2,
+							1,//.5f + sinf(cosf(centroid.y) + centroid.z) / 2,
+							1,//.5f + sinf(cosf(centroid.z) + centroid.x) / 2,
 							0.25f,
 							.25f,
 							.1f};
