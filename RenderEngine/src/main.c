@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
 
 	printf("Initializing renderer...\n");
 	Camera camera;
-	Matrix4x4 trans[] = {getYRotationMatrix(00, 0), getTranslationMatrix(0, 10, 20)};
+	Matrix4x4 trans[] = {getXRotationMatrix(-30, 0), getTranslationMatrix(0, 1.25, 6)};
 	Matrix4x4 camToWorld = getTransformationMatrix(trans, 2);
 
 	camera.width = WIDTH;
@@ -90,8 +90,9 @@ int main(int argc, char **argv) {
 	scene.nDirectionalLights = 3;
 	scene.nSpotLights = 0;
 
-	Renderer renderer = {&camera, &scene, 0};
+	Renderer renderer = {&camera, &scene, 0, 0};
 	renderer.nThreads = 128;
+	renderer.nTraces = 3;
 
 	printf("Raycasting...\n");
 

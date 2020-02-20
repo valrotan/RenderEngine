@@ -46,10 +46,10 @@ void rendererInit(Renderer *renderer) {
 		norm(t->plane->v, t->plane->v);
 		t->plane->d = -dot(t->p1, t->plane->v);
 
-//		printf("init triangle : N (%.2f, %.2f, %.2f) d %.2f \n", t->plane->v->x,
-//					 t->plane->v->y, t->plane->v->z, t->plane->d);
-//		printf("  color : C (%f, %f, %f) \n", t->colorR, t->colorG, t->colorB);
-//		printf("  refl  : C (%.2f, %.2f, %.2f) \n", t->k_d, t->k_e, t->k_s);
+		//		printf("init triangle : N (%.2f, %.2f, %.2f) d %.2f \n",
+		//t->plane->v->x, 					 t->plane->v->y, t->plane->v->z, t->plane->d); 		printf("
+		//color : C (%f, %f, %f) \n", t->colorR, t->colorG, t->colorB); 		printf("
+		//refl  : C (%.2f, %.2f, %.2f) \n", t->k_d, t->k_e, t->k_s);
 	}
 	BoundingVolume *bv = malloc(sizeof(BoundingVolume));
 	// convert scene triangles to double pointers to triangles
@@ -79,7 +79,8 @@ void *rayTraceSegment(void *pSegment) {
 	Vector3D rp, rv;
 	ray.p = &rp;
 	ray.v = &rv;
-	applyTransformation(&ORIGIN_3D, &rSegment->renderer->camera->cameraToWorld, ray.p);
+	applyTransformation(&ORIGIN_3D, &rSegment->renderer->camera->cameraToWorld,
+											ray.p);
 
 	unsigned char *p = rSegment->screen;
 
@@ -89,8 +90,8 @@ void *rayTraceSegment(void *pSegment) {
 			constructRayThroughPixel(rSegment->renderer->camera, x, y,
 															 rSegment->width, rSegment->height, &ray);
 
-			traceRay(rSegment->renderer->camera, rSegment->renderer->scene, &ray, 3,
-							 rgb);
+			traceRay(rSegment->renderer->camera, rSegment->renderer->scene, &ray,
+							 rSegment->renderer->nTraces, rgb);
 
 			if (rgb[0] > 1) {
 				*p++ = 255;
@@ -127,11 +128,12 @@ void rayTrace(Renderer *renderer, unsigned char *screen) {
 																					 (size_t)renderer->nThreads);
 	RendererSegment *rSegments = (RendererSegment *)malloc(
 			sizeof(RendererSegment) * (size_t)renderer->nThreads);
-	float lines = (float) (renderer->camera->height) / renderer->nThreads;
+	float lines = (float)(renderer->camera->height) / renderer->nThreads;
 
 	for (int i = 0; i < renderer->nThreads; i++, rSegments++) {
 		rSegments->renderer = renderer;
-		rSegments->screen = screen + 3 * renderer->camera->width * (int)(i * lines + .5f);
+		rSegments->screen =
+				screen + 3 * renderer->camera->width * (int)(i * lines + .5f);
 		rSegments->width = renderer->camera->width;
 		rSegments->height = renderer->camera->height;
 		rSegments->startLine = (int)(i * lines + .5f);
@@ -151,7 +153,8 @@ Ray3D *constructRayThroughPixel(Camera *camera, int x, int y, int imageWidth,
 																int imageHeight, Ray3D *ray) {
 
 	// TODO: move all the constants to the loop in rayTrace
-	float Px = (2 * (x + 0.5f) / imageWidth - 1) * camera->scale * camera->aspectRatio;
+	float Px =
+			(2 * (x + 0.5f) / imageWidth - 1) * camera->scale * camera->aspectRatio;
 	float Py = (1 - 2 * (y + 0.5f) / imageHeight) * camera->scale;
 
 	Vector3D pWorld = {Px, Py, -1};
@@ -550,7 +553,7 @@ void calcDirectionalLights(Scene *scene, Intersection3D *intersection,
 		lightToInter.v = &ltiv;
 		lightToInter.p = &ltip;
 		mul(dl->direction, -1, lightToInter.v);
-		add(&intersection->point, mul(normal, 1.001f, lightToInter.p),
+		add(&intersection->point, mul(normal, 0.001f, lightToInter.p),
 				lightToInter.p);
 
 		Intersection3D inter;
