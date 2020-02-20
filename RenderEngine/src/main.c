@@ -18,8 +18,7 @@ int main(int argc, char **argv) {
 
 	printf("Initializing renderer...\n");
 	Camera camera;
-	Matrix4x4 trans[] = {getTranslationMatrix(0, 20, 15),
-											 getXRotationMatrix(-20, 0)};
+	Matrix4x4 trans[] = {getYRotationMatrix(00, 0), getTranslationMatrix(0, 10, 20)};
 	Matrix4x4 camToWorld = getTransformationMatrix(trans, 2);
 
 	camera.width = WIDTH;

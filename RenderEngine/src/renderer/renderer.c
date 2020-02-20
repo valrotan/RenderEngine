@@ -235,7 +235,7 @@ BoundingVolume *constructBoundingVolumes(BoundingVolume *bv) {
 	bv->nChildren = 0;
 
 	// end at n triangles per volume
-	if (bv->nTriangles > 1) {
+	if (bv->nTriangles > 2) {
 		int nLow = bv->nTriangles / 2;
 		int nHigh = bv->nTriangles - nLow;
 

@@ -1,15 +1,15 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "objParser.h"
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
 
 char *trimwhitespace(char *str);
-FILE* openFile(char* path);
-void parseFaceLine(char* str, int* vertN, int** verts);
+FILE *openFile(char *path);
+void parseFaceLine(char *str, int *vertN, int **verts);
 /*
-	Similar to strtok, takes in string and delim, pass the same string to extract all of the tokens
-	does not change the string
-	PRE:	str - string to tokenize
+	Similar to strtok, takes in string and delim, pass the same string to extract
+	all of the tokens does not change the string PRE:	str - string to tokenize
 			delim - a set of character delimeters
 			newstr - bool val if want to parse the next string
 	POST:
@@ -34,7 +34,7 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 	int facesCount = 0;
 
 	while (fscanf(fpIn, "%s", line) != EOF) {
-		 //printf("\'%s\'\n",line);
+		// printf("\'%s\'\n",line);
 		if (strstr(line, "#")) {
 			fscanf(fpIn, "%[^\n]s", line);
 		}
@@ -45,8 +45,9 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 		if (strlen(line) == 1) {
 			if (strstr(line, "o")) {
 				fscanf(fpIn, "%s", line);
-				//printf("LINE: %s\n", line);
-			} else if (line[0] == 'v' && line[1] == '\0') { // strstr(line, "v") && !strstr(line,"vn")
+				// printf("LINE: %s\n", line);
+			} else if (line[0] == 'v' &&
+								 line[1] == '\0') { // strstr(line, "v") && !strstr(line,"vn")
 				if (vertCount >= sizeVerts) {
 					sizeVerts *= 2;
 					Vector3D *temp = realloc(verts, sizeVerts * sizeof(Vector3D));
@@ -56,12 +57,12 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 					verts = temp;
 				}
 				float x, y, z;
-				fscanf(fpIn, "%f %f %f", &x, &y, &z); 
-				//printf("GOT: %f %f %f\n", x, y, z);
+				fscanf(fpIn, "%f %f %f", &x, &y, &z);
+				// printf("GOT: %f %f %f\n", x, y, z);
 				Vector3D a = {x, y, z};
 				verts[vertCount] = a;
 				vertCount++;
-			} else if (line[0] == 'f' && line[1]=='\0') {
+			} else if (line[0] == 'f' && line[1] == '\0') {
 				if (facesCount + 10 >= sizeFaces) {
 					sizeFaces *= 2;
 					tempFaces = realloc(faces, sizeFaces * sizeof(Triangle3D));
@@ -71,17 +72,29 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 					faces = tempFaces;
 				}
 				fscanf(fpIn, "%[^\n]s", line);
-				//printf("%s\n", line);
-				int* indexes, vertNum;
+				// printf("%s\n", line);
+				int *indexes, vertNum;
 				parseFaceLine(line, &vertNum, &indexes);
 				int first = indexes[0];
 				for (int i = 1; i + 1 < vertNum; i++) {
 					Vector3D *aa = verts + first - 1;
-					Vector3D *bb = verts + indexes[i]  - 1;
+					Vector3D *bb = verts + indexes[i] - 1;
 					Vector3D *cc = verts + indexes[i + 1] - 1;
-					//printf("%3d| VERTS: %d %d %d\n", facesCount, indexes[i], indexes[i + 1], indexes[i + 2]);
-					Triangle3D trig = { aa, bb, cc, 0, 225 / 255.0f,
-													  225 / 255.0f, 225 / 255.0f, 0.25f, .25f, .1f};
+					Vector3D centroid;
+					divide(add(add(aa, bb, &centroid), cc, &centroid), 3, &centroid);
+					// printf("%3d| VERTS: %d %d %d\n", facesCount, indexes[i], indexes[i
+					// + 1], indexes[i + 2]);
+					Triangle3D trig = {
+							aa,
+							bb,
+							cc,
+							0,
+							.5f + sinf(cosf(centroid.x) + centroid.y) / 2,
+							.5f + sinf(cosf(centroid.y) + centroid.z) / 2,
+							.5f + sinf(cosf(centroid.z) + centroid.x) / 2,
+							0.25f,
+							.25f,
+							.1f};
 					faces[facesCount] = trig;
 					facesCount++;
 				}
@@ -90,15 +103,15 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 		}
 	}
 
-	//printf("VERTC: %d\n", vertCount);
-	//printf("FACEC: %d\n", facesCount);
+	// printf("VERTC: %d\n", vertCount);
+	// printf("FACEC: %d\n", facesCount);
 	*trigList = faces;
 	*size = facesCount;
 	printf("Number of verts: %d\n", vertCount);
 	printf("Number of faces: %d\n", facesCount);
 
 	line[0] = '\0';
-	//printf("TRIG TEST: (%f, %f, %f)(%f, %f, %f)(%f, %f, %f)\n", faces[0].p1->x,
+	// printf("TRIG TEST: (%f, %f, %f)(%f, %f, %f)(%f, %f, %f)\n", faces[0].p1->x,
 	//			 faces[0].p1->y, faces[0].p1->z, faces[0].p2->x, faces[0].p2->y,
 	//			 faces[0].p2->z, faces[0].p3->x, faces[0].p3->y, faces[0].p3->z);
 	if (fclose(fpIn) != 0) {
@@ -106,7 +119,7 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 	}
 }
 
-void parseFaceLine(char* line, int* vertNumber, int **v) {
+void parseFaceLine(char *line, int *vertNumber, int **v) {
 	int spaces = 0;
 	for (int i = 0; line[i] != '\0'; i++) {
 		if (line[i] == ' ') {
@@ -114,29 +127,28 @@ void parseFaceLine(char* line, int* vertNumber, int **v) {
 		}
 	}
 	line += 1;
-	int* verts = (int*) malloc (spaces * sizeof(int));
+	int *verts = (int *)malloc(spaces * sizeof(int));
 
 	for (int i = 0; i < spaces; i++) {
 		char temp[100];
-		sscanf(line,"%[^\040\t]s", temp);
+		sscanf(line, "%[^\040\t]s", temp);
 
 		if (i < spaces - 1) {
 			line = strpbrk(line, "\t\040");
 			line = strpbrk(line, "0123456789");
 		}
-		
+
 		if (strstr(temp, "/")) {
-			//char* aStr = parser_strtok_r(line, "/", 1);
-			//fscanf(fpIn, "%s", line);
-			//char* bStr = parser_strtok_r(line, "/", 1);
-			//fscanf(fpIn, "%s", line);
-			//char* cStr = parser_strtok_r(line, "/", 1);
-			//sscanf(aStr, "%d", &a);
-			//sscanf(bStr, "%d", &b);
-			//sscanf(cStr, "%d", &c);
+			// char* aStr = parser_strtok_r(line, "/", 1);
+			// fscanf(fpIn, "%s", line);
+			// char* bStr = parser_strtok_r(line, "/", 1);
+			// fscanf(fpIn, "%s", line);
+			// char* cStr = parser_strtok_r(line, "/", 1);
+			// sscanf(aStr, "%d", &a);
+			// sscanf(bStr, "%d", &b);
+			// sscanf(cStr, "%d", &c);
 			sscanf(temp, "%d", verts + i);
-		}
-		else {
+		} else {
 			sscanf(temp, "%d", verts + i);
 		}
 	}
@@ -144,15 +156,14 @@ void parseFaceLine(char* line, int* vertNumber, int **v) {
 	*v = verts;
 }
 
-FILE* openFile(char* path) {
-	FILE* fpIn;
+FILE *openFile(char *path) {
+	FILE *fpIn;
 	if (!(fpIn = fopen(path, "r"))) {
 		printf("File was not found!\n");
 		exit(2);
 	}
 	return fpIn;
 }
-
 
 // Note: This function returns a pointer to a substring of the original string.
 // If the given string was allocated dynamically, the caller must not overwrite
@@ -180,16 +191,15 @@ char *trimwhitespace(char *str) {
 	return str;
 }
 
-
-char* parser_strtok_r(char* str, const char* delim, int newstr) {
+char *parser_strtok_r(char *str, const char *delim, int newstr) {
 	static int currIndex = 0;
 	if (newstr)
 		currIndex = 0;
 	if (!str || !delim || str[currIndex] == '\0')
 		return NULL;
 
-	char* pS = str;
-	char* W = (char*)malloc(100 * sizeof(char));
+	char *pS = str;
+	char *W = (char *)malloc(100 * sizeof(char));
 	int i = currIndex, k = 0, j;
 	int br = 0; // bool
 	while (str[i] != '\0' && !br) {
@@ -199,8 +209,7 @@ char* parser_strtok_r(char* str, const char* delim, int newstr) {
 				W[k] = str[i];
 				j++;
 				k++;
-			}
-			else {
+			} else {
 				br = 1;
 				break;
 			}
