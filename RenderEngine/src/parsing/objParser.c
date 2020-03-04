@@ -2,20 +2,23 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include "linkedList.h"
 
 char *trimwhitespace(char *str);
 FILE *openFile(char *path);
 void parseFaceLine(char *str, int *vertN, int **verts);
+
+
 /*
 	Similar to strtok, takes in string and delim, pass the same string to extract
-	all of the tokens does not change the string PRE:	str - string to tokenize
+	all of the tokens does not change the string 
+	PRE:	str - string to tokenize
 			delim - a set of character delimeters
 			newstr - bool val if want to parse the next string
 	POST:
 		token is extracted, currIndex is changed
 	returns: extracted token
 */
-
 void parseObj(char *path, Triangle3D **trigList, int *size) {
 	FILE *fpIn = openFile(path);
 	char *materialsPath[100];
@@ -28,8 +31,9 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 	int vertCount = 0;
 
 	int sizeFaces = 1000;
-	Triangle3D *faces = (Triangle3D *)malloc(sizeFaces * sizeof(Triangle3D));
-	Triangle3D *tempFaces;
+	StackNode* facesStack = (StackNode*)malloc(sizeof(StackNode));
+	//Triangle3D *faces = (Triangle3D *)malloc(sizeFaces * sizeof(Triangle3D));
+	//Triangle3D *tempFaces;
 	int facesCount = 0;
 
 	while (fscanf(fpIn, "%s", line) != EOF) {
@@ -62,14 +66,14 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 				verts[vertCount] = a;
 				vertCount++;
 			} else if (line[0] == 'f' && line[1] == '\0') {
-				if (facesCount + 10 >= sizeFaces) {
-					sizeFaces *= 2;
-					tempFaces = realloc(faces, sizeFaces * sizeof(Triangle3D));
-					if (!tempFaces) {
-						printf("Error with allocation!\n");
-					}
-					faces = tempFaces;
-				}
+				//if (facesCount + 10 >= sizeFaces) {
+				//	sizeFaces *= 2;
+				//	tempFaces = realloc(faces, sizeFaces * sizeof(Triangle3D));
+				//	if (!tempFaces) {
+				//		printf("Error with allocation!\n");
+				//	}
+				//	faces = tempFaces;
+				//}
 				fscanf(fpIn, "%[^\n]s", line);
 				// printf("%s\n", line);
 				int *indexes, vertNum;
@@ -94,7 +98,10 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 							0.25f,
 							.25f,
 							.1f};
-					faces[facesCount] = trig;
+					Triangle3D* pTemp = (Triangle3D*)malloc(sizeof(Triangle3D));
+					*pTemp = trig;
+					//faces[facesCount] = trig;
+					facesStack = push(facesStack, pTemp);
 					facesCount++;
 				}
 				free(indexes);
@@ -102,13 +109,26 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 		}
 	}
 
+	//memory wasted 814kb
 	// printf("VERTC: %d\n", vertCount);
 	// printf("FACEC: %d\n", facesCount);
-	*trigList = faces;
+	
+	Triangle3D* triggs = (Triangle3D*)malloc(facesCount * sizeof(Triangle3D));
+	int i = 0;
+	while (facesStack && i < facesCount) {
+		Triangle3D* n = facesStack->data;
+		pop(&facesStack);
+		triggs[i] = *n;
+		i++;
+	}
+	triggs;
+	*trigList = triggs;
 	*size = facesCount;
+	printf("Faces list size: %d\n", sizeFaces);
+	printf("Size of the triangle: %ud\n", sizeof(Triangle3D));
+	printf("Memory wasted: %ud bytes\n", (sizeFaces - facesCount < 0 ? 0 : (sizeFaces - facesCount) * sizeof(Triangle3D)) );
 	printf("Number of verts: %d\n", vertCount);
 	printf("Number of faces: %d\n", facesCount);
-
 	line[0] = '\0';
 	// printf("TRIG TEST: (%f, %f, %f)(%f, %f, %f)(%f, %f, %f)\n", faces[0].p1->x,
 	//			 faces[0].p1->y, faces[0].p1->z, faces[0].p2->x, faces[0].p2->y,
@@ -117,6 +137,13 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 		exit(3);
 	}
 }
+
+
+
+void centerVertecies(Vector3D* verts) {
+
+}
+
 
 void parseFaceLine(char *line, int *vertNumber, int **v) {
 	int spaces = 0;

@@ -8,3 +8,4 @@
 
 void parseObj(char *path, Triangle3D **trigList, int *size);
 char *parser_strtok_r(char *str, const char *delim, int newstr);
+void centerVertecies(Vector3D* verts);

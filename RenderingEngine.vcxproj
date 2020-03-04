@@ -22,6 +22,7 @@
     <ClCompile Include="RenderEngine\src\imageUtil\imageUtil.c" />
     <ClCompile Include="RenderEngine\src\main.c" />
     <ClCompile Include="RenderEngine\src\math\renderMath.c" />
+    <ClCompile Include="RenderEngine\src\parsing\linkedList.c" />
     <ClCompile Include="RenderEngine\src\parsing\objParser.c" />
     <ClCompile Include="RenderEngine\src\renderer\renderer.c" />
     <ClCompile Include="RenderEngine\src\visualizer\visualizer.c" />
@@ -29,6 +30,7 @@
   <ItemGroup>
     <ClInclude Include="RenderEngine\src\imageUtil\imageUtil.h" />
     <ClInclude Include="RenderEngine\src\math\renderMath.h" />
+    <ClInclude Include="RenderEngine\src\parsing\linkedList.h" />
     <ClInclude Include="RenderEngine\src\parsing\objParser.h" />
     <ClInclude Include="RenderEngine\src\renderer\renderer.h" />
     <ClInclude Include="RenderEngine\src\visualizer\visualizer.h" />
@@ -94,6 +96,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -105,6 +108,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
