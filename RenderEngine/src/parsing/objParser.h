@@ -3,8 +3,13 @@
 // Intended to parse obj files to work with this Rendering Engine
 
 #include "../math/renderMath.h"
-#include "stdio.h"
-#include "stdlib.h"
+#include "stack.h"
+
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+
 
 // helper functions
 

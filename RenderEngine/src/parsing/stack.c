@@ -1,4 +1,4 @@
-#include "linkedList.h"
+#include "stack.h"
 
 /***************************************************
 	Destroys dynamically allocated stack

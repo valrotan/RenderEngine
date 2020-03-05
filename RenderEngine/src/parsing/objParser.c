@@ -1,9 +1,4 @@
 #include "objParser.h"
-#include <math.h>
-#include <stdio.h>
-#include <string.h>
-#include "linkedList.h"
-
 
 void parseObj(char *path, Triangle3D **trigList, int *size, float *scale) {
 	FILE *fpIn = openFile(path);
