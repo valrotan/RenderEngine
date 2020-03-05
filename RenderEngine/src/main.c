@@ -16,23 +16,40 @@ int main(int argc, char **argv) {
 	visInit(WIDTH, HEIGHT);
 	unsigned char *screen = visGetPixbuf();
 
+	// increase x to scroll right, decrease x to scroll left
+	// increase y to scroll up, decrease to scroll down
+	// increase z to zoom out, decrease z to zoom in
+	
+	// ORIGINAL AXIS:
+	// x-axis - left to right
+	// y-axis - top to bottom
+	// z-axis - directed through the camera
+
 	printf("Initializing renderer...\n");
+
+	Triangle3D *t;
+	int size;
+
+	// FinalBaseMesh.obj
+	// tea.obj 17 
+	// tinker.obj 420
+
+	char *path = "RenderEngine/input/tea.obj";
+	if (argc > 1) {
+		path = argv[1];
+	}
+	float scale = 1;
+
+	parseObj(path, &t, &size, &scale);
+
 	Camera camera;
-	Matrix4x4 trans[] = {getXRotationMatrix(0, 0), getTranslationMatrix(0, 10, 20)};
-	Matrix4x4 camToWorld = getTransformationMatrix(trans, 2);
+	Matrix4x4 trans[] = { getScaleMatrix(scale,scale,scale), getXRotationMatrix(-30, 0), getTranslationMatrix(0, 0, 2)}; //getTranslationMatrix(0, 10, 20)};
+	Matrix4x4 camToWorld = getTransformationMatrix(trans, 3);
 
 	camera.width = WIDTH;
 	camera.height = HEIGHT;
 	camera.fov = 60;
 	camera.cameraToWorld = camToWorld;
-
-	Triangle3D *t;
-	int size;
-	char *path = "RenderEngine/input/FinalBaseMesh.obj";
-	if (argc > 1) {
-		path = argv[1];
-	}
-	parseObj(path, &t, &size);
 
 	Scene scene;
 	scene.bkgR = .3f;

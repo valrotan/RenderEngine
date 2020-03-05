@@ -19,7 +19,7 @@ void parseFaceLine(char *str, int *vertN, int **verts);
 		token is extracted, currIndex is changed
 	returns: extracted token
 */
-void parseObj(char *path, Triangle3D **trigList, int *size) {
+void parseObj(char *path, Triangle3D **trigList, int *size, float *scale) {
 	FILE *fpIn = openFile(path);
 	char *materialsPath[100];
 
@@ -32,6 +32,11 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 
 	int sizeFaces = 1000;
 	StackNode* facesStack = (StackNode*)malloc(sizeof(StackNode));
+	Vector3D* centerElement = (Vector3D*)malloc(sizeof(Vector3D));
+	centerElement->x = 0;
+	centerElement->y = 0;
+	centerElement->z = 0;
+
 	//Triangle3D *faces = (Triangle3D *)malloc(sizeFaces * sizeof(Triangle3D));
 	//Triangle3D *tempFaces;
 	int facesCount = 0;
@@ -63,6 +68,7 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 				fscanf(fpIn, "%f %f %f", &x, &y, &z);
 				// printf("GOT: %f %f %f\n", x, y, z);
 				Vector3D a = {x, y, z};
+				add(centerElement, &a, centerElement);
 				verts[vertCount] = a;
 				vertCount++;
 			} else if (line[0] == 'f' && line[1] == '\0') {
@@ -84,7 +90,7 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 					Vector3D *bb = verts + indexes[i] - 1;
 					Vector3D *cc = verts + indexes[i + 1] - 1;
 					Vector3D centroid;
-					divide(add(add(aa, bb, &centroid), cc, &centroid), 3, &centroid);
+					divide(add(add(aa, bb, &centroid), cc, &centroid), 3*(*scale), &centroid);
 					// printf("%3d| VERTS: %d %d %d\n", facesCount, indexes[i], indexes[i
 					// + 1], indexes[i + 2]);
 					Triangle3D trig = {
@@ -92,9 +98,9 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 							bb,
 							cc,
 							0,
-							1,//.5f + sinf(cosf(centroid.x) + centroid.y) / 2,
-							1,//.5f + sinf(cosf(centroid.y) + centroid.z) / 2,
-							1,//.5f + sinf(cosf(centroid.z) + centroid.x) / 2,
+							.5f + sinf(cosf(centroid.x) + centroid.y) / 2,
+							.5f + sinf(cosf(centroid.y) + centroid.z) / 2,
+							.5f + sinf(cosf(centroid.z) + centroid.x) / 2,
 							0.25f,
 							.25f,
 							.1f};
@@ -115,6 +121,42 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 	
 	Triangle3D* triggs = (Triangle3D*)malloc(facesCount * sizeof(Triangle3D));
 	int i = 0;
+
+	divide(centerElement, vertCount, centerElement);
+	
+	float xMax = 0, xMin = 0;
+	float yMax = 0, yMin = 0;
+	float zMax = 0, zMin = 0;
+
+
+	for (int i = 0; i < vertCount; i++) {
+		sub(&verts[i], centerElement, &verts[i]);
+		setMinMax(&(verts[i].x), &xMin, &xMax);
+		setMinMax(&(verts[i].y), &yMin, &yMax);
+		setMinMax(&(verts[i].z), &zMin, &zMax);
+	}
+
+	xMax = xMax - xMin;
+	yMax = yMax - yMin;
+	zMax = zMax - zMin;
+	
+	*scale = xMax > yMax ? xMax : yMax;
+	*scale = *scale > zMax ? *scale : zMax;
+	*scale /= 2;
+
+	// xMax: 3.3801, yMax : 1.4259, zMax : 2.0002
+	// xMin : -3.0539, yMin : -1.7241, zMin : -1.9998
+
+	// xMax: 20.5000, yMax: 2.4877, zMax: 14.0000
+	// xMin: -20.5000, yMin : -2.5123, zMin : -14.0000
+
+
+
+	printf("xMax: %.4f, yMax: %.4f, zMax: %.4f\n", xMax, yMax, zMax);
+	printf("xMin: %.4f, yMin: %.4f, zMin: %.4f\n", xMin, yMin, zMin);
+
+	//divide(&verts[i], scale, &verts[i]);
+
 	while (facesStack && i < facesCount) {
 		Triangle3D* n = facesStack->data;
 		pop(&facesStack);
@@ -130,6 +172,7 @@ void parseObj(char *path, Triangle3D **trigList, int *size) {
 	printf("Number of verts: %d\n", vertCount);
 	printf("Number of faces: %d\n", facesCount);
 	line[0] = '\0';
+	free(centerElement);
 	// printf("TRIG TEST: (%f, %f, %f)(%f, %f, %f)(%f, %f, %f)\n", faces[0].p1->x,
 	//			 faces[0].p1->y, faces[0].p1->z, faces[0].p2->x, faces[0].p2->y,
 	//			 faces[0].p2->z, faces[0].p3->x, faces[0].p3->y, faces[0].p3->z);

@@ -15,6 +15,11 @@ float dot2D(Vector2D *a, Vector2D *b) { return a->x * b->x + a->y * b->y; }
 
 float mag2D(Vector2D *v) { return sqrtf(v->x * v->x + v->y * v->y); }
 
+// Normalizes vector
+// Pre: v - vector to be normalized
+//		out - values of the vector are normalized so that the magnitude is 1
+// Post: normilizes vector v
+// Returns: result
 Vector3D *norm(Vector3D *v, Vector3D *out) {
 	float l = mag(v);
 	out->x = v->x / l;
@@ -23,6 +28,13 @@ Vector3D *norm(Vector3D *v, Vector3D *out) {
 	return out;
 }
 
+
+// Adds vector a + vector b
+// Pre: a - first vector
+//		b - second vector
+//		out - where the results of addition will be saved
+// Post: vector a + vector b
+// Returns: result
 Vector3D *add(Vector3D *a, Vector3D *b, Vector3D *out) {
 
 	out->x = a->x + b->x;
@@ -32,6 +44,12 @@ Vector3D *add(Vector3D *a, Vector3D *b, Vector3D *out) {
 	return out;
 }
 
+// Subtracts vector a - vector b
+// Pre: a - first vector to subtract from
+//		b - second vector that will be used to subtract from a
+//		out - where the results will be saved
+// Post: vector a - vector b
+// Returns: result
 Vector3D *sub(Vector3D *a, Vector3D *b, Vector3D *out) {
 
 	out->x = a->x - b->x;
@@ -148,10 +166,10 @@ Intersection3D *intersect(Ray3D *r, Triangle3D *t, Intersection3D *i) {
 
 Matrix4x4 getTranslationMatrix(float x, float y, float z) {
 	Matrix4x4 translate;
-	float t[4][4] = {{1, 0, 0, x}, //
-									 {0, 1, 0, y}, //
-									 {0, 0, 1, z}, //
-									 {0, 0, 0, 1}};
+	float t[4][4] = {	{1, 0, 0, x}, //
+						{0, 1, 0, y}, //
+						{0, 0, 1, z}, //
+						{0, 0, 0, 1}};
 	memcpy(translate.matrix, t, sizeof(t));
 	return translate;
 }
@@ -159,10 +177,10 @@ Matrix4x4 getTranslationMatrix(float x, float y, float z) {
 Matrix4x4 getScaleMatrix(float xScale, float yScale, float zScale) {
 	Matrix4x4 scale;
 
-	float s[4][4] = {{xScale, 0, 0, 0}, //
-									 {0, yScale, 0, 0}, //
-									 {0, 0, zScale, 0}, //
-									 {0, 0, 0, 1}};
+	float s[4][4] = {	{xScale, 0, 0, 0}, //
+						{0, yScale, 0, 0}, //
+						{0, 0, zScale, 0}, //
+						{0, 0, 0, 1}};
 
 	memcpy(scale.matrix, s, sizeof(s));
 	return scale;
@@ -179,10 +197,10 @@ Matrix4x4 getXRotationMatrix(float angle, int rad) {
 		angle = getRad(angle);
 
 	Matrix4x4 rotateX;
-	float x[4][4] = {{1, 0, 0, 0},                      //
-									 {0, cosf(angle), -sinf(angle), 0}, //
-									 {0, sinf(angle), cosf(angle), 0},  //
-									 {0, 0, 0, 1}};
+	float x[4][4] = {	{1, 0, 0, 0},                      //
+						{0, cosf(angle), -sinf(angle), 0}, //
+						{0, sinf(angle), cosf(angle), 0},  //
+						{0, 0, 0, 1}};
 	memcpy(rotateX.matrix, x, sizeof(x));
 
 	return rotateX;
@@ -225,10 +243,10 @@ Matrix4x4 getZRotationMatrix(float angle, int rad) {
 Matrix4x4 getEye() {
 	Matrix4x4 eye;
 
-	float temp[4][4] = {{1, 0, 0, 0}, //
-											{0, 1, 0, 0}, //
-											{0, 0, 1, 0}, //
-											{0, 0, 0, 1}};
+	float temp[4][4] ={	{1, 0, 0, 0}, //
+						{0, 1, 0, 0}, //
+						{0, 0, 1, 0}, //
+						{0, 0, 0, 1}};
 
 	memcpy(eye.matrix, temp, sizeof(temp));
 
@@ -284,4 +302,10 @@ Matrix4x4 multiply4x4Matrices(Matrix4x4 a, Matrix4x4 b) {
 	}
 
 	return result;
+}
+
+
+void setMinMax(const float *point, float* min, float* max) {
+	*min = *point < *min ? *point : *min;
+	*max = *point > *max ? *point : *max;
 }
