@@ -33,7 +33,7 @@
     <ClCompile Include="RenderEngine\src\imageUtil\imageUtil.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RenderEngine\src\parsing\linkedList.c">
+    <ClCompile Include="RenderEngine\src\parsing\stack.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -53,7 +53,7 @@
     <ClInclude Include="RenderEngine\src\imageUtil\imageUtil.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="RenderEngine\src\parsing\linkedList.h">
+    <ClInclude Include="RenderEngine\src\parsing\stack.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
