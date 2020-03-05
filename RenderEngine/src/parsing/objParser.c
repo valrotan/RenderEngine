@@ -4,29 +4,30 @@
 #include <string.h>
 #include "linkedList.h"
 
-char *trimwhitespace(char *str);
+// helper functions
+
 FILE *openFile(char *path);
 void parseFaceLine(char *str, int *vertN, int **verts);
 
 
 /*
-	Similar to strtok, takes in string and delim, pass the same string to extract
-	all of the tokens does not change the string 
-	PRE:	str - string to tokenize
-			delim - a set of character delimeters
-			newstr - bool val if want to parse the next string
+	Parses an obj file and outputs triangles that is interpretable by the program
+	PRE:	path - path to the .obj file
+			trigList - a pointer to the triangle list
+			size - output int for the number of triangles
+			scale - the scale factor to scale all of the models to be of similar size
 	POST:
-		token is extracted, currIndex is changed
-	returns: extracted token
+			File is parsed and all of the pre variables are set properly
+	returns: void
 */
 void parseObj(char *path, Triangle3D **trigList, int *size, float *scale) {
 	FILE *fpIn = openFile(path);
-	char *materialsPath[100];
 
-	char line[1000];
-	// char* pos = line;
+	char *materialsPath[100]; // for future material path parsing
 
-	int sizeVerts = 1000;
+	char line[1000]; // buffer line
+
+	int sizeVerts = 1000; // the current size of vertex array
 	Vector3D *verts = (Vector3D *)malloc(sizeVerts * sizeof(Vector3D));
 	int vertCount = 0;
 
@@ -89,18 +90,13 @@ void parseObj(char *path, Triangle3D **trigList, int *size, float *scale) {
 					Vector3D *aa = verts + first - 1;
 					Vector3D *bb = verts + indexes[i] - 1;
 					Vector3D *cc = verts + indexes[i + 1] - 1;
-					Vector3D centroid;
-					divide(add(add(aa, bb, &centroid), cc, &centroid), 3*(*scale), &centroid);
-					// printf("%3d| VERTS: %d %d %d\n", facesCount, indexes[i], indexes[i
-					// + 1], indexes[i + 2]);
 					Triangle3D trig = {
 							aa,
 							bb,
 							cc,
 							0,
-							.5f + sinf(cosf(centroid.x) + centroid.y) / 2,
-							.5f + sinf(cosf(centroid.y) + centroid.z) / 2,
-							.5f + sinf(cosf(centroid.z) + centroid.x) / 2,
+							0,
+							0,
 							0.25f,
 							.25f,
 							.1f};
@@ -120,6 +116,7 @@ void parseObj(char *path, Triangle3D **trigList, int *size, float *scale) {
 	// printf("FACEC: %d\n", facesCount);
 	
 	Triangle3D* triggs = (Triangle3D*)malloc(facesCount * sizeof(Triangle3D));
+	
 	int i = 0;
 
 	divide(centerElement, vertCount, centerElement);
@@ -144,38 +141,36 @@ void parseObj(char *path, Triangle3D **trigList, int *size, float *scale) {
 	*scale = *scale > zMax ? *scale : zMax;
 	*scale /= 2;
 
-	// xMax: 3.3801, yMax : 1.4259, zMax : 2.0002
-	// xMin : -3.0539, yMin : -1.7241, zMin : -1.9998
-
-	// xMax: 20.5000, yMax: 2.4877, zMax: 14.0000
-	// xMin: -20.5000, yMin : -2.5123, zMin : -14.0000
-
-
-
-	printf("xMax: %.4f, yMax: %.4f, zMax: %.4f\n", xMax, yMax, zMax);
-	printf("xMin: %.4f, yMin: %.4f, zMin: %.4f\n", xMin, yMin, zMin);
-
-	//divide(&verts[i], scale, &verts[i]);
-
 	while (facesStack && i < facesCount) {
 		Triangle3D* n = facesStack->data;
+		Vector3D centroid;
+		divide(add(add(n->p1, n->p2, &centroid), n->p3, &centroid), 2*(*scale), &centroid);
+		n->colorR = sinf(centroid.x)/2 + .5f;
+		n->colorG = sinf(centroid.y) / 2 + .5f;
+		n->colorB = sinf(centroid.z) / 2 + .5f;
+		// funky soft colors
+		// n->colorR = .5f + sinf(cosf(centroid.x) + centroid.y) / 1;
+		// n->colorG = .5f + sinf(cosf(centroid.z) + centroid.x) / 1; 
+		// n->colorB = .5f + sinf(cosf(centroid.y) + centroid.z) / 1;
 		pop(&facesStack);
 		triggs[i] = *n;
 		i++;
 	}
-	triggs;
+
 	*trigList = triggs;
 	*size = facesCount;
-	printf("Faces list size: %d\n", sizeFaces);
+
+	printf("\nFaces list size: %d\n", sizeFaces);
 	printf("Size of the triangle: %ud\n", sizeof(Triangle3D));
 	printf("Memory wasted: %ud bytes\n", (sizeFaces - facesCount < 0 ? 0 : (sizeFaces - facesCount) * sizeof(Triangle3D)) );
 	printf("Number of verts: %d\n", vertCount);
-	printf("Number of faces: %d\n", facesCount);
+	printf("Number of faces: %d\n\n", facesCount);
+
 	line[0] = '\0';
+
 	free(centerElement);
-	// printf("TRIG TEST: (%f, %f, %f)(%f, %f, %f)(%f, %f, %f)\n", faces[0].p1->x,
-	//			 faces[0].p1->y, faces[0].p1->z, faces[0].p2->x, faces[0].p2->y,
-	//			 faces[0].p2->z, faces[0].p3->x, faces[0].p3->y, faces[0].p3->z);
+	free(facesStack);
+
 	if (fclose(fpIn) != 0) {
 		exit(3);
 	}

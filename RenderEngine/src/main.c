@@ -43,8 +43,8 @@ int main(int argc, char **argv) {
 	parseObj(path, &t, &size, &scale);
 
 	Camera camera;
-	Matrix4x4 trans[] = { getScaleMatrix(scale,scale,scale), getXRotationMatrix(-30, 0), getTranslationMatrix(0, 0, 2)}; //getTranslationMatrix(0, 10, 20)};
-	Matrix4x4 camToWorld = getTransformationMatrix(trans, 3);
+	Matrix4x4 trans[] = { getScaleMatrix(scale,scale,scale), getYRotationMatrix(40,0), getXRotationMatrix(-30, 0), getTranslationMatrix(0, 0, 1.5f)}; //getTranslationMatrix(0, 10, 20)};
+	Matrix4x4 camToWorld = getTransformationMatrix(trans, 4);
 
 	camera.width = WIDTH;
 	camera.height = HEIGHT;
