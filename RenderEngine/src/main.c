@@ -6,20 +6,33 @@
 #include <stdlib.h>
 #include <sys/timeb.h>
 
+float scale = 1; // remove sometime
+int iter = 0;
+
+void render(unsigned char *screen, void *voidRenderer) {
+	Renderer *renderer = (Renderer *)voidRenderer;
+
+	Matrix4x4 trans[] = {getScaleMatrix(scale, scale, scale), //
+											 getYRotationMatrix(5*iter++, 0),           //
+											 getXRotationMatrix(-30, 0),          //
+											 getTranslationMatrix(0, 0, 1.5f)};
+	renderer->camera->cameraToWorld = getTransformationMatrix(trans, 4);
+
+	rendererInit(renderer);
+	rayTrace(renderer, screen);
+	printf("%d \n", iter);
+}
+
 int main(int argc, char **argv) {
 
 	printf("Starting render engine...\n");
 
 	int WIDTH = 1280, HEIGHT = 720;
 
-	printf("Initializing visualizer...\n");
-	visInit(WIDTH, HEIGHT);
-	unsigned char *screen = visGetPixbuf();
-
 	// increase x to scroll right, decrease x to scroll left
 	// increase y to scroll up, decrease to scroll down
 	// increase z to zoom out, decrease z to zoom in
-	
+
 	// ORIGINAL AXIS:
 	// x-axis - left to right
 	// y-axis - top to bottom
@@ -31,19 +44,24 @@ int main(int argc, char **argv) {
 	int size;
 
 	// FinalBaseMesh.obj
-	// tea.obj 17 
+	// tea.obj 17
 	// tinker.obj 420
 
-	char *path = "RenderEngine/input/tea.obj";
+	char *path = "RenderEngine/input/torus.obj";
 	if (argc > 1) {
 		path = argv[1];
 	}
-	float scale = 1;
+	scale = 1;
 
 	parseObj(path, &t, &size, &scale);
 
 	Camera camera;
-	Matrix4x4 trans[] = { getScaleMatrix(scale,scale,scale), getYRotationMatrix(40,0), getXRotationMatrix(-30, 0), getTranslationMatrix(0, 0, 1.5f)}; //getTranslationMatrix(0, 10, 20)};
+	Matrix4x4 trans[] = {
+			getScaleMatrix(scale, scale, scale),
+			getXRotationMatrix(-30, 0),
+			getTranslationMatrix(0, 0, 1.5f),
+			getYRotationMatrix(40, 0),
+	}; // getTranslationMatrix(0, 10, 20)};
 	Matrix4x4 camToWorld = getTransformationMatrix(trans, 4);
 
 	camera.width = WIDTH;
@@ -111,25 +129,37 @@ int main(int argc, char **argv) {
 	renderer.nThreads = 128;
 	renderer.nTraces = 0;
 
-	printf("Raycasting...\n");
+	printf("Initializing visualizer...\n");
 
-	struct timeb start, end;
-	int diff;
-	ftime(&start);
+	Visualizer vis;
+	int loadVideo = 1;
 
-	rendererInit(&renderer);
-	rayTrace(&renderer, screen);
-	ftime(&end);
-	diff =
-			(int)(1000.0 * (end.time - start.time) + (end.millitm - start.millitm));
+	if (loadVideo) {
+		visInitVideo(&vis, WIDTH, HEIGHT, &render, &renderer);
+		visShowVideo(&vis);
+	} else {
+		printf("Raycasting...\n");
+		visInit(&vis, WIDTH, HEIGHT);
 
-	printf("Render took %u milliseconds \n", diff);
+		struct timeb start, end;
+		int diff;
+		ftime(&start);
 
-	printf("Writing...\n");
+		rendererInit(&renderer);
+		rayTrace(&renderer, vis.pixels);
 
-	printf("%d \n", saveToTGA("image.tga", screen, WIDTH, HEIGHT));
+		ftime(&end);
+		diff =
+				(int)(1000.0 * (end.time - start.time) + (end.millitm - start.millitm));
+		printf("Render took %u milliseconds \n", diff);
 
-	visShowStill();
+		printf("Showing...\n");
+		visShowStill(&vis);
+	}
+
+	//	printf("%d \n", saveToTGA("image.tga", screen, WIDTH, HEIGHT));
+
+	//	visShowStill();
 
 	return 0;
 }
