@@ -88,6 +88,6 @@ void visInitVideo(Visualizer *v, int w, int h,
 
 void visShowVideo(Visualizer *v) {
 	gtk_widget_show_all(v->window);
-	g_timeout_add(300, _renderCaller, v);
+	g_timeout_add(200, _renderCaller, v);
 	gtk_main();
 }

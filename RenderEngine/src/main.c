@@ -13,9 +13,9 @@ void render(unsigned char *screen, void *voidRenderer) {
 	Renderer *renderer = (Renderer *)voidRenderer;
 
 	Matrix4x4 trans[] = {getScaleMatrix(scale, scale, scale), //
-											 getYRotationMatrix(5*iter++, 0),           //
-											 getXRotationMatrix(-30, 0),          //
-											 getTranslationMatrix(0, 0, 1.5f)};
+											 getYRotationMatrix(5 * iter++, 0),   //
+											 getXRotationMatrix(-25, 0),          //
+											 getTranslationMatrix(0, .1f, 2.1f)};
 	renderer->camera->cameraToWorld = getTransformationMatrix(trans, 4);
 
 	rendererInit(renderer);
@@ -56,12 +56,10 @@ int main(int argc, char **argv) {
 	parseObj(path, &t, &size, &scale);
 
 	Camera camera;
-	Matrix4x4 trans[] = {
-			getScaleMatrix(scale, scale, scale),
-			getXRotationMatrix(-30, 0),
-			getTranslationMatrix(0, 0, 1.5f),
-			getYRotationMatrix(40, 0),
-	}; // getTranslationMatrix(0, 10, 20)};
+	Matrix4x4 trans[] = {getScaleMatrix(scale, scale, scale), //
+											 getYRotationMatrix(0, 0),            //
+											 getXRotationMatrix(-25, 0),          //
+											 getTranslationMatrix(0, .1f, 2.1f)};
 	Matrix4x4 camToWorld = getTransformationMatrix(trans, 4);
 
 	camera.width = WIDTH;
@@ -132,7 +130,9 @@ int main(int argc, char **argv) {
 	printf("Initializing visualizer...\n");
 
 	Visualizer vis;
-	int loadVideo = 1;
+	int loadVideo = 0;
+	// CHANGE THE FPS VALUE IN VISUALIZER IF THE MODEL TAKES MORE THAN 100 MS TO
+	// LOAD
 
 	if (loadVideo) {
 		visInitVideo(&vis, WIDTH, HEIGHT, &render, &renderer);

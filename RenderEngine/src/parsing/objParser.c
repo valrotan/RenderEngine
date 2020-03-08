@@ -113,9 +113,9 @@ void parseObj(char *path, Triangle3D **trigList, int *size, float *scale) {
 	}
 
 
-	xMax = xMax - xMin;
+	xMax = (xMax - xMin) / 1.4;
 	yMax = yMax - yMin;
-	zMax = zMax - zMin;
+	zMax = (zMax - zMin) / 1.4;
 	
 	*scale = xMax > yMax ? xMax : yMax;
 	*scale = *scale > zMax ? *scale : zMax;
