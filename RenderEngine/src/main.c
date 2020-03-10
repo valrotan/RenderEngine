@@ -13,7 +13,7 @@ void render(unsigned char *screen, void *voidRenderer) {
 	Renderer *renderer = (Renderer *)voidRenderer;
 
 	Matrix4x4 trans[] = {getScaleMatrix(scale, scale, scale), //
-											 getYRotationMatrix(5 * iter++, 0),   //
+											 getYRotationMatrix(30 * iter++, 0),   //
 											 getXRotationMatrix(-25, 0),          //
 											 getTranslationMatrix(0, .1f, 2.1f)};
 	renderer->camera->cameraToWorld = getTransformationMatrix(trans, 4);
@@ -58,8 +58,8 @@ int main(int argc, char **argv) {
 	Camera camera;
 	Matrix4x4 trans[] = {getScaleMatrix(scale, scale, scale), //
 											 getYRotationMatrix(0, 0),            //
-											 getXRotationMatrix(-25, 0),          //
-											 getTranslationMatrix(0, .1f, 2.1f)};
+											 getXRotationMatrix(-180, 0),          //
+											 getTranslationMatrix(0, 0, 2.5f)};
 	Matrix4x4 camToWorld = getTransformationMatrix(trans, 4);
 
 	camera.width = WIDTH;
@@ -87,15 +87,15 @@ int main(int argc, char **argv) {
 	scene.pointLights = pointLights;
 
 	DirectionalLight dirLights[4];
-	Vector3D dirLightDir0 = {-1, -1, -1};
+	Vector3D dirLightDir0 = {-1, -1, 1};
 	dirLights[0].direction = norm(&dirLightDir0, &dirLightDir0);
-	dirLights[0].intensity = .5;
+	dirLights[0].intensity = .65f;
 	Vector3D dirLightDir1 = {1, -1, -1};
 	dirLights[1].direction = norm(&dirLightDir1, &dirLightDir1);
-	dirLights[1].intensity = .5;
+	dirLights[1].intensity = .65f;
 	Vector3D dirLightDir2 = {0, -1, 1};
 	dirLights[2].direction = norm(&dirLightDir2, &dirLightDir2);
-	dirLights[2].intensity = .5;
+	dirLights[2].intensity = .65f;
 
 	scene.directionalLights = dirLights;
 
@@ -124,7 +124,7 @@ int main(int argc, char **argv) {
 	scene.nSpotLights = 0;
 
 	Renderer renderer = {&camera, &scene, 0, 0};
-	renderer.nThreads = 128;
+	renderer.nThreads = 192;
 	renderer.nTraces = 0;
 
 	printf("Initializing visualizer...\n");
