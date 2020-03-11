@@ -461,7 +461,7 @@ float *getColor(Camera *camera, Scene *scene, Intersection3D *intersection,
 		reflectedRay.p = &rrp;
 		reflectedRay.v = &rrv;
 		Vector3D eps;
-		add(&intersection->point, mul(&normal, .0001f, &eps), reflectedRay.p);
+		add(&intersection->point, mul(&normal, .001f, &eps), reflectedRay.p);
 		reflectedRay.v = &reflectedVector;
 
 		float reflectedColors[3];
@@ -553,7 +553,7 @@ void calcDirectionalLights(Scene *scene, Intersection3D *intersection,
 		lightToInter.v = &ltiv;
 		lightToInter.p = &ltip;
 		mul(dl->direction, -1, lightToInter.v);
-		add(&intersection->point, mul(normal, 0.00001f, lightToInter.p),
+		add(&intersection->point, mul(normal, 0.001f, lightToInter.p),
 				lightToInter.p);
 
 		Intersection3D inter;

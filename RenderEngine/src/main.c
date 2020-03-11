@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
 
 	// increase x to scroll right, decrease x to scroll left
 	// increase y to scroll up, decrease to scroll down
-	// increase z to zoom out, decrease z to zoom in
+	// increase z to zoom out, decrease z to zoom in 
 	
 	// ORIGINAL AXIS:
 	// x-axis - left to right
@@ -33,8 +33,10 @@ int main(int argc, char **argv) {
 	// FinalBaseMesh.obj
 	// tea.obj 17 
 	// tinker.obj 420
+	// bugatti.obj
+	// plant.obj
 
-	char *path = "RenderEngine/input/tea.obj";
+	char *path = "RenderEngine/input/tinker.obj";
 	if (argc > 1) {
 		path = argv[1];
 	}
@@ -43,7 +45,7 @@ int main(int argc, char **argv) {
 	parseObj(path, &t, &size, &scale);
 
 	Camera camera;
-	Matrix4x4 trans[] = { getScaleMatrix(scale,scale,scale), getYRotationMatrix(40,0), getXRotationMatrix(-30, 0), getTranslationMatrix(0, 0, 1.5f)}; //getTranslationMatrix(0, 10, 20)};
+	Matrix4x4 trans[] = { getScaleMatrix(scale,scale,scale), getYRotationMatrix(40,0), getXRotationMatrix(-30, 0), getTranslationMatrix(0, 0.2f, 2.0f)};
 	Matrix4x4 camToWorld = getTransformationMatrix(trans, 4);
 
 	camera.width = WIDTH;

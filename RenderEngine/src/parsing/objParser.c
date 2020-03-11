@@ -75,6 +75,9 @@ void parseObj(char *path, Triangle3D **trigList, int *size, float *scale) {
 					Vector3D *aa = verts + first - 1;
 					Vector3D *bb = verts + indexes[i] - 1;
 					Vector3D *cc = verts + indexes[i + 1] - 1;
+					//if(facesCount>3330 && facesCount < 3350)
+						//printf("(%.2f,%.2f,%.2f) (%.2f,%.2f,%.2f) (%.2f,%.2f,%.2f)\n", aa->x, aa->y, aa->z, bb->x, bb->y, bb->z, cc->x, cc->y, cc->z);
+					
 					Triangle3D trig = {
 							aa,
 							bb,
@@ -88,6 +91,8 @@ void parseObj(char *path, Triangle3D **trigList, int *size, float *scale) {
 
 					Triangle3D* pTemp = (Triangle3D*)malloc(sizeof(Triangle3D));
 					*pTemp = trig;
+					//printf("%4d| (%.2f,%.2f,%.2f) (%.2f,%.2f,%.2f) (%.2f,%.2f,%.2f)\n", facesCount, pTemp->p1->x, pTemp->p1->y, pTemp->p1->z, pTemp->p2->x,
+					//	pTemp->p2->y, pTemp->p2->z, pTemp->p3->x, pTemp->p3->y, pTemp->p3->z);
 					facesStack = push(facesStack, pTemp);
 					facesCount++;
 				}
@@ -124,6 +129,9 @@ void parseObj(char *path, Triangle3D **trigList, int *size, float *scale) {
 	while (facesStack && i < facesCount) {
 		Triangle3D* n = facesStack->data;
 		Vector3D centroid;
+
+		//printf("%4d| (%.2f,%.2f,%.2f) (%.2f,%.2f,%.2f) (%.2f,%.2f,%.2f)\n", i, n->p1->x, n->p1->y, n->p1->z, n->p2->x, n->p2->y, n->p2->z, n->p3->x, n->p3->y, n->p3->z);
+		
 		divide(add(add(n->p1, n->p2, &centroid), n->p3, &centroid), 2*(*scale), &centroid);
 		n->colorR = sinf(centroid.x)/2 + .5f;
 		n->colorG = sinf(centroid.y) / 2 + .5f;
@@ -158,31 +166,17 @@ void parseObj(char *path, Triangle3D **trigList, int *size, float *scale) {
 
 
 void parseFaceLine(char *line, int *vertNumber, int **v) {
-	int spaces = 0;
-	for (int i = 0; line[i] != '\0'; i++) {
-		if (line[i] == ' ') {
-			spaces++;
-		}
+	int vNum = 0;
+	int* verts = (int*)malloc(5 * sizeof(int));
+	
+	char* buffer = strtok(line,"\t\n ");
+	while (buffer != NULL) {
+		sscanf(buffer, "%d", verts + vNum);
+		vNum++;
+		buffer = strtok(NULL, "\t\n ");
 	}
-	line += 1;
-	int *verts = (int *)malloc(spaces * sizeof(int));
 
-	for (int i = 0; i < spaces; i++) {
-		char temp[100];
-		sscanf(line, "%[^\040\t]s", temp);
-
-		if (i < spaces - 1) {
-			line = strpbrk(line, "\t\040");
-			line = strpbrk(line, "0123456789");
-		}
-
-		if (strstr(temp, "/")) {
-			sscanf(temp, "%d", verts + i);
-		} else {
-			sscanf(temp, "%d", verts + i);
-		}
-	}
-	*vertNumber = spaces;
+	*vertNumber = vNum;
 	*v = verts;
 }
 

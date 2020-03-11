@@ -36,7 +36,6 @@ Vector3D *norm(Vector3D *v, Vector3D *out) {
 // Post: vector a + vector b
 // Returns: result
 Vector3D *add(Vector3D *a, Vector3D *b, Vector3D *out) {
-
 	out->x = a->x + b->x;
 	out->y = a->y + b->y;
 	out->z = a->z + b->z;
