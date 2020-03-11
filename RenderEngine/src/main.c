@@ -27,7 +27,8 @@ int main(int argc, char **argv) {
 
 	printf("Starting render engine...\n");
 
-	int WIDTH = 1280, HEIGHT = 720;
+		int WIDTH = 6000, HEIGHT = 4000;
+//	int WIDTH = 1280, HEIGHT = 720;
 
 	// increase x to scroll right, decrease x to scroll left
 	// increase y to scroll up, decrease to scroll down
@@ -58,7 +59,7 @@ int main(int argc, char **argv) {
 	Camera camera;
 	Matrix4x4 trans[] = {getScaleMatrix(scale, scale, scale), //
 											 getYRotationMatrix(0, 0),            //
-											 getXRotationMatrix(0, 0),          //
+											 getXRotationMatrix(180, 0),          //
 											 getTranslationMatrix(0, 0, 2.5f)};
 	Matrix4x4 camToWorld = getTransformationMatrix(trans, 4);
 
@@ -154,10 +155,9 @@ int main(int argc, char **argv) {
 		printf("Render took %u milliseconds \n", diff);
 
 		printf("Showing...\n");
+		printf("%d \n", saveToTGA("image.tga", vis.pixels, WIDTH, HEIGHT));
 		visShowStill(&vis);
 	}
-
-	//	printf("%d \n", saveToTGA("image.tga", screen, WIDTH, HEIGHT));
 
 	//	visShowStill();
 

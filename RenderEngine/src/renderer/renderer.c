@@ -106,14 +106,9 @@ void *rayTraceSegment(void *pSegment) {
 				}
 			}
 
-			temp_rgb[0] /= (float)(ns * ns);
-			temp_rgb[1] /= (float)(ns * ns);
-			temp_rgb[2] /= (float)(ns * ns);
-
-			rgb[0] = temp_rgb[0];
-			rgb[1] = temp_rgb[1];
-			rgb[2] = temp_rgb[2];
-
+			rgb[0] = temp_rgb[0] / (float)(ns * ns);
+			rgb[1] = temp_rgb[1] / (float)(ns * ns);
+			rgb[2] = temp_rgb[2] / (float)(ns * ns);
 
 			//constructRayThroughPixel(rSegment->renderer->camera, x, y, rSegment->width, rSegment->height, &ray);
 
