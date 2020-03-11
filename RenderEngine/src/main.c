@@ -6,20 +6,33 @@
 #include <stdlib.h>
 #include <sys/timeb.h>
 
+float scale = 1; // remove sometime
+int iter = 0;
+
+void render(unsigned char *screen, void *voidRenderer) {
+	Renderer *renderer = (Renderer *)voidRenderer;
+
+	Matrix4x4 trans[] = {getScaleMatrix(scale, scale, scale), //
+											 getYRotationMatrix(30 * iter++, 0),   //
+											 getXRotationMatrix(-25, 0),          //
+											 getTranslationMatrix(0, .1f, 2.1f)};
+	renderer->camera->cameraToWorld = getTransformationMatrix(trans, 4);
+
+	rendererInit(renderer);
+	rayTrace(renderer, screen);
+	printf("%d \n", iter);
+}
+
 int main(int argc, char **argv) {
 
 	printf("Starting render engine...\n");
 
 	int WIDTH = 1280, HEIGHT = 720;
 
-	printf("Initializing visualizer...\n");
-	visInit(WIDTH, HEIGHT);
-	unsigned char *screen = visGetPixbuf();
-
 	// increase x to scroll right, decrease x to scroll left
 	// increase y to scroll up, decrease to scroll down
-	// increase z to zoom out, decrease z to zoom in 
-	
+	// increase z to zoom out, decrease z to zoom in
+
 	// ORIGINAL AXIS:
 	// x-axis - left to right
 	// y-axis - top to bottom
@@ -31,21 +44,22 @@ int main(int argc, char **argv) {
 	int size;
 
 	// FinalBaseMesh.obj
-	// tea.obj 17 
+	// tea.obj 17
 	// tinker.obj 420
-	// bugatti.obj
-	// plant.obj
 
-	char *path = "RenderEngine/input/tinker.obj";
+	char *path = "RenderEngine/input/torus.obj";
 	if (argc > 1) {
 		path = argv[1];
 	}
-	float scale = 1;
+	scale = 1;
 
 	parseObj(path, &t, &size, &scale);
 
 	Camera camera;
-	Matrix4x4 trans[] = { getScaleMatrix(scale,scale,scale), getYRotationMatrix(40,0), getXRotationMatrix(-30, 0), getTranslationMatrix(0, 0.2f, 2.0f)};
+	Matrix4x4 trans[] = {getScaleMatrix(scale, scale, scale), //
+											 getYRotationMatrix(0, 0),            //
+											 getXRotationMatrix(-180, 0),          //
+											 getTranslationMatrix(0, 0, 2.5f)};
 	Matrix4x4 camToWorld = getTransformationMatrix(trans, 4);
 
 	camera.width = WIDTH;
@@ -73,15 +87,15 @@ int main(int argc, char **argv) {
 	scene.pointLights = pointLights;
 
 	DirectionalLight dirLights[4];
-	Vector3D dirLightDir0 = {-1, -1, -1};
+	Vector3D dirLightDir0 = {-1, -1, 1};
 	dirLights[0].direction = norm(&dirLightDir0, &dirLightDir0);
-	dirLights[0].intensity = .5;
+	dirLights[0].intensity = .65f;
 	Vector3D dirLightDir1 = {1, -1, -1};
 	dirLights[1].direction = norm(&dirLightDir1, &dirLightDir1);
-	dirLights[1].intensity = .5;
+	dirLights[1].intensity = .65f;
 	Vector3D dirLightDir2 = {0, -1, 1};
 	dirLights[2].direction = norm(&dirLightDir2, &dirLightDir2);
-	dirLights[2].intensity = .5;
+	dirLights[2].intensity = .65f;
 
 	scene.directionalLights = dirLights;
 
@@ -110,28 +124,42 @@ int main(int argc, char **argv) {
 	scene.nSpotLights = 0;
 
 	Renderer renderer = {&camera, &scene, 0, 0};
-	renderer.nThreads = 128;
+	renderer.nThreads = 192;
 	renderer.nTraces = 0;
 
-	printf("Raycasting...\n");
+	printf("Initializing visualizer...\n");
 
-	struct timeb start, end;
-	int diff;
-	ftime(&start);
+	Visualizer vis;
+	int loadVideo = 0;
+	// CHANGE THE FPS VALUE IN VISUALIZER IF THE MODEL TAKES MORE THAN 100 MS TO
+	// LOAD
 
-	rendererInit(&renderer);
-	rayTrace(&renderer, screen);
-	ftime(&end);
-	diff =
-			(int)(1000.0 * (end.time - start.time) + (end.millitm - start.millitm));
+	if (loadVideo) {
+		visInitVideo(&vis, WIDTH, HEIGHT, &render, &renderer);
+		visShowVideo(&vis);
+	} else {
+		printf("Raycasting...\n");
+		visInit(&vis, WIDTH, HEIGHT);
 
-	printf("Render took %u milliseconds \n", diff);
+		struct timeb start, end;
+		int diff;
+		ftime(&start);
 
-	printf("Writing...\n");
+		rendererInit(&renderer);
+		rayTrace(&renderer, vis.pixels);
 
-	printf("%d \n", saveToTGA("image.tga", screen, WIDTH, HEIGHT));
+		ftime(&end);
+		diff =
+				(int)(1000.0 * (end.time - start.time) + (end.millitm - start.millitm));
+		printf("Render took %u milliseconds \n", diff);
 
-	visShowStill();
+		printf("Showing...\n");
+		visShowStill(&vis);
+	}
+
+	//	printf("%d \n", saveToTGA("image.tga", screen, WIDTH, HEIGHT));
+
+	//	visShowStill();
 
 	return 0;
 }

@@ -13,7 +13,7 @@ int saveToTGA(const char *filename, unsigned char *pbuf, short int w, short int 
 										0,0,0,0, // x,y
 										(char) (w & 0xff), (char) (w >> 8),
 										(char) (h & 0xff), (char) (h >> 8),
-										24, 0b00100000};
+										24, 1 << 5};
 	fwrite(header, sizeof(char), 18, tga);
 
 	unsigned char *p = pbuf;
