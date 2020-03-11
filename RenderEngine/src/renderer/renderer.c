@@ -77,8 +77,6 @@ void rendererInit(Renderer *renderer) {
 
 void *rayTraceSegment(void *pSegment) {
 
-	static int count = 0;
-
 	RendererSegment *rSegment = (RendererSegment *)pSegment;
 
 	Ray3D ray;
@@ -90,21 +88,15 @@ void *rayTraceSegment(void *pSegment) {
 
 	unsigned char *p = rSegment->screen;
 
-	float temp_rgb[3];
-	float rgb[3];
+	float rgb[3] = {0};
 	for (int y = rSegment->startLine; y < rSegment->stopLine; y++) {
 		for (int x = 0; x < rSegment->width; x++) {
-			
+			float temp_rgb[3] = {0,0,0};
 
-			int ns = 3;
-			constructRayThroughPixel(rSegment->renderer->camera, x, y,
-				rSegment->width, rSegment->height, &ray);
+			int ns = 5;
 			for (int i = 0; i < ns; i++) {
-				float offsetY = -0.0005f + i* 0.001f/ns;
 				for (int j = 0; j < ns; j++) {
-					float offsetX = -0.0005f + j * 0.001f / ns;
-					ray.v->x += offsetX;
-					ray.v->y += offsetY;
+					constructRayThroughPixel(rSegment->renderer->camera, ns * x + i, ns * y + j, rSegment->width, rSegment->height, &ray, ns);
 					traceRay(rSegment->renderer->camera, rSegment->renderer->scene, &ray,
 						rSegment->renderer->nTraces, rgb);
 
@@ -185,12 +177,12 @@ void rayTrace(Renderer *renderer, unsigned char *screen) {
 // the given pixel (x,y)
 // MBP performance: ~50ms for HD on single threadb
 Ray3D *constructRayThroughPixel(Camera *camera, int x, int y, int imageWidth,
-																int imageHeight, Ray3D *ray) {
+																int imageHeight, Ray3D *ray, int samplesPerPixel) {
 
 	// TODO: move all the constants to the loop in rayTrace
 	float Px =
-			(2 * (x + 0.5f) / imageWidth - 1) * camera->scale * camera->aspectRatio;
-	float Py = (1 - 2 * (y + 0.5f) / imageHeight) * camera->scale;
+			(2 * ((float)x / samplesPerPixel) / imageWidth - 1) * camera->scale * camera->aspectRatio;
+	float Py = (1 - 2 * ((float)y / samplesPerPixel) / imageHeight) * camera->scale;
 
 	Vector3D pWorld = {Px, Py, -1};
 	applyTransformation(&pWorld, &camera->cameraToWorld, &pWorld);

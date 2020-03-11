@@ -73,7 +73,7 @@ void rendererInit(Renderer *renderer);
 void rayTrace(Renderer *renderer, unsigned char *screen);
 
 Ray3D *constructRayThroughPixel(Camera *camera, int x, int y, int width,
-																int height, Ray3D *ray);
+																int height, Ray3D *ray, int samplesPerPixel);
 
 float *traceRay(Camera *camera, Scene *scene, Ray3D *ray, int depth,
 								float *rgb);

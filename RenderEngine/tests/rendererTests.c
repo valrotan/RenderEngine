@@ -35,7 +35,7 @@ void rayThroughPixelPerformance() {
 	applyTransformation(&ORIGIN_3D, &camera.cameraToWorld, ray.p);
 	for (int y = 0; y < HEIGHT; y++) {
 		for (int x = 0; x < WIDTH; x++) {
-			constructRayThroughPixel(&camera, x, y, WIDTH, HEIGHT, &ray);
+			constructRayThroughPixel(&camera, x, y, WIDTH, HEIGHT, &ray, 1);
 		}
 	}
 
