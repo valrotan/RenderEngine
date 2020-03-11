@@ -90,14 +90,43 @@ void *rayTraceSegment(void *pSegment) {
 
 	unsigned char *p = rSegment->screen;
 
+	float temp_rgb[3];
 	float rgb[3];
 	for (int y = rSegment->startLine; y < rSegment->stopLine; y++) {
 		for (int x = 0; x < rSegment->width; x++) {
-			constructRayThroughPixel(rSegment->renderer->camera, x, y,
-															 rSegment->width, rSegment->height, &ray);
+			
 
-			traceRay(rSegment->renderer->camera, rSegment->renderer->scene, &ray,
-							 rSegment->renderer->nTraces, rgb);
+			int ns = 3;
+			constructRayThroughPixel(rSegment->renderer->camera, x, y,
+				rSegment->width, rSegment->height, &ray);
+			for (int i = 0; i < ns; i++) {
+				float offsetY = -0.0005f + i* 0.001f/ns;
+				for (int j = 0; j < ns; j++) {
+					float offsetX = -0.0005f + j * 0.001f / ns;
+					ray.v->x += offsetX;
+					ray.v->y += offsetY;
+					traceRay(rSegment->renderer->camera, rSegment->renderer->scene, &ray,
+						rSegment->renderer->nTraces, rgb);
+
+					temp_rgb[0] += rgb[0];
+					temp_rgb[1] += rgb[1];
+					temp_rgb[2] += rgb[2];
+				}
+			}
+
+			temp_rgb[0] /= (float)(ns * ns);
+			temp_rgb[1] /= (float)(ns * ns);
+			temp_rgb[2] /= (float)(ns * ns);
+
+			rgb[0] = temp_rgb[0];
+			rgb[1] = temp_rgb[1];
+			rgb[2] = temp_rgb[2];
+
+
+			//constructRayThroughPixel(rSegment->renderer->camera, x, y, rSegment->width, rSegment->height, &ray);
+
+			//traceRay(rSegment->renderer->camera, rSegment->renderer->scene, &ray,
+			//				 rSegment->renderer->nTraces, rgb);
 
 			if (rgb[0] > 1) {
 				*p++ = 255;

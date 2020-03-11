@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
 	// tea.obj 17
 	// tinker.obj 420
 
-	char *path = "RenderEngine/input/torus.obj";
+	char *path = "RenderEngine/input/FinalBaseMesh.obj";
 	if (argc > 1) {
 		path = argv[1];
 	}
@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
 	Camera camera;
 	Matrix4x4 trans[] = {getScaleMatrix(scale, scale, scale), //
 											 getYRotationMatrix(0, 0),            //
-											 getXRotationMatrix(-180, 0),          //
+											 getXRotationMatrix(0, 0),          //
 											 getTranslationMatrix(0, 0, 2.5f)};
 	Matrix4x4 camToWorld = getTransformationMatrix(trans, 4);
 
