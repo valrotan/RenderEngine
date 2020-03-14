@@ -1,165 +1,52 @@
-#include "imageUtil/imageUtil.h"
-#include "parsing/objParser.h"
-#include "renderer/renderer.h"
-#include "visualizer/visualizer.h"
+#include "engine.h"
 #include <stdio.h>
-#include <stdlib.h>
-#include <sys/timeb.h>
-
-float scale = 1; // remove sometime
-int iter = 0;
-
-void render(unsigned char *screen, void *voidRenderer) {
-	Renderer *renderer = (Renderer *)voidRenderer;
-
-	Matrix4x4 trans[] = {getScaleMatrix(scale, scale, scale), //
-											 getYRotationMatrix(30 * iter++, 0),   //
-											 getXRotationMatrix(-25, 0),          //
-											 getTranslationMatrix(0, .1f, 2.1f)};
-	renderer->camera->cameraToWorld = getTransformationMatrix(trans, 4);
-
-	rendererInit(renderer);
-	rayTrace(renderer, screen);
-	printf("%d \n", iter);
-}
+#include <string.h>
 
 int main(int argc, char **argv) {
 
-	printf("Starting render engine...\n");
+	RenderArgs args = engineDefaultArgs();
 
-		int WIDTH = 6000, HEIGHT = 4000;
-//	int WIDTH = 1280, HEIGHT = 720;
-
-	// increase x to scroll right, decrease x to scroll left
-	// increase y to scroll up, decrease to scroll down
-	// increase z to zoom out, decrease z to zoom in
-
-	// ORIGINAL AXIS:
-	// x-axis - left to right
-	// y-axis - top to bottom
-	// z-axis - directed through the camera
-
-	printf("Initializing renderer...\n");
-
-	Triangle3D *t;
-	int size;
-
-	// FinalBaseMesh.obj
-	// tea.obj 17
-	// tinker.obj 420
-
-	char *path = "RenderEngine/input/FinalBaseMesh.obj";
-	if (argc > 1) {
-		path = argv[1];
-	}
-	scale = 1;
-
-	parseObj(path, &t, &size, &scale);
-
-	Camera camera;
-	Matrix4x4 trans[] = {getScaleMatrix(scale, scale, scale), //
-											 getYRotationMatrix(0, 0),            //
-											 getXRotationMatrix(180, 0),          //
-											 getTranslationMatrix(0, 0, 2.5f)};
-	Matrix4x4 camToWorld = getTransformationMatrix(trans, 4);
-
-	camera.width = WIDTH;
-	camera.height = HEIGHT;
-	camera.fov = 60;
-	camera.cameraToWorld = camToWorld;
-
-	Scene scene;
-	scene.bkgR = .3f;
-	scene.bkgG = .3f;
-	scene.bkgB = .3f;
-	scene.ambientLight = .25f;
-	scene.kSpecularExponent = 3;
-
-	scene.triangles = t;
-	scene.nTriangles = size;
-
-	PointLight *pointLights = (PointLight *)malloc(sizeof(PointLight));
-	Vector3D pointLightLoc1 = {0, -40, -50};
-	pointLights[0].point = &pointLightLoc1;
-	pointLights[0].intensity = 20;
-	Vector3D pointLightCoeffs1 = {2, .01f, .005f};
-	pointLights[0].attenuationCoeffs = &pointLightCoeffs1;
-
-	scene.pointLights = pointLights;
-
-	DirectionalLight dirLights[4];
-	Vector3D dirLightDir0 = {-1, -1, 1};
-	dirLights[0].direction = norm(&dirLightDir0, &dirLightDir0);
-	dirLights[0].intensity = .65f;
-	Vector3D dirLightDir1 = {1, -1, -1};
-	dirLights[1].direction = norm(&dirLightDir1, &dirLightDir1);
-	dirLights[1].intensity = .65f;
-	Vector3D dirLightDir2 = {0, -1, 1};
-	dirLights[2].direction = norm(&dirLightDir2, &dirLightDir2);
-	dirLights[2].intensity = .65f;
-
-	scene.directionalLights = dirLights;
-
-	SpotLight spotLights[4];
-	Vector3D spotLightLoc0 = {-60, -20, 100};
-	Vector3D spotLightDir0 = {1, -.25f, 0};
-	Vector3D spotLightCoeffs0 = {1, 1, 3.0f};
-	spotLights[0].point = &spotLightLoc0;
-	spotLights[0].direction = norm(&spotLightDir0, &spotLightDir0);
-	spotLights[0].attenuationCoeffs = &spotLightCoeffs0;
-	spotLights[0].intensity = 2000.0f;
-
-	Vector3D spotLightLoc1 = {60, -20, 100};
-	Vector3D spotLightDir1 = {-1, -.25f, 0};
-	Vector3D spotLightCoeffs1 = {1, 1, 3.0f};
-	spotLights[1].point = &spotLightLoc1;
-	spotLights[1].direction = norm(&spotLightDir1, &spotLightDir1);
-	spotLights[1].attenuationCoeffs = &spotLightCoeffs1;
-	spotLights[1].intensity = 2000.0f;
-
-	scene.spotLights = spotLights;
-
-	// *** light counts
-	scene.nPointLights = 0;
-	scene.nDirectionalLights = 3;
-	scene.nSpotLights = 0;
-
-	Renderer renderer = {&camera, &scene, 0, 0};
-	renderer.nThreads = 192;
-	renderer.nTraces = 0;
-
-	printf("Initializing visualizer...\n");
-
-	Visualizer vis;
-	int loadVideo = 0;
-	// CHANGE THE FPS VALUE IN VISUALIZER IF THE MODEL TAKES MORE THAN 100 MS TO
-	// LOAD
-
-	if (loadVideo) {
-		visInitVideo(&vis, WIDTH, HEIGHT, &render, &renderer);
-		visShowVideo(&vis);
-	} else {
-		printf("Raycasting...\n");
-		visInit(&vis, WIDTH, HEIGHT);
-
-		struct timeb start, end;
-		int diff;
-		ftime(&start);
-
-		rendererInit(&renderer);
-		rayTrace(&renderer, vis.pixels);
-
-		ftime(&end);
-		diff =
-				(int)(1000.0 * (end.time - start.time) + (end.millitm - start.millitm));
-		printf("Render took %u milliseconds \n", diff);
-
-		printf("Showing...\n");
-		printf("%d \n", saveToTGA("image.tga", vis.pixels, WIDTH, HEIGHT));
-		visShowStill(&vis);
+	for (int i = 1; i < argc; i += 2) {
+		if (strcmp(argv[i], "-help") == 0 || strcmp(argv[i], "-h") == 0) {
+			printf("Simple Render Engine in C \n"
+						 "\n"
+						 "-h/-help  -  print help menu \n"
+						 "\n");
+		} else if (strcmp(argv[i], "-input") == 0 || strcmp(argv[i], "-i") == 0) {
+			args.objPath = argv[i + 1];
+		} else if (strcmp(argv[i], "-output") == 0 || strcmp(argv[i], "-o") == 0) {
+			args.outputPath = argv[i + 1];
+		} else if (strcmp(argv[i], "-height") == 0 || strcmp(argv[i], "-h") == 0) {
+			args.resolution.y = strtol(argv[i + 1], NULL, 10);
+		} else if (strcmp(argv[i], "-width") == 0 || strcmp(argv[i], "-w") == 0) {
+			args.resolution.x = strtol(argv[i + 1], NULL, 10);
+		} else if (strcmp(argv[i], "-fov") == 0 || strcmp(argv[i], "-f") == 0) {
+			args.fov = strtof(argv[i + 1], NULL);
+		} else if (strcmp(argv[i], "-scale") == 0 || strcmp(argv[i], "-s") == 0) {
+			args.scale = strtof(argv[i + 1], NULL);
+		} else if (strcmp(argv[i], "-bkgR") == 0 || strcmp(argv[i], "-br") == 0) {
+			args.bkgColor.x = strtof(argv[i + 1], NULL);
+		} else if (strcmp(argv[i], "-bkgG") == 0 || strcmp(argv[i], "-bg") == 0) {
+			args.bkgColor.y = strtof(argv[i + 1], NULL);
+		} else if (strcmp(argv[i], "-bkgB") == 0 || strcmp(argv[i], "-bb") == 0) {
+			args.bkgColor.z = strtof(argv[i + 1], NULL);
+		} else if (strcmp(argv[i], "-ambient") == 0 || strcmp(argv[i], "-b") == 0) {
+			args.ambientLight = strtof(argv[i + 1], NULL);
+		} else if (strcmp(argv[i], "-kspecular") == 0 ||
+							 strcmp(argv[i], "-c") == 0) {
+			args.kSpecularExponent = strtol(argv[i + 1], NULL, 10);
+		} else if (strcmp(argv[i], "-aliasSamples") == 0 ||
+							 strcmp(argv[i], "-a") == 0) {
+			args.nAntialiasingSamples = strtol(argv[i + 1], NULL, 10);
+		} else if (strcmp(argv[i], "-traces") == 0 || strcmp(argv[i], "-t") == 0) {
+			args.nTraces = strtol(argv[i + 1], NULL, 10);
+		} else if (strcmp(argv[i], "-threads") == 0 || strcmp(argv[i], "-n") == 0) {
+			args.nThreads = strtol(argv[i + 1], NULL, 10);
+		} else {
+			printf("Unknown option: %s\n", argv[i]);
+			return 0;
+		}
 	}
 
-	//	visShowStill();
-
-	return 0;
+	engineRun(&args);
 }

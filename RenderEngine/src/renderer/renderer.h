@@ -57,6 +57,7 @@ typedef struct {
 	Scene *scene;
 	int nThreads;
 	int nTraces;
+	int nAntialiasingSamples;
 } Renderer;
 
 typedef struct {

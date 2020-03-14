@@ -10,6 +10,7 @@ file( GLOB VISUALIZER_SOURCES src/visualizer/*.c )
 file( GLOB PARSING_SOURCES src/parsing/*.c )
 file( GLOB IMAGE_UTIL_SOURCES src/imageUtil/*.c )
 file( GLOB SRC_SOURCES
+	src/engine.c
 	${MATH_SOURCES}
 	${RENDERER_SOURCES}
 	${VISUALIZER_SOURCES}

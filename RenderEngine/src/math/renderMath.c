@@ -1,6 +1,5 @@
 #include "renderMath.h"
 #include <math.h>
-#include <stdlib.h>
 #include <string.h>
 
 float dot(Vector3D *a, Vector3D *b) {

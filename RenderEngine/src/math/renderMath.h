@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdlib.h>
+
 typedef struct {
 	float x, y, z;
 } Vector3D;
@@ -76,4 +78,4 @@ float mag2D(Vector2D *v);
 float dist(Vector3D *a, Vector3D *b);
 float distSqrd(Vector3D *a, Vector3D *b);
 Intersection3D *intersect(Ray3D *r, Triangle3D *t, Intersection3D *out);
-void setMinMax(const float* point, float* min, float* max);
+void setMinMax(const float *point, float *min, float *max);

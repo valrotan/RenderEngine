@@ -89,11 +89,11 @@ void *rayTraceSegment(void *pSegment) {
 	unsigned char *p = rSegment->screen;
 
 	float rgb[3] = {0};
+	int ns = rSegment->renderer->nAntialiasingSamples;
 	for (int y = rSegment->startLine; y < rSegment->stopLine; y++) {
 		for (int x = 0; x < rSegment->width; x++) {
 			float temp_rgb[3] = {0,0,0};
 
-			int ns = 5;
 			for (int i = 0; i < ns; i++) {
 				for (int j = 0; j < ns; j++) {
 					constructRayThroughPixel(rSegment->renderer->camera, ns * x + i, ns * y + j, rSegment->width, rSegment->height, &ray, ns);
@@ -110,10 +110,10 @@ void *rayTraceSegment(void *pSegment) {
 			rgb[1] = temp_rgb[1] / (float)(ns * ns);
 			rgb[2] = temp_rgb[2] / (float)(ns * ns);
 
-			//constructRayThroughPixel(rSegment->renderer->camera, x, y, rSegment->width, rSegment->height, &ray);
+//			constructRayThroughPixel(rSegment->renderer->camera, x, y, rSegment->width, rSegment->height, &ray, 1);
 
-			//traceRay(rSegment->renderer->camera, rSegment->renderer->scene, &ray,
-			//				 rSegment->renderer->nTraces, rgb);
+//			traceRay(rSegment->renderer->camera, rSegment->renderer->scene, &ray,
+//							 rSegment->renderer->nTraces, rgb);
 
 			if (rgb[0] > 1) {
 				*p++ = 255;
@@ -557,64 +557,10 @@ BoundingVolume *constructBoundingVolumes(BoundingVolume *bv) {
 		//		printf("dims (%.2f, %.2f, %.2f) \n", bvDims.x, bvDims.y, bvDims.z);
 
 		if (bvDims.x >= bvDims.y && bvDims.x >= bvDims.z) { // split along x
-			// sort using x
-//			for (int i = 0; i < bv->nTriangles - 1; i++) {
-//				float min = INFINITY;
-//				int minInd = i;
-//				for (int j = i; j < bv->nTriangles; j++) {
-//					// centroid c in axis (if you divide by 3)
-//					float c = bv->triangles[j]->p1->x + //
-//										bv->triangles[j]->p2->x + //
-//										bv->triangles[j]->p3->x;
-//					if (c < min) {
-//						min = c;
-//						minInd = j;
-//					}
-//				}
-//				Triangle3D *temp = bv->triangles[minInd];
-//				bv->triangles[minInd] = bv->triangles[i];
-//				bv->triangles[i] = temp;
-//			}
 				quickSortX(bv->triangles, 0, bv->nTriangles - 1);
 		} else if (bvDims.y >= bvDims.x && bvDims.y >= bvDims.z) { // split along y
-			// sort using y
-//			for (int i = 0; i < bv->nTriangles - 1; i++) {
-//				float min = INFINITY;
-//				int minInd = i;
-//				for (int j = i; j < bv->nTriangles; j++) {
-//					// centroid c in axis (if you divide by 3)
-//					float c = bv->triangles[j]->p1->y + //
-//										bv->triangles[j]->p2->y + //
-//										bv->triangles[j]->p3->y;
-//					if (c < min) {
-//						min = c;
-//						minInd = j;
-//					}
-//				}
-//				Triangle3D *temp = bv->triangles[minInd];
-//				bv->triangles[minInd] = bv->triangles[i];
-//				bv->triangles[i] = temp;
-//			}
 			quickSortY(bv->triangles, 0, bv->nTriangles - 1);
 		} else { // split along z
-			// sort using z
-//			for (int i = 0; i < bv->nTriangles - 1; i++) {
-//				float min = INFINITY;
-//				int minInd = i;
-//				for (int j = i; j < bv->nTriangles; j++) {
-//					// centroid c in axis (if you divide by 3)
-//					float c = bv->triangles[j]->p1->z + //
-//										bv->triangles[j]->p2->z + //
-//										bv->triangles[j]->p3->z;
-//					if (c < min) {
-//						min = c;
-//						minInd = j;
-//					}
-//				}
-//				Triangle3D *temp = bv->triangles[minInd];
-//				bv->triangles[minInd] = bv->triangles[i];
-//				bv->triangles[i] = temp;
-//			}
 			quickSortZ(bv->triangles, 0, bv->nTriangles - 1);
 		}
 

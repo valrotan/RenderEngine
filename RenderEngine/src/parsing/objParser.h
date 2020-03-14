@@ -5,16 +5,15 @@
 #include "../math/renderMath.h"
 #include "stack.h"
 
-#include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-
 
 // helper functions
 
 // Open the path for the given file
-FILE* openFile(char* path);
+FILE *openFile(const char *path);
 
 // Parsing a face line to capture the vertecies of an object
 // Pre:		str - line string
@@ -22,7 +21,7 @@ FILE* openFile(char* path);
 //		verts - the vertecy indexes taht got captured
 // Post: capture and set the proper arguments
 // Returns: void
-void parseFaceLine(char* str, int* vertN, int** verts);
+void parseFaceLine(char *str, int *vertN, int **verts);
 
 /*
 	Parses an obj file and outputs triangles that is interpretable by the program
@@ -34,4 +33,4 @@ void parseFaceLine(char* str, int* vertN, int** verts);
 			File is parsed and all of the pre variables are set properly
 	returns: void
 */
-void parseObj(char *path, Triangle3D **trigList, int *size, float *scale);
+void parseObj(const char *path, Triangle3D **trigList, int *size, float *scale);
