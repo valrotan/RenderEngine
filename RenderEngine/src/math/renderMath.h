@@ -27,6 +27,7 @@ typedef struct {
 	float k_e; // emission
 	float k_d; // diffuse
 	float k_s; // specular (reflectivity)
+	Vector3D *centroid;
 } Triangle3D;
 
 typedef struct {
@@ -79,3 +80,13 @@ float dist(Vector3D *a, Vector3D *b);
 float distSqrd(Vector3D *a, Vector3D *b);
 Intersection3D *intersect(Ray3D *r, Triangle3D *t, Intersection3D *out);
 void setMinMax(const float *point, float *min, float *max);
+
+Vector3D *triangleGetX(Triangle3D *t, Vector3D *v);
+Vector3D *triangleGetY(Triangle3D *t, Vector3D *v);
+Vector3D *triangleGetZ(Triangle3D *t, Vector3D *v);
+
+float triangleCentroidX(Triangle3D *);
+float triangleCentroidY(Triangle3D *);
+float triangleCentroidZ(Triangle3D *);
+
+float dotOne(Vector3D *v);

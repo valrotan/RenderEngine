@@ -2,34 +2,12 @@
 #include <float.h>
 #include <math.h>
 #include <pthread.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/timeb.h>
-#include <stdio.h>
 
-#define EPSILON .0001f
-
-void printBoundingVolume(BoundingVolume *bv) {
-	for (int i = 0; i < bv->nChildren; i++) {
-		printBoundingVolume(bv->children + i);
-	}
-	//	printf("-----\n");
-	//	for (int i = 0; i < bv->nTriangles; i++) {
-	static char c = 'A';
-	printf("%c = [%.2f, %.2f, %.2f] \n", c, bv->low.x, bv->low.y, bv->low.z);
-	c++;
-	printf("%c = [%.2f, %.2f, %.2f] \n", c, bv->high.x, bv->high.y, bv->high.z);
-	c++;
-	printf("%% children: %d triangles: %d \n", bv->nChildren, bv->nTriangles);
-	for (int i = 0; i < bv->nTriangles; i++) {
-		printf("(%.2f %.2f %.2f) ", bv->triangles[i]->colorR,
-					 bv->triangles[i]->colorG, bv->triangles[i]->colorB);
-	}
-	printf("\n");
-	printf("drawBox(%c, %c, 1) \n", c - 2, c - 1);
-	//	}
-	//	printf("-----\n");
-}
+#define EPSILON .0005f
 
 void rendererInit(Renderer *renderer) {
 
@@ -45,14 +23,13 @@ void rendererInit(Renderer *renderer) {
 		sub(t->p1, t->p2, &v2);
 		t->plane = (Plane3D *)malloc(sizeof(Plane3D));
 		t->plane->v = (Vector3D *)malloc(sizeof(Vector3D));
+
 		cross(&v1, &v2, t->plane->v);
 		norm(t->plane->v, t->plane->v);
 		t->plane->d = -dot(t->p1, t->plane->v);
 
-		//		printf("init Triangle3D: N (%.2f, %.2f, %.2f) d %.2f \n",
-		// t->plane->v->x, 					 t->plane->v->y, t->plane->v->z, t->plane->d);
-		// printf(" color : C (%f, %f, %f) \n", t->colorR, t->colorG, t->colorB);
-		// printf(" refl  : C (%.2f, %.2f, %.2f) \n", t->k_d, t->k_e, t->k_s);
+		t->centroid = (Vector3D *)malloc(sizeof(Vector3D));
+		divide(add(add(t->p1, t->p2, t->centroid), t->p3, t->centroid), 3, t->centroid);
 	}
 	BoundingVolume *bv = malloc(sizeof(BoundingVolume));
 	// convert scene triangles to double pointers to triangles
@@ -64,7 +41,7 @@ void rendererInit(Renderer *renderer) {
 	bv->triangles = triangles;
 	bv->nTriangles = renderer->scene->nTriangles;
 
-//	printf("init construction \n");
+	//	printf("init construction \n");
 	renderer->scene->bv = constructBoundingVolumes(bv);
 	printf("finished construction \n");
 
@@ -92,13 +69,15 @@ void *rayTraceSegment(void *pSegment) {
 	int ns = rSegment->renderer->nAntialiasingSamples;
 	for (int y = rSegment->startLine; y < rSegment->stopLine; y++) {
 		for (int x = 0; x < rSegment->width; x++) {
-			float temp_rgb[3] = {0,0,0};
+			float temp_rgb[3] = {0, 0, 0};
 
 			for (int i = 0; i < ns; i++) {
 				for (int j = 0; j < ns; j++) {
-					constructRayThroughPixel(rSegment->renderer->camera, ns * x + i, ns * y + j, rSegment->width, rSegment->height, &ray, ns);
+					constructRayThroughPixel(rSegment->renderer->camera, ns * x + i,
+																	 ns * y + j, rSegment->width,
+																	 rSegment->height, &ray, ns);
 					traceRay(rSegment->renderer->camera, rSegment->renderer->scene, &ray,
-						rSegment->renderer->nTraces, rgb);
+									 rSegment->renderer->nTraces, rgb);
 
 					temp_rgb[0] += rgb[0];
 					temp_rgb[1] += rgb[1];
@@ -110,10 +89,11 @@ void *rayTraceSegment(void *pSegment) {
 			rgb[1] = temp_rgb[1] / (float)(ns * ns);
 			rgb[2] = temp_rgb[2] / (float)(ns * ns);
 
-//			constructRayThroughPixel(rSegment->renderer->camera, x, y, rSegment->width, rSegment->height, &ray, 1);
+			//			constructRayThroughPixel(rSegment->renderer->camera, x, y,
+			//rSegment->width, rSegment->height, &ray, 1);
 
-//			traceRay(rSegment->renderer->camera, rSegment->renderer->scene, &ray,
-//							 rSegment->renderer->nTraces, rgb);
+			//			traceRay(rSegment->renderer->camera, rSegment->renderer->scene,
+			//&ray, 							 rSegment->renderer->nTraces, rgb);
 
 			if (rgb[0] > 1) {
 				*p++ = 255;
@@ -172,12 +152,14 @@ void rayTrace(Renderer *renderer, unsigned char *screen) {
 // the given pixel (x,y)
 // MBP performance: ~50ms for HD on single threadb
 Ray3D *constructRayThroughPixel(Camera *camera, int x, int y, int imageWidth,
-																int imageHeight, Ray3D *ray, int samplesPerPixel) {
+																int imageHeight, Ray3D *ray,
+																int samplesPerPixel) {
 
 	// TODO: move all the constants to the loop in rayTrace
-	float Px =
-			(2 * ((float)x / samplesPerPixel) / imageWidth - 1) * camera->scale * camera->aspectRatio;
-	float Py = (1 - 2 * ((float)y / samplesPerPixel) / imageHeight) * camera->scale;
+	float Px = (2 * ((float)x / samplesPerPixel) / imageWidth - 1) *
+						 camera->scale * camera->aspectRatio;
+	float Py =
+			(1 - 2 * ((float)y / samplesPerPixel) / imageHeight) * camera->scale;
 
 	Vector3D pWorld = {Px, Py, -1};
 	applyTransformation(&pWorld, &camera->cameraToWorld, &pWorld);
@@ -215,25 +197,22 @@ void swap(Triangle3D **a, Triangle3D **b) {
 	*b = t;
 }
 
-// Quick sort: credit Geeks for Geeks
-// modified
+// Quick split: original credit Geeks for Geeks
+// heavily modified
 /* This function takes last element as pivot, places
 	 the pivot element at its correct position in sorted
 		array, and places all smaller (smaller than pivot)
 	 to left of pivot and all greater elements to right
 	 of pivot */
-int partitionX(Triangle3D **arr, int low, int high) {
+int partition(Triangle3D **arr, int low, int high, float getAxis(Triangle3D *)) {
 	Triangle3D *pivot = arr[high]; // pivot
 	int i = (low - 1);             // Index of smaller element
 
+	float cPivot = getAxis(pivot);
+
 	for (int j = low; j <= high - 1; j++) {
 
-		float cj = arr[j]->p1->x + //
-							 arr[j]->p2->x + //
-							 arr[j]->p3->x;
-		float cPivot = pivot->p1->x + //
-									 pivot->p2->x + //
-									 pivot->p3->x;
+		float cj = getAxis(arr[j]);
 		// If current element is smaller than the pivot
 		if (cj < cPivot) {
 			i++; // increment index of smaller element
@@ -244,18 +223,42 @@ int partitionX(Triangle3D **arr, int low, int high) {
 	return (i + 1);
 }
 
-int partitionY(Triangle3D **arr, int low, int high) {
-	Triangle3D *pivot = arr[high]; // pivot
-	int i = (low - 1);             // Index of smaller element
+Triangle3D *kthSmallest(Triangle3D **arr, int l, int r, int k, float getAxis(Triangle3D *)) {
+	// If k is smaller than number of
+	// elements in array
+	if (k > 0 && k <= r - l + 1) {
+
+		// Partition the array around last
+		// element and get position of pivot
+		// element in sorted array
+		int index = partition(arr, l, r, getAxis);
+
+		// If position is same as k
+		if (index - l == k - 1)
+			return arr[index];
+
+		// If position is more, recur
+		// for left subarray
+		if (index - l > k - 1)
+			return kthSmallest(arr, l, index - 1, k, getAxis);
+
+		// Else recur for right subarray
+		return kthSmallest(arr, index + 1, r, k - index + l - 1, getAxis);
+	}
+
+	// If k is more than number of
+	// elements in array
+	return 0;
+}
+
+int quickPartition(Triangle3D **arr, int low, int high, float getAxis(Triangle3D *)) {
+	Triangle3D *pivot = kthSmallest(arr, low, high, high / 2, getAxis); // pivot at median
+	int i = (low - 1); // Index of smaller element
+
+	float cPivot = getAxis(pivot);
 
 	for (int j = low; j <= high - 1; j++) {
-
-		float cj = arr[j]->p1->y + //
-							 arr[j]->p2->y + //
-							 arr[j]->p3->y;
-		float cPivot = pivot->p1->y + //
-									 pivot->p2->y + //
-									 pivot->p3->y;
+		float cj = getAxis(arr[j]);
 		// If current element is smaller than the pivot
 		if (cj < cPivot) {
 			i++; // increment index of smaller element
@@ -264,232 +267,6 @@ int partitionY(Triangle3D **arr, int low, int high) {
 	}
 	swap(&arr[i + 1], &arr[high]);
 	return (i + 1);
-}
-
-int partitionZ(Triangle3D **arr, int low, int high) {
-	Triangle3D *pivot = arr[high]; // pivot
-	int i = (low - 1);             // Index of smaller element
-
-	for (int j = low; j <= high - 1; j++) {
-
-		float cj = arr[j]->p1->z + //
-							 arr[j]->p2->z + //
-							 arr[j]->p3->z;
-		float cPivot = pivot->p1->z + //
-									 pivot->p2->z + //
-									 pivot->p3->z;
-		// If current element is smaller than the pivot
-		if (cj < cPivot) {
-			i++; // increment index of smaller element
-			swap(&arr[i], &arr[j]);
-		}
-	}
-	swap(&arr[i + 1], &arr[high]);
-	return (i + 1);
-}
-
-// credit: GeeksforGeeks
-// This function returns k'th smallest
-// element in arr[l..r] using QuickSort
-// based method.  ASSUMPTION: ALL ELEMENTS
-// IN ARR[] ARE DISTINCT
-Triangle3D *kthSmallestX(Triangle3D **arr, int l, int r, int k)
-{
-		// If k is smaller than number of
-		// elements in array
-		if (k > 0 && k <= r - l + 1) {
-
-				// Partition the array around last
-				// element and get position of pivot
-				// element in sorted array
-				int index = partitionX(arr, l, r);
-
-				// If position is same as k
-				if (index - l == k - 1)
-						return arr[index];
-
-				// If position is more, recur
-				// for left subarray
-				if (index - l > k - 1)
-						return kthSmallestX(arr, l, index - 1, k);
-
-				// Else recur for right subarray
-				return kthSmallestX(arr, index + 1, r,
-														k - index + l - 1);
-		}
-
-		// If k is more than number of
-		// elements in array
-		return 0;
-}
-
-Triangle3D *kthSmallestY(Triangle3D **arr, int l, int r, int k)
-{
-		// If k is smaller than number of
-		// elements in array
-		if (k > 0 && k <= r - l + 1) {
-
-				// Partition the array around last
-				// element and get position of pivot
-				// element in sorted array
-				int index = partitionY(arr, l, r);
-
-				// If position is same as k
-				if (index - l == k - 1)
-						return arr[index];
-
-				// If position is more, recur
-				// for left subarray
-				if (index - l > k - 1)
-						return kthSmallestY(arr, l, index - 1, k);
-
-				// Else recur for right subarray
-				return kthSmallestY(arr, index + 1, r,
-														k - index + l - 1);
-		}
-
-		// If k is more than number of
-		// elements in array
-		return 0;
-}
-
-Triangle3D *kthSmallestZ(Triangle3D **arr, int l, int r, int k)
-{
-		// If k is smaller than number of
-		// elements in array
-		if (k > 0 && k <= r - l + 1) {
-
-				// Partition the array around last
-				// element and get position of pivot
-				// element in sorted array
-				int index = partitionZ(arr, l, r);
-
-				// If position is same as k
-				if (index - l == k - 1)
-						return arr[index];
-
-				// If position is more, recur
-				// for left subarray
-				if (index - l > k - 1)
-						return kthSmallestZ(arr, l, index - 1, k);
-
-				// Else recur for right subarray
-				return kthSmallestZ(arr, index + 1, r,
-														k - index + l - 1);
-		}
-
-		// If k is more than number of
-		// elements in array
-		return 0;
-}
-
-int quickPartitionX(Triangle3D **arr, int low, int high) {
-	Triangle3D *pivot = kthSmallestX(arr, low, high, high / 2); // pivot
-	int i = (low - 1);             // Index of smaller element
-
-	for (int j = low; j <= high - 1; j++) {
-
-		float cj = arr[j]->p1->x + //
-							 arr[j]->p2->x + //
-							 arr[j]->p3->x;
-		float cPivot = pivot->p1->x + //
-									 pivot->p2->x + //
-									 pivot->p3->x;
-		// If current element is smaller than the pivot
-		if (cj < cPivot) {
-			i++; // increment index of smaller element
-			swap(&arr[i], &arr[j]);
-		}
-	}
-	swap(&arr[i + 1], &arr[high]);
-	return (i + 1);
-}
-
-int quickPartitionY(Triangle3D **arr, int low, int high) {
-	Triangle3D *pivot = kthSmallestY(arr, low, high, high / 2); // pivot
-	int i = (low - 1);             // Index of smaller element
-
-	for (int j = low; j <= high - 1; j++) {
-
-		float cj = arr[j]->p1->y + //
-							 arr[j]->p2->y + //
-							 arr[j]->p3->y;
-		float cPivot = pivot->p1->y + //
-									 pivot->p2->y + //
-									 pivot->p3->y;
-		// If current element is smaller than the pivot
-		if (cj < cPivot) {
-			i++; // increment index of smaller element
-			swap(&arr[i], &arr[j]);
-		}
-	}
-	swap(&arr[i + 1], &arr[high]);
-	return (i + 1);
-}
-
-int quickPartitionZ(Triangle3D **arr, int low, int high) {
-	Triangle3D *pivot = kthSmallestZ(arr, low, high, high / 2); // pivot
-	int i = (low - 1);             // Index of smaller element
-
-	for (int j = low; j <= high - 1; j++) {
-
-		float cj = arr[j]->p1->z + //
-							 arr[j]->p2->z + //
-							 arr[j]->p3->z;
-		float cPivot = pivot->p1->z + //
-									 pivot->p2->z + //
-									 pivot->p3->z;
-		// If current element is smaller than the pivot
-		if (cj < cPivot) {
-			i++; // increment index of smaller element
-			swap(&arr[i], &arr[j]);
-		}
-	}
-	swap(&arr[i + 1], &arr[high]);
-	return (i + 1);
-}
-
-/* The main function that implements QuickSort
- arr[] --> Array to be sorted,
-	low  --> Starting index,
-	high  --> Ending index */
-void quickSortX(Triangle3D **arr, int low, int high) {
-	if (low < high) {
-		/* pi is partitioning index, arr[p] is now
-			 at right place */
-		int pi = quickPartitionX(arr, low, high);
-
-		// Separately sort elements before
-		// partition and after partition
-//		quickSortX(arr, low, pi - 1);
-//		quickSortX(arr, pi + 1, high);
-	}
-}
-
-void quickSortY(Triangle3D **arr, int low, int high) {
-	if (low < high) {
-		/* pi is partitioning index, arr[p] is now
-			 at right place */
-		int pi = quickPartitionY(arr, low, high);
-
-		// Separately sort elements before
-		// partition and after partition
-//		quickSortY(arr, low, pi - 1);
-//		quickSortY(arr, pi + 1, high);
-	}
-}
-
-void quickSortZ(Triangle3D **arr, int low, int high) {
-	if (low < high) {
-		/* pi is partitioning index, arr[p] is now
-			 at right place */
-		int pi = quickPartitionZ(arr, low, high);
-
-		// Separately sort elements before
-		// partition and after partition
-//		quickSortZ(arr, low, pi - 1);
-//		quickSortZ(arr, pi + 1, high);
-	}
 }
 
 // generate bounding volumes
@@ -556,16 +333,19 @@ BoundingVolume *constructBoundingVolumes(BoundingVolume *bv) {
 		sub(&bv->high, &bv->low, &bvDims);
 		//		printf("dims (%.2f, %.2f, %.2f) \n", bvDims.x, bvDims.y, bvDims.z);
 
-		if (bvDims.x >= bvDims.y && bvDims.x >= bvDims.z) { // split along x
-				quickSortX(bv->triangles, 0, bv->nTriangles - 1);
-		} else if (bvDims.y >= bvDims.x && bvDims.y >= bvDims.z) { // split along y
-			quickSortY(bv->triangles, 0, bv->nTriangles - 1);
+		if (bvDims.x > bvDims.y && bvDims.x > bvDims.z) { // split along x
+			quickPartition(bv->triangles, 0, bv->nTriangles - 1, triangleCentroidX);
+		} else if (bvDims.y > bvDims.z) { // split along y
+			quickPartition(bv->triangles, 0, bv->nTriangles - 1, triangleCentroidY);
 		} else { // split along z
-			quickSortZ(bv->triangles, 0, bv->nTriangles - 1);
+			quickPartition(bv->triangles, 0, bv->nTriangles - 1, triangleCentroidZ);
 		}
 
-		memcpy(low, bv->triangles, sizeof(Triangle3D *) * (size_t)nLow);
-		memcpy(high, bv->triangles + nLow, sizeof(Triangle3D *) * (size_t)nHigh);
+//		memcpy(low, bv->triangles, sizeof(Triangle3D *) * (size_t)nLow);
+//		memcpy(high, bv->triangles + nLow, sizeof(Triangle3D *) * (size_t)nHigh);
+		low = bv->triangles;
+		high = bv->triangles + nLow;
+
 		BoundingVolume *children =
 				(BoundingVolume *)malloc(sizeof(BoundingVolume) * 2);
 

@@ -1,6 +1,7 @@
 #include "objParser.h"
 
-void parseObj(const char *path, Triangle3D **trigList, int *size, float *scale) {
+void parseObj(const char *path, Triangle3D **trigList, int *size,
+							float *scale) {
 	FILE *fpIn = openFile(path);
 
 	char *materialsPath[100]; // for future material path parsing
@@ -80,10 +81,11 @@ void parseObj(const char *path, Triangle3D **trigList, int *size, float *scale) 
 					// aa->x, aa->y, aa->z, bb->x, bb->y, bb->z, cc->x, cc->y, cc->z);
 
 					Triangle3D trig = {
-							aa,    bb,  cc, // verts
-							0,              // normal plane
-							0,     0,   0,  // rgb
-							0.25f, .3f, .1f // ke kd ks
+							aa,   bb,   cc,  // verts
+							0,               // normal plane
+							0,    0,    0,   // rgb
+							0.2f, .25f, .1f, // ke kd ks
+							0                // centroid (initialized in render)
 					};
 
 					Triangle3D *pTemp = (Triangle3D *)malloc(sizeof(Triangle3D));
@@ -137,9 +139,9 @@ void parseObj(const char *path, Triangle3D **trigList, int *size, float *scale) 
 		n->colorG = sinf(centroid.y) + .5f;
 		n->colorB = sinf(centroid.z) + .5f;
 		// funky soft colors
-		//		n->colorR = .5f + sinf(cosf(centroid.x) + centroid.y) / 1;
+		//		n->colorR = .5f + sinf(cosf(centroid.x) - centroid.y) / 1;
 		//		n->colorG = .5f + sinf(cosf(centroid.z) + centroid.x) / 1;
-		//		n->colorB = .5f + sinf(cosf(centroid.y) + centroid.z) / 1;
+		//		n->colorB = .5f + sinf(cosf(-centroid.y) + centroid.z) / 1;
 		// const colors
 		//		n->colorR = .15f;
 		//		n->colorG = .15f;

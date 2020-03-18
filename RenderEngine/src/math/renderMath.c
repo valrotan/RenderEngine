@@ -307,3 +307,38 @@ void setMinMax(const float *point, float* min, float* max) {
 	*min = *point < *min ? *point : *min;
 	*max = *point > *max ? *point : *max;
 }
+
+Vector3D *triangleGetX(Triangle3D *t, Vector3D *v) {
+	v->x = t->p1->x;
+	v->y = t->p2->x;
+	v->z = t->p3->x;
+	return v;
+}
+
+Vector3D *triangleGetY(Triangle3D *t, Vector3D *v) {
+	v->x = t->p1->y;
+	v->y = t->p2->y;
+	v->z = t->p3->y;
+	return v;
+}
+
+Vector3D *triangleGetZ(Triangle3D *t, Vector3D *v) {
+	v->x = t->p1->z;
+	v->y = t->p2->z;
+	v->z = t->p3->z;
+	return v;
+}
+
+float dotOne(Vector3D *v) {
+	return v->x + v->y + v->z;
+}
+
+float triangleCentroidX(Triangle3D *t) {
+	return t->centroid->x;
+}
+float triangleCentroidY(Triangle3D *t) {
+	return t->centroid->y;
+}
+float triangleCentroidZ(Triangle3D *t) {
+	return t->centroid->z;
+}

@@ -7,7 +7,7 @@ int main(int argc, char **argv) {
 	RenderArgs args = engineDefaultArgs();
 
 	for (int i = 1; i < argc; i += 2) {
-		if (strcmp(argv[i], "-help") == 0 || strcmp(argv[i], "-h") == 0) {
+		if (strcmp(argv[i], "-help") == 0) {
 			printf("Simple Render Engine in C \n"
 						 "\n"
 						 "-h/-help  -  print help menu \n"

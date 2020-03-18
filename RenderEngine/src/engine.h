@@ -19,6 +19,6 @@ typedef struct {
 	int loadVideo;
 } RenderArgs;
 
-RenderArgs engineDefaultArgs();
+RenderArgs engineDefaultArgs(void);
 
 void engineRun(RenderArgs *args);

@@ -13,7 +13,7 @@ RenderArgs engineDefaultArgs() {
 
 	args.resolution.x = 1280;
 	args.resolution.y = 720;
-	args.objPath = "input/sphere.obj";
+	args.objPath = "input/torus.obj";
 	args.outputPath = "output.tga";
 
 	args.fov = 60;
@@ -55,7 +55,7 @@ RenderArgs engineDefaultArgs() {
 void engineRun(RenderArgs *args) {
 	printf("Starting render engine...\n");
 
-	int WIDTH = args->resolution.x, HEIGHT = args->resolution.y;
+	const int WIDTH = (int)args->resolution.x, HEIGHT = (int)args->resolution.y;
 
 	// increase x to scroll right, decrease x to scroll left
 	// increase y to scroll up, decrease to scroll down
@@ -71,11 +71,7 @@ void engineRun(RenderArgs *args) {
 	Triangle3D *t;
 	int size;
 
-	// FinalBaseMesh.obj
-	// tea.obj 17
-	// tinker.obj 420
-
-	const char *path = "input/sphere.obj";
+	const char *path = "input/torus.obj";
 	if (*args->objPath) {
 		path = args->objPath;
 	}
@@ -86,8 +82,8 @@ void engineRun(RenderArgs *args) {
 
 	Camera camera;
 	Matrix4x4 trans[] = {getScaleMatrix(scale, scale, scale), //
+											 getXRotationMatrix(-30, 0),          //
 											 getYRotationMatrix(0, 0),            //
-											 getXRotationMatrix(-90, 0),          //
 											 getTranslationMatrix(0, 0, 2.5f)};
 	Matrix4x4 camToWorld = getTransformationMatrix(trans, 4);
 
@@ -115,15 +111,19 @@ void engineRun(RenderArgs *args) {
 //	scene.pointLights = pointLights;
 
 	DirectionalLight dirLights[4];
-	Vector3D dirLightDir0 = {-1, -1, 1};
+	Vector3D dirLightDir0 = {1, -.5f, -1};
 	dirLights[0].direction = norm(&dirLightDir0, &dirLightDir0);
 	dirLights[0].intensity = .65f;
-	Vector3D dirLightDir1 = {1, -1, -1};
+	Vector3D dirLightDir1 = {1, -.5f, 1};
 	dirLights[1].direction = norm(&dirLightDir1, &dirLightDir1);
 	dirLights[1].intensity = .65f;
-	Vector3D dirLightDir2 = {0, -1, 1};
+	Vector3D dirLightDir2 = {-1, -.5f, -1};
 	dirLights[2].direction = norm(&dirLightDir2, &dirLightDir2);
 	dirLights[2].intensity = .65f;
+	scene.directionalLights = dirLights;
+	Vector3D dirLightDir3 = {-1, -.5f, 1};
+	dirLights[3].direction = norm(&dirLightDir3, &dirLightDir3);
+	dirLights[3].intensity = .65f;
 	scene.directionalLights = dirLights;
 
 //	SpotLight spotLights[4];
@@ -135,18 +135,9 @@ void engineRun(RenderArgs *args) {
 //	spotLights[0].attenuationCoeffs = &spotLightCoeffs0;
 //	spotLights[0].intensity = 2000.0f;
 
-//	Vector3D spotLightLoc1 = {60, -20, 100};
-//	Vector3D spotLightDir1 = {-1, -.25f, 0};
-//	Vector3D spotLightCoeffs1 = {1, 1, 3.0f};
-//	spotLights[1].point = &spotLightLoc1;
-//	spotLights[1].direction = norm(&spotLightDir1, &spotLightDir1);
-//	spotLights[1].attenuationCoeffs = &spotLightCoeffs1;
-//	spotLights[1].intensity = 2000.0f;
-//	scene.spotLights = spotLights;
-
 	// *** light counts
 	scene.nPointLights = 0;
-	scene.nDirectionalLights = 3;
+	scene.nDirectionalLights = 4;
 	scene.nSpotLights = 0;
 
 	Renderer renderer = {&camera, &scene, 0, 0};
@@ -184,10 +175,11 @@ void engineRun(RenderArgs *args) {
 		if (*args->outputPath) {
 			out = args->outputPath;
 		}
-		printf("%d \n", saveToTGA(out, vis.pixels, WIDTH, HEIGHT));
+		printf("%d \n", saveToTGA(out, vis.pixels, (short)WIDTH, (short)HEIGHT));
 
 		printf("Showing...\n");
 		visShowStill(&vis);
 	}
 
+	free(t);
 }
