@@ -19,6 +19,8 @@ RenderArgs engineDefaultArgs() {
 	args.fov = 60;
 	args.scale = 1;
 
+	args.cameraPosition.z = 2.5;
+
 	args.bkgColor.x = .4;
 	args.bkgColor.y = .4;
 	args.bkgColor.z = .4;
@@ -85,10 +87,11 @@ void engineRun(RenderArgs *args) {
 
 	Camera camera;
 	Matrix4x4 trans[] = {
-			getScaleMatrix(scale, scale, scale),           //
-			getXRotationMatrix(args->modelRotation.x, 0),  // model orientation
-			getYRotationMatrix(args->modelRotation.y, 0),  //
-			getTranslationMatrix(0, 0, 2.5),               // camera position
+			getScaleMatrix(scale, scale, scale),          //
+			getYRotationMatrix(args->modelRotation.y, 0), //
+			getXRotationMatrix(args->modelRotation.x, 0), // model orientation
+			getTranslationMatrix(args->cameraPosition.x, args->cameraPosition.y,
+													 args->cameraPosition.z),  // camera position
 			getXRotationMatrix(args->cameraRotation.x, 0), // camera orientation
 			getYRotationMatrix(args->cameraRotation.y, 0), //
 			getZRotationMatrix(args->cameraRotation.z, 0), //
@@ -119,17 +122,17 @@ void engineRun(RenderArgs *args) {
 	//	scene.pointLights = pointLights;
 
 	DirectionalLight dirLights[4];
-	Vector3D dirLightDir0 = {1, -.5, -1};
+	Vector3D dirLightDir0 = {1, -1.5, -1};
 	dirLights[0].direction = norm(&dirLightDir0, &dirLightDir0);
 	dirLights[0].intensity = .5;
-	Vector3D dirLightDir1 = {1, -.5, 1};
+	Vector3D dirLightDir1 = {1, -1.5, 1};
 	dirLights[1].direction = norm(&dirLightDir1, &dirLightDir1);
 	dirLights[1].intensity = .5;
-	Vector3D dirLightDir2 = {-1, -.5, -1};
+	Vector3D dirLightDir2 = {-1, -1.5, -1};
 	dirLights[2].direction = norm(&dirLightDir2, &dirLightDir2);
 	dirLights[2].intensity = .5;
 	scene.directionalLights = dirLights;
-	Vector3D dirLightDir3 = {-1, -.5, 1};
+	Vector3D dirLightDir3 = {-1, -1.5, 1};
 	dirLights[3].direction = norm(&dirLightDir3, &dirLightDir3);
 	dirLights[3].intensity = .5;
 	scene.directionalLights = dirLights;

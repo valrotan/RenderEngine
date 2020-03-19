@@ -42,6 +42,18 @@ int main(int argc, char **argv) {
 							 strcmp(argv[i], "-cz") == 0) {
 			args.cameraRotation.z = strtod(argv[i + 1], NULL);
 
+		} else if (strcmp(argv[i], "-cameraX") == 0 ||
+							 strcmp(argv[i], "-x") == 0) {
+			args.cameraPosition.x = strtod(argv[i + 1], NULL);
+
+		} else if (strcmp(argv[i], "-cameraY") == 0 ||
+							 strcmp(argv[i], "-y") == 0) {
+			args.cameraPosition.y = strtod(argv[i + 1], NULL);
+
+		} else if (strcmp(argv[i], "-cameraZ") == 0 ||
+							 strcmp(argv[i], "-z") == 0) {
+			args.cameraPosition.z = strtod(argv[i + 1], NULL);
+
 		} else if (strcmp(argv[i], "-width") == 0 || strcmp(argv[i], "-w") == 0) {
 			args.resolution.x = strtol(argv[i + 1], NULL, 10);
 
@@ -59,6 +71,14 @@ int main(int argc, char **argv) {
 
 		} else if (strcmp(argv[i], "-bkgB") == 0 || strcmp(argv[i], "-bb") == 0) {
 			args.bkgColor.z = strtod(argv[i + 1], NULL);
+
+		} else if (strcmp(argv[i], "-bkg") == 0) {
+			long colorRGB = strtol(argv[i + 1], NULL, 16);
+			args.bkgColor.z = (colorRGB & ((1 << 8) - 1)) / 255.0;
+			colorRGB >>= 8;
+			args.bkgColor.y = (colorRGB & ((1 << 8) - 1)) / 255.0;
+			colorRGB >>= 8;
+			args.bkgColor.x = (colorRGB & ((1 << 8) - 1)) / 255.0;
 
 		} else if (strcmp(argv[i], "-ambient") == 0 || strcmp(argv[i], "-b") == 0) {
 			args.ambientLight = strtod(argv[i + 1], NULL);

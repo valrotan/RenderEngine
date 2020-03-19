@@ -6,6 +6,7 @@ typedef struct {
 	const char *outputPath;
 
 	Vector2D modelRotation;
+	Vector3D cameraPosition;
 	Vector3D cameraRotation;
 
 	double fov;
