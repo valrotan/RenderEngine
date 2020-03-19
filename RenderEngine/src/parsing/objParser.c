@@ -13,7 +13,7 @@ void parseObj(const char *path, Triangle3D **trigList, int *size, double *scale,
 	int vertCount = 0;
 
 	int sizeFaces = 1000;
-	StackNode *facesStack = (StackNode *)malloc(sizeof(StackNode));
+	StackNode *facesStack = NULL;
 	Vector3D *centerElement =
 			(Vector3D *)malloc(sizeof(Vector3D)); // used for centering vertecies
 	centerElement->x = 0;
@@ -21,9 +21,10 @@ void parseObj(const char *path, Triangle3D **trigList, int *size, double *scale,
 	centerElement->z = 0;
 
 	int facesCount = 0;
-
+	int *lineCount = (int*)malloc(sizeof(int));
+	*lineCount = 0;
 	while (fscanf(fpIn, "%s", line) != EOF) {
-
+		(*lineCount)++;
 		// skip comment lines in the file
 		if (strstr(line, "#")) {
 			fscanf(fpIn, "%[^\n]s", line);
@@ -65,7 +66,10 @@ void parseObj(const char *path, Triangle3D **trigList, int *size, double *scale,
 			} else if (line[0] == 'f' && line[1] == '\0') {
 				fscanf(fpIn, "%[^\n]s", line);
 
-				int *indexes, vertNum;
+				int *indexes, vertNum = 0;
+				if (strlen(line) >= 300) {
+					printf("%s\n",line);
+				}
 
 				// parsing the face line to create multiple triangles if more
 				// than 3 vertecies
@@ -73,28 +77,7 @@ void parseObj(const char *path, Triangle3D **trigList, int *size, double *scale,
 
 				int first = indexes[0];
 				for (int i = 1; i + 1 < vertNum; i++) {
-					Vector3D *aa = verts + first - 1;
-					Vector3D *bb = verts + indexes[i] - 1;
-					Vector3D *cc = verts + indexes[i + 1] - 1;
-					// if(facesCount>3330 && facesCount < 3350)
-					// printf("(%.2f,%.2f,%.2f) (%.2f,%.2f,%.2f) (%.2f,%.2f,%.2f)\n",
-					// aa->x, aa->y, aa->z, bb->x, bb->y, bb->z, cc->x, cc->y, cc->z);
-
-					Triangle3D trig = baseTriangle;
-					trig.p1 = aa;
-					trig.p2 = bb;
-					trig.p3 = cc;
-
-					Triangle3D *pTemp = (Triangle3D *)malloc(sizeof(Triangle3D));
-					*pTemp = trig;
-					 //printf("%4d| (%.2f,%.2f,%.2f) (%.2f,%.2f,%.2f) (%.2f,%.2f,%.2f)\n",
-					 //facesCount, pTemp->p1->x, pTemp->p1->y, pTemp->p1->z, pTemp->p2->x,
-						//pTemp->p2->y, pTemp->p2->z, pTemp->p3->x, pTemp->p3->y,
-					 //pTemp->p3->z);
-					/*if (facesCount == 93263) {
-						printf("");
-					}*/
-					facesStack = push(facesStack, pTemp);
+					facesStack = push(facesStack, first - 1, indexes[i] - 1, indexes[i + 1] - 1);
 					facesCount++;
 				}
 				free(indexes);
@@ -102,13 +85,14 @@ void parseObj(const char *path, Triangle3D **trigList, int *size, double *scale,
 		}
 	}
 
-	for (int k = 0; k < vertCount; k++) {
-		printf("%4d| (%.2f,%.2f,%.2f)\n",
-			k, verts[k].x, verts[k].y, verts[k].z);
-	}
+	printf("Finished parsing\n");
+
+	//for (int k = 0; k < vertCount; k++) {
+	//	printf("%4d| (%.2f,%.2f,%.2f)\n",
+	//		k, verts[k].x, verts[k].y, verts[k].z);
+	//}
 
 	Triangle3D *triggs = (Triangle3D *)malloc(facesCount * sizeof(Triangle3D));
-	int i = 0;
 
 	divide(centerElement, vertCount, centerElement); // calculate average x,y,z
 
@@ -131,38 +115,36 @@ void parseObj(const char *path, Triangle3D **trigList, int *size, double *scale,
 	*scale = *scale > zMax ? *scale : zMax;
 	*scale /= 2;
 
+	int i = 0;
+
 	while (facesStack && i < facesCount) {
-		Triangle3D *n = facesStack->data;
+		//printf("%d %d %d\n", n.p1, n.p2, n.p3);
+
 		Vector3D centroid;
 
-		if (i == 93264) {
-			printf("");
-		}
+		Triangle3D* trig = (Triangle3D*)malloc(sizeof(Triangle3D));
+		
+		*trig = baseTriangle;
 
-		// printf("%4d| (%.2f,%.2f,%.2f) (%.2f,%.2f,%.2f) (%.2f,%.2f,%.2f)\n", i,
-		// n->p1->x, n->p1->y, n->p1->z, n->p2->x, n->p2->y, n->p2->z, n->p3->x,
-		// n->p3->y, n->p3->z);
+		StackNode* stackNode = pop(&facesStack);
 
-		if (!n || !(n->p1) || !n->p2->x || !n->p3->x) {
-			printf("broke on: %d\n", i);
-		}
+		trig->p1 = verts + stackNode->p1;
+		trig->p2 = verts + stackNode->p2;
+		trig->p3 = verts + stackNode->p3;
 
-		divide(add(add(n->p1, n->p2, &centroid), n->p3, &centroid), 2 * (*scale),
-					 &centroid);
+		free(stackNode);
+
+		divide(add(add(trig->p1, trig->p2, &centroid), trig->p3, &centroid), 2 * (*scale),
+			&centroid);
 		//		n->colorR = sin(centroid.x) + .5;
 		//		n->colorG = sin(centroid.y) + .5;
 		//		n->colorB = sin(centroid.z) + .5;
 		// funky soft colors
-		n->colorR = .65 + sin(cos(centroid.y) + centroid.z) / 5;
-		n->colorG = .4 + sin(cos(centroid.z) + centroid.x) / 5;
-		n->colorB = .25 - sin(cos(centroid.x) + centroid.y) / 5;
-		// const colors
-		//		n->colorR = .15f;
-		//		n->colorG = .15f;
-		//		n->colorB = .15f;
+		trig->colorR = .65 + sin(cos(centroid.y) + centroid.z) / 5;
+		trig->colorG = .4 + sin(cos(centroid.z) + centroid.x) / 5;
+		trig->colorB = .25 - sin(cos(centroid.x) + centroid.y) / 5;
 
-		pop(&facesStack);
-		triggs[i] = *n;
+		triggs[i] = *trig;
 		i++;
 	}
 
@@ -190,10 +172,17 @@ void parseObj(const char *path, Triangle3D **trigList, int *size, double *scale,
 
 void parseFaceLine(char *line, int *vertNumber, int **v) {
 	int vNum = 0;
-	int *verts = (int *)malloc(5 * sizeof(int));
+	int maxVerts = 120;
+
+	int *verts = (int *)malloc(maxVerts * sizeof(int));
 
 	char *buffer = strtok(line, "\t\n ");
 	while (buffer != NULL) {
+		if (vNum >= maxVerts) {
+			maxVerts *= 2;
+			int* temp = (int*)realloc(verts, maxVerts*sizeof(int));
+			verts = temp;
+		}
 		sscanf(buffer, "%d", verts + vNum);
 		vNum++;
 		buffer = strtok(NULL, "\t\n ");

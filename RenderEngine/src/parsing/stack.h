@@ -11,17 +11,11 @@
 // last character in the ASCII table
 
 
-typedef struct {
+typedef struct snode StackNode;
+struct snode {
 	int p1;
 	int p2;
 	int p3;
-} STACK_DATA;
-
-typedef struct snode StackNode;
-struct snode {
-	STACK_DATA pt1;
-	STACK_DATA pt2;
-	STACK_DATA pt3;
 	StackNode* next;
 };
 
@@ -33,5 +27,5 @@ struct snode {
 
 
 StackNode* push(StackNode* stack, int p1, int p2, int p3);
-Triangle3D* pop(StackNode** stack);
+StackNode* pop(StackNode** stack);
 void destroyStack(StackNode* stack);

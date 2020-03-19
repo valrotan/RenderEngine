@@ -13,7 +13,7 @@ void destroyStack(StackNode* stack) {
 /***************************************************
 	Stack Insert: insert in the beginning
 */
-StackNode* push(StackNode* stack, Triangle3D* data)
+StackNode* push(StackNode* stack, int p1, int p2, int p3)
 {
 	StackNode* pnew;
 
@@ -23,10 +23,11 @@ StackNode* push(StackNode* stack, Triangle3D* data)
 		printf("... error in push!\n");
 		exit(1);
 	}
-	pnew->data = data;
+	pnew->p1 = p1;
+	pnew->p2 = p2;
+	pnew->p3 = p3;
 	pnew->next = stack;
 	stack = pnew;
-
 	return stack;
 }
 
@@ -34,7 +35,7 @@ StackNode* push(StackNode* stack, Triangle3D* data)
 /***************************************************
 	Stack Delete: delete the first node
 */
-Triangle3D* pop(StackNode** stack)
+StackNode* pop(StackNode** stack)
 {
 	StackNode* first;
 	if (*stack == NULL) return NULL;
@@ -42,5 +43,5 @@ Triangle3D* pop(StackNode** stack)
 	*stack = (*stack)->next;
 	first->next = NULL;
 
-	return first->data;
+	return first;
 }
