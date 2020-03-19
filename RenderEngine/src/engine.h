@@ -5,11 +5,11 @@ typedef struct {
 	const char *objPath;
 	const char *outputPath;
 
-	float fov;
-	float scale;
+	double fov;
+	double scale;
 
 	Vector3D bkgColor;
-	float ambientLight;
+	double ambientLight;
 	int kSpecularExponent;
 
 	int nAntialiasingSamples;
@@ -17,6 +17,8 @@ typedef struct {
 	int nThreads;
 
 	int loadVideo;
+
+	Triangle3D baseTriangle;
 } RenderArgs;
 
 RenderArgs engineDefaultArgs(void);

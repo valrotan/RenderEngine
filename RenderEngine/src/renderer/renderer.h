@@ -6,23 +6,23 @@
 typedef struct {
 	Matrix4x4 cameraToWorld;
 	int width, height;
-	float fov;
-	float scale, aspectRatio;
+	double fov;
+	double scale, aspectRatio;
 } Camera;
 
 typedef struct {
-	float intensity;
+	double intensity;
 	Vector3D *point;
 	Vector3D *attenuationCoeffs;
 } PointLight;
 
 typedef struct {
-	float intensity;
+	double intensity;
 	Vector3D *direction;
 } DirectionalLight;
 
 typedef struct {
-	float intensity;
+	double intensity;
 	Vector3D *point;
 	Vector3D *direction;
 	Vector3D *attenuationCoeffs;
@@ -38,9 +38,9 @@ typedef struct BoundingVolume {
 
 // Only triangles for now I guess
 typedef struct {
-	float ambientLight;
-	float bkgR, bkgG, bkgB;
-	float kSpecularExponent;
+	double ambientLight;
+	double bkgR, bkgG, bkgB;
+	double kSpecularExponent;
 	Triangle3D *triangles;
 	int nTriangles;
 	PointLight *pointLights;
@@ -76,23 +76,23 @@ void rayTrace(Renderer *renderer, unsigned char *screen);
 Ray3D *constructRayThroughPixel(Camera *camera, int x, int y, int width,
 																int height, Ray3D *ray, int samplesPerPixel);
 
-float *traceRay(Camera *camera, Scene *scene, Ray3D *ray, int depth,
-								float *rgb);
+double *traceRay(Camera *camera, Scene *scene, Ray3D *ray, int depth,
+								 double *rgb);
 
 Intersection3D *findIntersection(Scene *scene, Ray3D *ray);
 
-float *getColor(Camera *camera, Scene *scene, Intersection3D *intersection,
-								int depth, float *rgb);
+double *getColor(Camera *camera, Scene *scene, Intersection3D *intersection,
+								 int depth, double *rgb);
 
 void calcPointLights(Scene *scene, Intersection3D *intersection,
-										 Vector3D *normal, Vector3D *view, float *id, float *is);
+										 Vector3D *normal, Vector3D *view, double *id, double *is);
 
 void calcDirectionalLights(Scene *scene, Intersection3D *intersection,
-													 Vector3D *normal, Vector3D *view, float *id,
-													 float *is);
+													 Vector3D *normal, Vector3D *view, double *id,
+													 double *is);
 
 void calcSpotLights(Scene *scene, Intersection3D *intersection,
-										Vector3D *normal, Vector3D *view, float *id, float *is);
+										Vector3D *normal, Vector3D *view, double *id, double *is);
 
 BoundingVolume *constructBoundingVolumes(BoundingVolume *bv);
 

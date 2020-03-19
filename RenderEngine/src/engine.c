@@ -9,7 +9,7 @@
 #include <sys/timeb.h>
 
 RenderArgs engineDefaultArgs() {
-	RenderArgs args;
+	RenderArgs args = {0};
 
 	args.resolution.x = 1280;
 	args.resolution.y = 720;
@@ -19,10 +19,10 @@ RenderArgs engineDefaultArgs() {
 	args.fov = 60;
 	args.scale = 1;
 
-	args.bkgColor.x = .4f;
-	args.bkgColor.y = .4f;
-	args.bkgColor.z = .4f;
-	args.ambientLight = .15f;
+	args.bkgColor.x = .4;
+	args.bkgColor.y = .4;
+	args.bkgColor.z = .4;
+	args.ambientLight = .15;
 	args.kSpecularExponent = 3;
 
 	args.nAntialiasingSamples = 2;
@@ -31,14 +31,17 @@ RenderArgs engineDefaultArgs() {
 
 	args.loadVideo = 0;
 
-	return args;
+	args.baseTriangle.k_e = .1;
+	args.baseTriangle.k_d = .25;
+	args.baseTriangle.k_s = .15;
 
+	return args;
 }
 
-//float scale = 1; // remove sometime
-//int iter = 0;
+// double scale = 1; // remove sometime
+// int iter = 0;
 
-//void render(unsigned char *screen, void *voidRenderer) {
+// void render(unsigned char *screen, void *voidRenderer) {
 //	Renderer *renderer = (Renderer *)voidRenderer;
 
 //	Matrix4x4 trans[] = {getScaleMatrix(scale, scale, scale), //
@@ -76,16 +79,20 @@ void engineRun(RenderArgs *args) {
 		path = args->objPath;
 	}
 
-	float scale = 1;
-	parseObj(path, &t, &size, &scale);
+	double scale = 1;
+	parseObj(path, &t, &size, &scale, args->baseTriangle);
 	scale /= args->scale;
 
 	Camera camera;
-	Matrix4x4 trans[] = {getScaleMatrix(scale, scale, scale), //
-											 getXRotationMatrix(-30, 0),          //
-											 getYRotationMatrix(0, 0),            //
-											 getTranslationMatrix(0, 0, 2.5f)};
-	Matrix4x4 camToWorld = getTransformationMatrix(trans, 4);
+	Matrix4x4 trans[] = {
+			getScaleMatrix(scale, scale, scale), //
+			getXRotationMatrix(-30, 0),           // model orientation
+			getYRotationMatrix(0, 0),            //
+			getTranslationMatrix(0, 0, 2.5),     // camera position
+			getXRotationMatrix(0, 0),            // camera orientation
+			getYRotationMatrix(0, 0),            //
+	};
+	Matrix4x4 camToWorld = getTransformationMatrix(trans, 6);
 
 	camera.width = WIDTH;
 	camera.height = HEIGHT;
@@ -96,53 +103,53 @@ void engineRun(RenderArgs *args) {
 	scene.bkgR = args->bkgColor.x; // .4f
 	scene.bkgG = args->bkgColor.y;
 	scene.bkgB = args->bkgColor.z;
-	scene.ambientLight = args->ambientLight; // .15
+	scene.ambientLight = args->ambientLight;           // .15
 	scene.kSpecularExponent = args->kSpecularExponent; // 3
 
 	scene.triangles = t;
 	scene.nTriangles = size;
 
-//	PointLight *pointLights = (PointLight *)malloc(sizeof(PointLight));
-//	Vector3D pointLightLoc1 = {0, -40, -50};
-//	pointLights[0].point = &pointLightLoc1;
-//	pointLights[0].intensity = 20;
-//	Vector3D pointLightCoeffs1 = {2, .01f, .005f};
-//	pointLights[0].attenuationCoeffs = &pointLightCoeffs1;
-//	scene.pointLights = pointLights;
+	//	PointLight pointLights[1];
+	//	Vector3D pointLightLoc1 = {0, -40, 50};
+	//	pointLights[0].point = &pointLightLoc1;
+	//	pointLights[0].intensity = 20;
+	//	Vector3D pointLightCoeffs1 = {2, .01, .005};
+	//	pointLights[0].attenuationCoeffs = &pointLightCoeffs1;
+	//	scene.pointLights = pointLights;
 
 	DirectionalLight dirLights[4];
-	Vector3D dirLightDir0 = {1, -.5f, -1};
+	Vector3D dirLightDir0 = {1, -.5, -1};
 	dirLights[0].direction = norm(&dirLightDir0, &dirLightDir0);
-	dirLights[0].intensity = .65f;
-	Vector3D dirLightDir1 = {1, -.5f, 1};
+	dirLights[0].intensity = 1.65;
+	Vector3D dirLightDir1 = {1, -.5, 1};
 	dirLights[1].direction = norm(&dirLightDir1, &dirLightDir1);
-	dirLights[1].intensity = .65f;
-	Vector3D dirLightDir2 = {-1, -.5f, -1};
+	dirLights[1].intensity = .65;
+	Vector3D dirLightDir2 = {-1, -.5, -1};
 	dirLights[2].direction = norm(&dirLightDir2, &dirLightDir2);
-	dirLights[2].intensity = .65f;
+	dirLights[2].intensity = .65;
 	scene.directionalLights = dirLights;
-	Vector3D dirLightDir3 = {-1, -.5f, 1};
+	Vector3D dirLightDir3 = {-1, -.5, 1};
 	dirLights[3].direction = norm(&dirLightDir3, &dirLightDir3);
-	dirLights[3].intensity = .65f;
+	dirLights[3].intensity = .65;
 	scene.directionalLights = dirLights;
 
-//	SpotLight spotLights[4];
-//	Vector3D spotLightLoc0 = {-60, -20, 100};
-//	Vector3D spotLightDir0 = {1, -.25f, 0};
-//	Vector3D spotLightCoeffs0 = {1, 1, 3.0f};
-//	spotLights[0].point = &spotLightLoc0;
-//	spotLights[0].direction = norm(&spotLightDir0, &spotLightDir0);
-//	spotLights[0].attenuationCoeffs = &spotLightCoeffs0;
-//	spotLights[0].intensity = 2000.0f;
+	//	SpotLight spotLights[4];
+	//	Vector3D spotLightLoc0 = {-60, -20, 100};
+	//	Vector3D spotLightDir0 = {1, -.25f, 0};
+	//	Vector3D spotLightCoeffs0 = {1, 1, 3.0f};
+	//	spotLights[0].point = &spotLightLoc0;
+	//	spotLights[0].direction = norm(&spotLightDir0, &spotLightDir0);
+	//	spotLights[0].attenuationCoeffs = &spotLightCoeffs0;
+	//	spotLights[0].intensity = 2000.0f;
 
 	// *** light counts
 	scene.nPointLights = 0;
 	scene.nDirectionalLights = 4;
 	scene.nSpotLights = 0;
 
-	Renderer renderer = {&camera, &scene, 0, 0};
-	renderer.nThreads = args->nThreads; // 96
-	renderer.nTraces = args->nTraces; // 1
+	Renderer renderer = {&camera, &scene, 0, 0, 0};
+	renderer.nThreads = args->nThreads;                         // 96
+	renderer.nTraces = args->nTraces;                           // 1
 	renderer.nAntialiasingSamples = args->nAntialiasingSamples; // 3
 
 	printf("Initializing visualizer...\n");
@@ -152,8 +159,8 @@ void engineRun(RenderArgs *args) {
 
 	if (loadVideo) {
 		printf("Video unsupported at this moment \n");
-//		visInitVideo(&vis, WIDTH, HEIGHT, &render, &renderer);
-//		visShowVideo(&vis);
+		//		visInitVideo(&vis, WIDTH, HEIGHT, &render, &renderer);
+		//		visShowVideo(&vis);
 	} else {
 		printf("Raycasting...\n");
 		visInit(&vis, WIDTH, HEIGHT);
