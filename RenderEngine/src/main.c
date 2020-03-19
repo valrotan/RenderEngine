@@ -22,6 +22,26 @@ int main(int argc, char **argv) {
 		} else if (strcmp(argv[i], "-height") == 0 || strcmp(argv[i], "-h") == 0) {
 			args.resolution.y = strtol(argv[i + 1], NULL, 10);
 
+		} else if (strcmp(argv[i], "-modelRotateX") == 0 ||
+							 strcmp(argv[i], "-mx") == 0) {
+			args.modelRotation.x = strtod(argv[i + 1], NULL);
+
+		} else if (strcmp(argv[i], "-modelRotateY") == 0 ||
+							 strcmp(argv[i], "-my") == 0) {
+			args.modelRotation.y = strtod(argv[i + 1], NULL);
+
+		} else if (strcmp(argv[i], "-cameraRotateX") == 0 ||
+							 strcmp(argv[i], "-cx") == 0) {
+			args.cameraRotation.x = strtod(argv[i + 1], NULL);
+
+		} else if (strcmp(argv[i], "-cameraRotateY") == 0 ||
+							 strcmp(argv[i], "-cy") == 0) {
+			args.cameraRotation.y = strtod(argv[i + 1], NULL);
+
+		} else if (strcmp(argv[i], "-cameraRotateZ") == 0 ||
+							 strcmp(argv[i], "-cz") == 0) {
+			args.cameraRotation.z = strtod(argv[i + 1], NULL);
+
 		} else if (strcmp(argv[i], "-width") == 0 || strcmp(argv[i], "-w") == 0) {
 			args.resolution.x = strtol(argv[i + 1], NULL, 10);
 
