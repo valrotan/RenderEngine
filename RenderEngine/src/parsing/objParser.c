@@ -1,7 +1,7 @@
 #include "objParser.h"
 
-void parseObj(const char *path, Triangle3D **trigList, int *size,
-							float *scale) {
+void parseObj(const char *path, Triangle3D **trigList, int *size, double *scale,
+							Triangle3D baseTriangle) {
 	FILE *fpIn = openFile(path);
 
 	char *materialsPath[100]; // for future material path parsing
@@ -54,8 +54,8 @@ void parseObj(const char *path, Triangle3D **trigList, int *size,
 					verts = temp;
 				}
 
-				float x, y, z;
-				fscanf(fpIn, "%f %f %f", &x, &y, &z);
+				double x, y, z;
+				fscanf(fpIn, "%lf %lf %lf", &x, &y, &z);
 				Vector3D a = {x, y, z};
 				add(centerElement, &a, centerElement);
 				verts[vertCount] = a;
@@ -80,13 +80,10 @@ void parseObj(const char *path, Triangle3D **trigList, int *size,
 					// printf("(%.2f,%.2f,%.2f) (%.2f,%.2f,%.2f) (%.2f,%.2f,%.2f)\n",
 					// aa->x, aa->y, aa->z, bb->x, bb->y, bb->z, cc->x, cc->y, cc->z);
 
-					Triangle3D trig = {
-							aa,   bb,   cc,  // verts
-							0,               // normal plane
-							0,    0,    0,   // rgb
-							0.2f, .25f, .1f, // ke kd ks
-							0                // centroid (initialized in render)
-					};
+					Triangle3D trig = baseTriangle;
+					trig.p1 = aa;
+					trig.p2 = bb;
+					trig.p3 = cc;
 
 					Triangle3D *pTemp = (Triangle3D *)malloc(sizeof(Triangle3D));
 					*pTemp = trig;
@@ -106,9 +103,9 @@ void parseObj(const char *path, Triangle3D **trigList, int *size,
 
 	divide(centerElement, vertCount, centerElement); // calculate average x,y,z
 
-	float xMax = 0, xMin = 0;
-	float yMax = 0, yMin = 0;
-	float zMax = 0, zMin = 0;
+	double xMax = 0, xMin = 0;
+	double yMax = 0, yMin = 0;
+	double zMax = 0, zMin = 0;
 
 	for (int i = 0; i < vertCount; i++) {
 		sub(&verts[i], centerElement, &verts[i]);
@@ -135,13 +132,13 @@ void parseObj(const char *path, Triangle3D **trigList, int *size,
 
 		divide(add(add(n->p1, n->p2, &centroid), n->p3, &centroid), 2 * (*scale),
 					 &centroid);
-		n->colorR = sinf(centroid.x) + .5f;
-		n->colorG = sinf(centroid.y) + .5f;
-		n->colorB = sinf(centroid.z) + .5f;
+		//		n->colorR = sin(centroid.x) + .5;
+		//		n->colorG = sin(centroid.y) + .5;
+		//		n->colorB = sin(centroid.z) + .5;
 		// funky soft colors
-		//		n->colorR = .5f + sinf(cosf(centroid.x) - centroid.y) / 1;
-		//		n->colorG = .5f + sinf(cosf(centroid.z) + centroid.x) / 1;
-		//		n->colorB = .5f + sinf(cosf(-centroid.y) + centroid.z) / 1;
+		n->colorR = .65 + sin(cos(centroid.y) + centroid.z) / 5;
+		n->colorG = .4 + sin(cos(centroid.z) + centroid.x) / 5;
+		n->colorB = .25 - sin(cos(centroid.x) + centroid.y) / 5;
 		// const colors
 		//		n->colorR = .15f;
 		//		n->colorG = .15f;

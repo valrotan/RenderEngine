@@ -7,13 +7,13 @@
 #include <string.h>
 #include <sys/timeb.h>
 
-#define EPSILON .0005f
+#define EPSILON .0000001
 
 void rendererInit(Renderer *renderer) {
 
 	Camera *cam = renderer->camera;
-	cam->scale = tanf(getRad(cam->fov / 2));
-	cam->aspectRatio = (float)(cam->width) / cam->height;
+	cam->scale = tan(getRad(cam->fov / 2));
+	cam->aspectRatio = (double)(cam->width) / cam->height;
 
 	for (int i = 0; i < renderer->scene->nTriangles; i++) {
 		Triangle3D *t = &renderer->scene->triangles[i];
@@ -29,7 +29,8 @@ void rendererInit(Renderer *renderer) {
 		t->plane->d = -dot(t->p1, t->plane->v);
 
 		t->centroid = (Vector3D *)malloc(sizeof(Vector3D));
-		divide(add(add(t->p1, t->p2, t->centroid), t->p3, t->centroid), 3, t->centroid);
+		divide(add(add(t->p1, t->p2, t->centroid), t->p3, t->centroid), 3,
+					 t->centroid);
 	}
 	BoundingVolume *bv = malloc(sizeof(BoundingVolume));
 	// convert scene triangles to double pointers to triangles
@@ -65,11 +66,11 @@ void *rayTraceSegment(void *pSegment) {
 
 	unsigned char *p = rSegment->screen;
 
-	float rgb[3] = {0};
+	double rgb[3] = {0};
 	int ns = rSegment->renderer->nAntialiasingSamples;
 	for (int y = rSegment->startLine; y < rSegment->stopLine; y++) {
 		for (int x = 0; x < rSegment->width; x++) {
-			float temp_rgb[3] = {0, 0, 0};
+			double temp_rgb[3] = {0, 0, 0};
 
 			for (int i = 0; i < ns; i++) {
 				for (int j = 0; j < ns; j++) {
@@ -85,12 +86,12 @@ void *rayTraceSegment(void *pSegment) {
 				}
 			}
 
-			rgb[0] = temp_rgb[0] / (float)(ns * ns);
-			rgb[1] = temp_rgb[1] / (float)(ns * ns);
-			rgb[2] = temp_rgb[2] / (float)(ns * ns);
+			rgb[0] = temp_rgb[0] / (double)(ns * ns);
+			rgb[1] = temp_rgb[1] / (double)(ns * ns);
+			rgb[2] = temp_rgb[2] / (double)(ns * ns);
 
 			//			constructRayThroughPixel(rSegment->renderer->camera, x, y,
-			//rSegment->width, rSegment->height, &ray, 1);
+			// rSegment->width, rSegment->height, &ray, 1);
 
 			//			traceRay(rSegment->renderer->camera, rSegment->renderer->scene,
 			//&ray, 							 rSegment->renderer->nTraces, rgb);
@@ -130,16 +131,16 @@ void rayTrace(Renderer *renderer, unsigned char *screen) {
 																					 (size_t)renderer->nThreads);
 	RendererSegment *rSegments = (RendererSegment *)malloc(
 			sizeof(RendererSegment) * (size_t)renderer->nThreads);
-	float lines = (float)(renderer->camera->height) / renderer->nThreads;
+	double lines = (double)(renderer->camera->height) / renderer->nThreads;
 
 	for (int i = 0; i < renderer->nThreads; i++, rSegments++) {
 		rSegments->renderer = renderer;
 		rSegments->screen =
-				screen + 3 * renderer->camera->width * (int)(i * lines + .5f);
+				screen + 3 * renderer->camera->width * (int)(i * lines + .5);
 		rSegments->width = renderer->camera->width;
 		rSegments->height = renderer->camera->height;
-		rSegments->startLine = (int)(i * lines + .5f);
-		rSegments->stopLine = (int)((i + 1) * lines + .5f);
+		rSegments->startLine = (int)(i * lines + .5);
+		rSegments->stopLine = (int)((i + 1) * lines + .5);
 		pthread_create(threads + i, NULL, rayTraceSegment, (void *)rSegments);
 	}
 	for (int i = 0; i < renderer->nThreads; i++) {
@@ -156,10 +157,10 @@ Ray3D *constructRayThroughPixel(Camera *camera, int x, int y, int imageWidth,
 																int samplesPerPixel) {
 
 	// TODO: move all the constants to the loop in rayTrace
-	float Px = (2 * ((float)x / samplesPerPixel) / imageWidth - 1) *
-						 camera->scale * camera->aspectRatio;
-	float Py =
-			(1 - 2 * ((float)y / samplesPerPixel) / imageHeight) * camera->scale;
+	double Px = (2 * ((double)x / samplesPerPixel) / imageWidth - 1) *
+							camera->scale * camera->aspectRatio;
+	double Py =
+			(1 - 2 * ((double)y / samplesPerPixel) / imageHeight) * camera->scale;
 
 	Vector3D pWorld = {Px, Py, -1};
 	applyTransformation(&pWorld, &camera->cameraToWorld, &pWorld);
@@ -172,8 +173,8 @@ Ray3D *constructRayThroughPixel(Camera *camera, int x, int y, int imageWidth,
 
 // recursive ray tracing for depth levels
 // TODO: prevent excess dynamic allocation for pixel
-float *traceRay(Camera *camera, Scene *scene, Ray3D *ray, int depth,
-								float *rgb) {
+double *traceRay(Camera *camera, Scene *scene, Ray3D *ray, int depth,
+								 double *rgb) {
 
 	Intersection3D intersection;
 	intersection.exists = 0;
@@ -204,15 +205,16 @@ void swap(Triangle3D **a, Triangle3D **b) {
 		array, and places all smaller (smaller than pivot)
 	 to left of pivot and all greater elements to right
 	 of pivot */
-int partition(Triangle3D **arr, int low, int high, float getAxis(Triangle3D *)) {
-	Triangle3D *pivot = arr[high]; // pivot
-	int i = (low - 1);             // Index of smaller element
+int partition(Triangle3D **arr, int low, int high,
+							double getAxis(Triangle3D *)) {
+	Triangle3D *pivot = arr[low + rand() % (high + 1 - low)]; // pivot
+	int i = (low - 1); // Index of smaller element
 
-	float cPivot = getAxis(pivot);
+	double cPivot = getAxis(pivot);
 
 	for (int j = low; j <= high - 1; j++) {
 
-		float cj = getAxis(arr[j]);
+		double cj = getAxis(arr[j]);
 		// If current element is smaller than the pivot
 		if (cj < cPivot) {
 			i++; // increment index of smaller element
@@ -223,7 +225,8 @@ int partition(Triangle3D **arr, int low, int high, float getAxis(Triangle3D *)) 
 	return (i + 1);
 }
 
-Triangle3D *kthSmallest(Triangle3D **arr, int l, int r, int k, float getAxis(Triangle3D *)) {
+Triangle3D *kthSmallest(Triangle3D **arr, int l, int r, int k,
+												double getAxis(Triangle3D *)) {
 	// If k is smaller than number of
 	// elements in array
 	if (k > 0 && k <= r - l + 1) {
@@ -251,14 +254,16 @@ Triangle3D *kthSmallest(Triangle3D **arr, int l, int r, int k, float getAxis(Tri
 	return 0;
 }
 
-int quickPartition(Triangle3D **arr, int low, int high, float getAxis(Triangle3D *)) {
-	Triangle3D *pivot = kthSmallest(arr, low, high, high / 2, getAxis); // pivot at median
+int quickPartition(Triangle3D **arr, int low, int high,
+									 double getAxis(Triangle3D *)) {
+	Triangle3D *pivot =
+			kthSmallest(arr, low, high, high / 2, getAxis); // pivot at median
 	int i = (low - 1); // Index of smaller element
 
-	float cPivot = getAxis(pivot);
+	double cPivot = getAxis(pivot);
 
 	for (int j = low; j <= high - 1; j++) {
-		float cj = getAxis(arr[j]);
+		double cj = getAxis(arr[j]);
 		// If current element is smaller than the pivot
 		if (cj < cPivot) {
 			i++; // increment index of smaller element
@@ -294,27 +299,27 @@ BoundingVolume *constructBoundingVolumes(BoundingVolume *bv) {
 	{
 		Triangle3D *cur = bv->triangles[0];
 
-		bv->low.x = fminf(fminf(cur->p1->x, cur->p2->x), cur->p3->x);
-		bv->low.y = fminf(fminf(cur->p1->y, cur->p2->y), cur->p3->y);
-		bv->low.z = fminf(fminf(cur->p1->z, cur->p2->z), cur->p3->z);
-		bv->high.x = fmaxf(fmaxf(cur->p1->x, cur->p2->x), cur->p3->x);
-		bv->high.y = fmaxf(fmaxf(cur->p1->y, cur->p2->y), cur->p3->y);
-		bv->high.z = fmaxf(fmaxf(cur->p1->z, cur->p2->z), cur->p3->z);
+		bv->low.x = fmin(fmin(cur->p1->x, cur->p2->x), cur->p3->x);
+		bv->low.y = fmin(fmin(cur->p1->y, cur->p2->y), cur->p3->y);
+		bv->low.z = fmin(fmin(cur->p1->z, cur->p2->z), cur->p3->z);
+		bv->high.x = fmax(fmax(cur->p1->x, cur->p2->x), cur->p3->x);
+		bv->high.y = fmax(fmax(cur->p1->y, cur->p2->y), cur->p3->y);
+		bv->high.z = fmax(fmax(cur->p1->z, cur->p2->z), cur->p3->z);
 
 		for (int i = 1; i < bv->nTriangles; i++) {
 			cur = bv->triangles[i];
 			bv->low.x =
-					fminf(bv->low.x, fminf(fminf(cur->p1->x, cur->p2->x), cur->p3->x));
+					fmin(bv->low.x, fmin(fmin(cur->p1->x, cur->p2->x), cur->p3->x));
 			bv->low.y =
-					fminf(bv->low.y, fminf(fminf(cur->p1->y, cur->p2->y), cur->p3->y));
+					fmin(bv->low.y, fmin(fmin(cur->p1->y, cur->p2->y), cur->p3->y));
 			bv->low.z =
-					fminf(bv->low.z, fminf(fminf(cur->p1->z, cur->p2->z), cur->p3->z));
+					fmin(bv->low.z, fmin(fmin(cur->p1->z, cur->p2->z), cur->p3->z));
 			bv->high.x =
-					fmaxf(bv->high.x, fmaxf(fmaxf(cur->p1->x, cur->p2->x), cur->p3->x));
+					fmax(bv->high.x, fmax(fmax(cur->p1->x, cur->p2->x), cur->p3->x));
 			bv->high.y =
-					fmaxf(bv->high.y, fmaxf(fmaxf(cur->p1->y, cur->p2->y), cur->p3->y));
+					fmax(bv->high.y, fmax(fmax(cur->p1->y, cur->p2->y), cur->p3->y));
 			bv->high.z =
-					fmaxf(bv->high.z, fmaxf(fmaxf(cur->p1->z, cur->p2->z), cur->p3->z));
+					fmax(bv->high.z, fmax(fmax(cur->p1->z, cur->p2->z), cur->p3->z));
 		}
 	}
 	bv->nChildren = 0;
@@ -341,8 +346,9 @@ BoundingVolume *constructBoundingVolumes(BoundingVolume *bv) {
 			quickPartition(bv->triangles, 0, bv->nTriangles - 1, triangleCentroidZ);
 		}
 
-//		memcpy(low, bv->triangles, sizeof(Triangle3D *) * (size_t)nLow);
-//		memcpy(high, bv->triangles + nLow, sizeof(Triangle3D *) * (size_t)nHigh);
+		//		memcpy(low, bv->triangles, sizeof(Triangle3D *) * (size_t)nLow);
+		//		memcpy(high, bv->triangles + nLow, sizeof(Triangle3D *) *
+		//(size_t)nHigh);
 		low = bv->triangles;
 		high = bv->triangles + nLow;
 
@@ -367,8 +373,8 @@ BoundingVolume *constructBoundingVolumes(BoundingVolume *bv) {
 
 // inspiration: http://www.cs.utah.edu/~awilliam/box/box.pdf
 int smitsBoxIntersect(BoundingVolume *bv, Ray3D *ray) {
-	float tmin, tmax, tymin, tymax, tzmin, tzmax;
-	float divx = 1 / ray->v->x;
+	double tmin, tmax, tymin, tymax, tzmin, tzmax;
+	double divx = 1 / ray->v->x;
 	if (divx >= 0) {
 		tmin = (bv->low.x - ray->p->x) * divx;
 		tmax = (bv->high.x - ray->p->x) * divx;
@@ -376,7 +382,7 @@ int smitsBoxIntersect(BoundingVolume *bv, Ray3D *ray) {
 		tmin = (bv->high.x - ray->p->x) * divx;
 		tmax = (bv->low.x - ray->p->x) * divx;
 	}
-	float divy = 1 / ray->v->y;
+	double divy = 1 / ray->v->y;
 	if (divy >= 0) {
 		tymin = (bv->low.y - ray->p->y) * divy;
 		tymax = (bv->high.y - ray->p->y) * divy;
@@ -390,7 +396,7 @@ int smitsBoxIntersect(BoundingVolume *bv, Ray3D *ray) {
 		tmin = tymin;
 	if (tymax < tmax)
 		tmax = tymax;
-	float divz = 1 / ray->v->z;
+	double divz = 1 / ray->v->z;
 	if (divz >= 0) {
 		tzmin = (bv->low.z - ray->p->z) * divz;
 		tzmax = (bv->high.z - ray->p->z) * divz;
@@ -421,8 +427,8 @@ Intersection3D *findIntersectionBV(BoundingVolume *bv, Ray3D *ray,
 		Intersection3D tempIntersection;
 		tempIntersection.exists = 0;
 
-		float minDist = FLT_MAX;
-		float tempDist;
+		double minDist = DBL_MAX;
+		double tempDist;
 
 		// Triangle3Dintersections
 		for (int i = 0; i < bv->nTriangles; i++) {
@@ -461,8 +467,8 @@ Intersection3D *findIntersectionBV(BoundingVolume *bv, Ray3D *ray,
 
 // gets a color from a specific intersection and calls rayTrace recursively
 // handles all light in the program
-float *getColor(Camera *camera, Scene *scene, Intersection3D *intersection,
-								int depth, float *rgb) {
+double *getColor(Camera *camera, Scene *scene, Intersection3D *intersection,
+								 int depth, double *rgb) {
 	// I = Ie + Ka Ial + Kd (N * L) Il + Ks (V * R)^n Ii
 
 	Triangle3D *t = intersection->triangle;
@@ -473,8 +479,8 @@ float *getColor(Camera *camera, Scene *scene, Intersection3D *intersection,
 	}
 	Vector3D *view = intersection->originalRay->v;
 
-	float id = 0;
-	float is = 0;
+	double id = 0;
+	double is = 0;
 
 	calcPointLights(scene, intersection, &normal, view, &id, &is);
 	calcDirectionalLights(scene, intersection, &normal, view, &id, &is);
@@ -483,9 +489,9 @@ float *getColor(Camera *camera, Scene *scene, Intersection3D *intersection,
 	// TODO: refraction/transparency
 
 	// reflection
-	float ir_r = 0;
-	float ir_g = 0;
-	float ir_b = 0;
+	double ir_r = 0;
+	double ir_g = 0;
+	double ir_b = 0;
 	if (depth > 0) {
 		Vector3D reflectedVector;
 		sub(view, mul(&normal, 2 * dot(view, &normal), &reflectedVector),
@@ -498,7 +504,7 @@ float *getColor(Camera *camera, Scene *scene, Intersection3D *intersection,
 		add(&intersection->point, mul(&normal, EPSILON, &eps), reflectedRay.p);
 		reflectedRay.v = &reflectedVector;
 
-		float reflectedColors[3];
+		double reflectedColors[3];
 		traceRay(camera, scene, &reflectedRay, depth - 1, reflectedColors);
 
 		ir_r = t->k_s * reflectedColors[0];
@@ -514,14 +520,14 @@ float *getColor(Camera *camera, Scene *scene, Intersection3D *intersection,
 }
 
 void calcPointLights(Scene *scene, Intersection3D *intersection,
-										 Vector3D *normal, Vector3D *view, float *id, float *is) {
+										 Vector3D *normal, Vector3D *view, double *id, double *is) {
 
 	for (int i = 0; i < scene->nPointLights; i++) {
 
 		PointLight *pl;
 		pl = &(scene->pointLights[i]);
 
-		float d = dist(&intersection->point, pl->point);
+		double d = dist(&intersection->point, pl->point);
 
 		// shadows
 		Ray3D lightToInter;
@@ -529,7 +535,7 @@ void calcPointLights(Scene *scene, Intersection3D *intersection,
 		sub(&intersection->point, pl->point, &l);
 		norm(&l, &l);
 
-		float lightNormalDot = dot(&l, normal);
+		double lightNormalDot = dot(&l, normal);
 		// check if light behind triangle
 		if (lightNormalDot > 0) { // light points into triangle
 			continue;
@@ -552,24 +558,24 @@ void calcPointLights(Scene *scene, Intersection3D *intersection,
 		norm(&lightReflectedVector, &lightReflectedVector);
 
 		Vector3D dvec = {1, d, d * d};
-		float il = pl->intensity; // intensity of light
+		double il = pl->intensity; // intensity of light
 		il /= dot(pl->attenuationCoeffs, &dvec);
 
 		// diffuse light
 		*id += -intersection->triangle->k_d * dot(normal, &l) * il;
 
 		// specular reflection
-		float is_temp = -dot(norm(view, view), &lightReflectedVector);
+		double is_temp = -dot(norm(view, view), &lightReflectedVector);
 		if (is_temp > 0) {
 			*is += intersection->triangle->k_s *
-						 powf(is_temp, scene->kSpecularExponent) * il;
+						 pow(is_temp, scene->kSpecularExponent) * il;
 		}
 	}
 }
 
 void calcDirectionalLights(Scene *scene, Intersection3D *intersection,
-													 Vector3D *normal, Vector3D *view, float *id,
-													 float *is) {
+													 Vector3D *normal, Vector3D *view, double *id,
+													 double *is) {
 
 	for (int i = 0; i < scene->nDirectionalLights; i++) {
 
@@ -603,27 +609,27 @@ void calcDirectionalLights(Scene *scene, Intersection3D *intersection,
 				&lightReflectedVector);
 		norm(&lightReflectedVector, &lightReflectedVector);
 
-		float il = dl->intensity; // intensity of light
+		double il = dl->intensity; // intensity of light
 
-		// diffuse light
-		*id += -intersection->triangle->k_d * dot(normal, dl->direction) * il;
+		// diffuse light (add negative due to vector orientations)
+		*id -= intersection->triangle->k_d * dot(normal, dl->direction) * il;
 
 		// specular reflection
-		float is_temp = -dot(norm(view, view), &lightReflectedVector);
+		double is_temp = -dot(norm(view, view), &lightReflectedVector);
 		if (is_temp > 0) {
 			*is += intersection->triangle->k_s *
-						 powf(is_temp, scene->kSpecularExponent) * il;
+						 pow(is_temp, scene->kSpecularExponent) * il;
 		}
 	}
 }
 
 void calcSpotLights(Scene *scene, Intersection3D *intersection,
-										Vector3D *normal, Vector3D *view, float *id, float *is) {
+										Vector3D *normal, Vector3D *view, double *id, double *is) {
 
 	for (int i = 0; i < scene->nSpotLights; i++) {
 
 		SpotLight *sl = &scene->spotLights[i];
-		float d = dist(sl->point, &intersection->point);
+		double d = dist(sl->point, &intersection->point);
 
 		Vector3D lightReflectedVector;
 		sub(sl->direction,
@@ -652,7 +658,7 @@ void calcSpotLights(Scene *scene, Intersection3D *intersection,
 		}
 
 		Vector3D dvec = {1, d, d * d};
-		float il = sl->intensity; // intensity of light
+		double il = sl->intensity; // intensity of light
 		il /= dot(sl->attenuationCoeffs, &dvec);
 		il *= dot(sl->direction, &lightToInter);
 
@@ -660,10 +666,10 @@ void calcSpotLights(Scene *scene, Intersection3D *intersection,
 		*id += -intersection->triangle->k_d * dot(normal, sl->direction) * il;
 
 		// specular reflection
-		float is_temp = -dot(view, &lightReflectedVector);
+		double is_temp = -dot(view, &lightReflectedVector);
 		if (is_temp > 0) {
 			*is += intersection->triangle->k_s *
-						 powf(is_temp, scene->kSpecularExponent) * il;
+						 pow(is_temp, scene->kSpecularExponent) * il;
 		}
 	}
 }

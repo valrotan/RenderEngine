@@ -33,4 +33,5 @@ void parseFaceLine(char *str, int *vertN, int **verts);
 			File is parsed and all of the pre variables are set properly
 	returns: void
 */
-void parseObj(const char *path, Triangle3D **trigList, int *size, float *scale);
+void parseObj(const char *path, Triangle3D **trigList, int *size, double *scale,
+							Triangle3D baseTriangle);
