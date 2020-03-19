@@ -8,7 +8,7 @@ The rendering engine supports most obj files and does not support color from mat
 The only two non-standard C libraries used are pthread and gtk+. gtk is used to render output to the screen and is optional. pthread is to render faster, even though it is completely on a CPU and the goal is to demonstrate simple rendering techniques and not be high-performing.
 
 ![](https://github.com/valrotan/RenderEngine/blob/master/human.jpg)
-![](https://github.com/valrotan/RenderEngine/blob/master/torus.jpg)
+![](https://github.com/valrotan/RenderEngine/blob/master/biglady.jpg)
 
 ## How to run
 ### Prerequisites:

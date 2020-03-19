@@ -85,14 +85,15 @@ void engineRun(RenderArgs *args) {
 
 	Camera camera;
 	Matrix4x4 trans[] = {
-			getScaleMatrix(scale, scale, scale), //
-			getXRotationMatrix(-30, 0),           // model orientation
-			getYRotationMatrix(0, 0),            //
-			getTranslationMatrix(0, 0, 2.5),     // camera position
-			getXRotationMatrix(0, 0),            // camera orientation
-			getYRotationMatrix(0, 0),            //
+			getScaleMatrix(scale, scale, scale),           //
+			getXRotationMatrix(args->modelRotation.x, 0),  // model orientation
+			getYRotationMatrix(args->modelRotation.y, 0),  //
+			getTranslationMatrix(0, 0, 2.5),               // camera position
+			getXRotationMatrix(args->cameraRotation.x, 0), // camera orientation
+			getYRotationMatrix(args->cameraRotation.y, 0), //
+			getZRotationMatrix(args->cameraRotation.z, 0), //
 	};
-	Matrix4x4 camToWorld = getTransformationMatrix(trans, 6);
+	Matrix4x4 camToWorld = getTransformationMatrix(trans, 7);
 
 	camera.width = WIDTH;
 	camera.height = HEIGHT;
@@ -120,17 +121,17 @@ void engineRun(RenderArgs *args) {
 	DirectionalLight dirLights[4];
 	Vector3D dirLightDir0 = {1, -.5, -1};
 	dirLights[0].direction = norm(&dirLightDir0, &dirLightDir0);
-	dirLights[0].intensity = 1.65;
+	dirLights[0].intensity = .5;
 	Vector3D dirLightDir1 = {1, -.5, 1};
 	dirLights[1].direction = norm(&dirLightDir1, &dirLightDir1);
-	dirLights[1].intensity = .65;
+	dirLights[1].intensity = .5;
 	Vector3D dirLightDir2 = {-1, -.5, -1};
 	dirLights[2].direction = norm(&dirLightDir2, &dirLightDir2);
-	dirLights[2].intensity = .65;
+	dirLights[2].intensity = .5;
 	scene.directionalLights = dirLights;
 	Vector3D dirLightDir3 = {-1, -.5, 1};
 	dirLights[3].direction = norm(&dirLightDir3, &dirLightDir3);
-	dirLights[3].intensity = .65;
+	dirLights[3].intensity = .5;
 	scene.directionalLights = dirLights;
 
 	//	SpotLight spotLights[4];
