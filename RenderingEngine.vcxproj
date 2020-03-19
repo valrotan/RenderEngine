@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="RenderEngine\src\engine.c" />
     <ClCompile Include="RenderEngine\src\imageUtil\imageUtil.c" />
     <ClCompile Include="RenderEngine\src\main.c" />
     <ClCompile Include="RenderEngine\src\math\renderMath.c" />
@@ -28,6 +29,7 @@
     <ClCompile Include="RenderEngine\src\visualizer\visualizer.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="RenderEngine\src\engine.h" />
     <ClInclude Include="RenderEngine\src\imageUtil\imageUtil.h" />
     <ClInclude Include="RenderEngine\src\math\renderMath.h" />
     <ClInclude Include="RenderEngine\src\parsing\stack.h" />

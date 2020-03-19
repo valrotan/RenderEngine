@@ -90,10 +90,13 @@ void parseObj(const char *path, Triangle3D **trigList, int *size,
 
 					Triangle3D *pTemp = (Triangle3D *)malloc(sizeof(Triangle3D));
 					*pTemp = trig;
-					// printf("%4d| (%.2f,%.2f,%.2f) (%.2f,%.2f,%.2f) (%.2f,%.2f,%.2f)\n",
-					// facesCount, pTemp->p1->x, pTemp->p1->y, pTemp->p1->z, pTemp->p2->x,
-					//	pTemp->p2->y, pTemp->p2->z, pTemp->p3->x, pTemp->p3->y,
-					// pTemp->p3->z);
+					 //printf("%4d| (%.2f,%.2f,%.2f) (%.2f,%.2f,%.2f) (%.2f,%.2f,%.2f)\n",
+					 //facesCount, pTemp->p1->x, pTemp->p1->y, pTemp->p1->z, pTemp->p2->x,
+						//pTemp->p2->y, pTemp->p2->z, pTemp->p3->x, pTemp->p3->y,
+					 //pTemp->p3->z);
+					/*if (facesCount == 93263) {
+						printf("");
+					}*/
 					facesStack = push(facesStack, pTemp);
 					facesCount++;
 				}
@@ -101,6 +104,12 @@ void parseObj(const char *path, Triangle3D **trigList, int *size,
 			}
 		}
 	}
+
+	for (int k = 0; k < vertCount; k++) {
+		printf("%4d| (%.2f,%.2f,%.2f)\n",
+			k, verts[k].x, verts[k].y, verts[k].z);
+	}
+
 	Triangle3D *triggs = (Triangle3D *)malloc(facesCount * sizeof(Triangle3D));
 	int i = 0;
 
@@ -129,9 +138,17 @@ void parseObj(const char *path, Triangle3D **trigList, int *size,
 		Triangle3D *n = facesStack->data;
 		Vector3D centroid;
 
+		if (i == 93264) {
+			printf("");
+		}
+
 		// printf("%4d| (%.2f,%.2f,%.2f) (%.2f,%.2f,%.2f) (%.2f,%.2f,%.2f)\n", i,
 		// n->p1->x, n->p1->y, n->p1->z, n->p2->x, n->p2->y, n->p2->z, n->p3->x,
 		// n->p3->y, n->p3->z);
+
+		if (!n || !(n->p1) || !n->p2->x || !n->p3->x) {
+			printf("broke on: %d\n", i);
+		}
 
 		divide(add(add(n->p1, n->p2, &centroid), n->p3, &centroid), 2 * (*scale),
 					 &centroid);
