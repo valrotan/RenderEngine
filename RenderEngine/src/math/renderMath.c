@@ -331,3 +331,8 @@ double dotOne(Vector3D *v) { return v->x + v->y + v->z; }
 double triangleCentroidX(Triangle3D *t) { return t->centroid->x; }
 double triangleCentroidY(Triangle3D *t) { return t->centroid->y; }
 double triangleCentroidZ(Triangle3D *t) { return t->centroid->z; }
+
+double sigmoid(double x) {
+	double ex = pow(E, x);
+	return ex / (ex + 1);
+}

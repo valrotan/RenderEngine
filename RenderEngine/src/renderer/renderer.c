@@ -83,6 +83,9 @@ void *rayTraceSegment(void *pSegment) {
 					temp_rgb[0] += rgb[0];
 					temp_rgb[1] += rgb[1];
 					temp_rgb[2] += rgb[2];
+					//					temp_rgb[0] += sigmoid(4 * rgb[0] - 2);
+					//					temp_rgb[1] += sigmoid(4 * rgb[1] - 2);
+					//					temp_rgb[2] += sigmoid(4 * rgb[2] - 2);
 				}
 			}
 

@@ -92,3 +92,5 @@ double triangleCentroidY(Triangle3D *);
 double triangleCentroidZ(Triangle3D *);
 
 double dotOne(Vector3D *v);
+
+double sigmoid(double x);
