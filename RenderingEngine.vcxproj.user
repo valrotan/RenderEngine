@@ -1,4 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LocalDebuggerCommandArguments>-i ./RenderEngine/input/earth.obj -br .1 -bg .1 -bb .1 -mx -5 -my -15 -cx 5 -ke .3 -kd .1 -ks .9 -a 2 -w 1280 -h 720 -s 1.5 -f 90 -t 2 </LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LocalDebuggerCommandArguments>-i ./RenderEngine/input/earth.obj -br .1 -bg .1 -bb .1 -mx -5 -my -15 -cx 5 -ke .3 -kd .1 -ks .9 -a 2 -w 1280 -h 720 -s 1.5 -f 90 -t 2 </LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
 </Project>

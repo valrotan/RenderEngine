@@ -140,9 +140,9 @@ void parseObj(const char *path, Triangle3D **trigList, int *size, double *scale,
 		//		n->colorG = sin(centroid.y) + .5;
 		//		n->colorB = sin(centroid.z) + .5;
 		// funky soft colors
-		trig->colorR = .65 + sin(cos(centroid.y) + centroid.z) / 5;
-		trig->colorG = .4 + sin(cos(centroid.z) + centroid.x) / 5;
-		trig->colorB = .25 - sin(cos(centroid.x) + centroid.y) / 5;
+		trig->colorR = .2 + sin(cos(centroid.y) + centroid.z) / 5;
+		trig->colorG = .2 + sin(cos(centroid.z) + centroid.x) / 5;
+		trig->colorB = .75 - sin(cos(centroid.x) + centroid.y) / 5;
 
 		triggs[i] = *trig;
 		i++;

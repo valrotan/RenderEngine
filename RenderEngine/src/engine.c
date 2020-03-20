@@ -13,7 +13,7 @@ RenderArgs engineDefaultArgs() {
 
 	args.resolution.x = 1280;
 	args.resolution.y = 720;
-	args.objPath = "input/torus.obj";
+	args.objPath = "./RenderEngine/input/zero_blue.obj";
 	args.outputPath = "output.tga";
 
 	args.fov = 60;
@@ -26,14 +26,14 @@ RenderArgs engineDefaultArgs() {
 	args.kSpecularExponent = 3;
 
 	args.nAntialiasingSamples = 2;
-	args.nTraces = 1;
+	args.nTraces = 2;
 	args.nThreads = 96;
 
 	args.loadVideo = 0;
 
-	args.baseTriangle.k_e = .1;
-	args.baseTriangle.k_d = .25;
-	args.baseTriangle.k_s = .15;
+	args.baseTriangle.k_e = .3;
+	args.baseTriangle.k_d = .3;
+	args.baseTriangle.k_s = .5;
 
 	return args;
 }
