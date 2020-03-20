@@ -27,6 +27,7 @@ cmake ..
 make
 ./engineRun [path to obj]
 ```
+Sample runs are located in the config subdirectory. For sample.sh, you should be able to simply run it `sh sample.sh`.
 
 ## How to use the source code
 The source code is split into 4 main modules.
@@ -36,6 +37,6 @@ The source code is split into 4 main modules.
 - *fileReader* - module to read in the .obj file with triangle verticies.
 - main.c has a lot most of the needed sample code to get started with modifying the scene and extending the project
 
-## Render times benchmarks (HD Human, dafault scene/obj):
-- MacBookPro 2019 2.30 GHZ i5 : 6359ms
-- Dell XPS 15 2.20 GHZ i7: 426 ms *not updated*
+## Render times benchmarks (HD Human, dafault scene/obj) (***VERY MUCH NOT UP TO DATE***):
+- MacBookPro 2019 2.30 GHZ i5 : 6359ms ***not updated***
+- Dell XPS 15 2.20 GHZ i7: 426 ms ***not updated***
