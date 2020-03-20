@@ -125,9 +125,9 @@ void engineRun(RenderArgs *args) {
 	Vector3D dirLightDir0 = {1, -1.5, -1};
 	dirLights[0].direction = norm(&dirLightDir0, &dirLightDir0);
 	dirLights[0].intensity = .5;
-	Vector3D dirLightDir1 = {1, -1.5, 1};
+	Vector3D dirLightDir1 = {1, -.5, 1};
 	dirLights[1].direction = norm(&dirLightDir1, &dirLightDir1);
-	dirLights[1].intensity = .5;
+	dirLights[1].intensity = 1.5;
 	Vector3D dirLightDir2 = {-1, -1.5, -1};
 	dirLights[2].direction = norm(&dirLightDir2, &dirLightDir2);
 	dirLights[2].intensity = .5;
@@ -188,9 +188,14 @@ void engineRun(RenderArgs *args) {
 		}
 		printf("%d \n", saveToTGA(out, vis.pixels, (short)WIDTH, (short)HEIGHT));
 
+		printf("Cleaning...\n");
+		for (int i = 0; i < size; i++) {
+			free(t[i].plane->v);
+			free(t[i].plane);
+			free(t[i].centroid);
+		}
+
 		printf("Showing...\n");
 		visShowStill(&vis);
 	}
-
-	free(t);
 }
