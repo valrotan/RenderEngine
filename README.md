@@ -1,4 +1,4 @@
-# C Render Engine
+# 3D Raytracing Render Engine in C
 
 ### Minimalistic render engine in C without using any libraries (almost)
 This is a simple ray-tracing rendering engine in C. It is partially inspired by/based on [Princeton's computer graphics class from 2000](https://www.cs.princeton.edu/courses/archive/fall00/cs426/).
