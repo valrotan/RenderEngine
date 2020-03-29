@@ -189,11 +189,7 @@ void engineRun(RenderArgs *args) {
 		printf("%d \n", saveToTGA(out, vis.pixels, (short)WIDTH, (short)HEIGHT));
 
 		printf("Cleaning...\n");
-		for (int i = 0; i < size; i++) {
-			free(t[i].plane->v);
-			free(t[i].plane);
-			free(t[i].centroid);
-		}
+		free(t);
 
 		printf("Showing...\n");
 		visShowStill(&vis);

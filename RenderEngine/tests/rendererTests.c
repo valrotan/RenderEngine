@@ -25,14 +25,14 @@ void rayThroughPixelPerformance() {
 
 	Ray3D ray;
 	Vector3D rayp, rayv;
-	ray.p = &rayp;
-	ray.v = &rayv;
+	ray.p = rayp;
+	ray.v = rayv;
 
 	struct timeb start, end;
 	int diff;
 	ftime(&start);
 
-	applyTransformation(&ORIGIN_3D, &camera.cameraToWorld, ray.p);
+	applyTransformation(&ORIGIN_3D, &camera.cameraToWorld, &ray.p);
 	for (int y = 0; y < HEIGHT; y++) {
 		for (int x = 0; x < WIDTH; x++) {
 			constructRayThroughPixel(&camera, x, y, WIDTH, HEIGHT, &ray, 1);

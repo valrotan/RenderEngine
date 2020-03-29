@@ -26,22 +26,22 @@ void intersectTests() {
 	Vector3D b = {-1, 1, -1};
 	Vector3D c = {1, 0, -1};
 	Triangle3D triangle;
-	triangle.p1 = &b;
-	triangle.p2 = &a;
-	triangle.p3 = &c;
+	triangle.p1 = b;
+	triangle.p2 = a;
+	triangle.p3 = c;
 	Plane3D plane;
 	Vector3D n;
 	Vector3D temp1;
 	Vector3D temp2;
 	norm(cross(sub(&b, &a, &temp1), sub(&c, &a, &temp2), &n), &n);
-	plane.v = &n;
+	plane.v = n;
 	plane.d = -dot(&b, mul(&n, -1, &n));
-	triangle.plane = &plane;
+	triangle.plane = plane;
 	Intersection3D inter;
 	Vector3D rayDir = {0, 0, -1};
 	Ray3D ray;
-	ray.p = &ORIGIN_3D;
-	ray.v = &rayDir;
+	ray.p = ORIGIN_3D;
+	ray.v = rayDir;
 
 	intersect(&ray, &triangle, &inter);
 

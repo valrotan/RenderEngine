@@ -18,19 +18,16 @@ void rendererInit(Renderer *renderer) {
 	for (int i = 0; i < renderer->scene->nTriangles; i++) {
 		Triangle3D *t = &renderer->scene->triangles[i];
 		Vector3D v1;
-		sub(t->p1, t->p3, &v1);
+		sub(&t->p1, &t->p3, &v1);
 		Vector3D v2;
-		sub(t->p1, t->p2, &v2);
-		t->plane = (Plane3D *)malloc(sizeof(Plane3D));
-		t->plane->v = (Vector3D *)malloc(sizeof(Vector3D));
+		sub(&t->p1, &t->p2, &v2);
 
-		cross(&v1, &v2, t->plane->v);
-		norm(t->plane->v, t->plane->v);
-		t->plane->d = -dot(t->p1, t->plane->v);
+		cross(&v1, &v2, &t->plane.v);
+		norm(&t->plane.v, &t->plane.v);
+		t->plane.d = -dot(&t->p1, &t->plane.v);
 
-		t->centroid = (Vector3D *)malloc(sizeof(Vector3D));
-		divide(add(add(t->p1, t->p2, t->centroid), t->p3, t->centroid), 3,
-					 t->centroid);
+		divide(add(add(&t->p1, &t->p2, &t->centroid), &t->p3, &t->centroid), 3,
+					 &t->centroid);
 	}
 	BoundingVolume *bv = malloc(sizeof(BoundingVolume));
 	// convert scene triangles to double pointers to triangles
@@ -57,12 +54,9 @@ void *rayTraceSegment(void *pSegment) {
 
 	RendererSegment *rSegment = (RendererSegment *)pSegment;
 
-	Ray3D ray;
-	Vector3D rp, rv;
-	ray.p = &rp;
-	ray.v = &rv;
+	Ray3D ray; // can move this outside
 	applyTransformation(&ORIGIN_3D, &rSegment->renderer->camera->cameraToWorld,
-											ray.p);
+											&ray.p);
 
 	unsigned char *p = rSegment->screen;
 
@@ -168,8 +162,8 @@ Ray3D *constructRayThroughPixel(Camera *camera, int x, int y, int imageWidth,
 	Vector3D pWorld = {Px, Py, -1};
 	applyTransformation(&pWorld, &camera->cameraToWorld, &pWorld);
 
-	sub(&pWorld, ray->p, ray->v);
-	norm(ray->v, ray->v);
+	sub(&pWorld, &ray->p, &ray->v);
+	norm(&ray->v, &ray->v);
 
 	return ray;
 }
@@ -277,6 +271,66 @@ int quickPartition(Triangle3D **arr, int low, int high,
 	return (i + 1);
 }
 
+void constructVolumeBounds(BoundingVolume *bv) {
+	Triangle3D *cur = bv->triangles[0];
+
+	bv->low.x = fmin(fmin(cur->p1.x, cur->p2.x), cur->p3.x);
+	bv->low.y = fmin(fmin(cur->p1.y, cur->p2.y), cur->p3.y);
+	bv->low.z = fmin(fmin(cur->p1.z, cur->p2.z), cur->p3.z);
+	bv->high.x = fmax(fmax(cur->p1.x, cur->p2.x), cur->p3.x);
+	bv->high.y = fmax(fmax(cur->p1.y, cur->p2.y), cur->p3.y);
+	bv->high.z = fmax(fmax(cur->p1.z, cur->p2.z), cur->p3.z);
+
+	for (int i = 1; i < bv->nTriangles; i++) {
+		cur = bv->triangles[i];
+		bv->low.x = fmin(bv->low.x, fmin(fmin(cur->p1.x, cur->p2.x), cur->p3.x));
+		bv->low.y = fmin(bv->low.y, fmin(fmin(cur->p1.y, cur->p2.y), cur->p3.y));
+		bv->low.z = fmin(bv->low.z, fmin(fmin(cur->p1.z, cur->p2.z), cur->p3.z));
+		bv->high.x = fmax(bv->high.x, fmax(fmax(cur->p1.x, cur->p2.x), cur->p3.x));
+		bv->high.y = fmax(bv->high.y, fmax(fmax(cur->p1.y, cur->p2.y), cur->p3.y));
+		bv->high.z = fmax(bv->high.z, fmax(fmax(cur->p1.z, cur->p2.z), cur->p3.z));
+	}
+}
+
+double getVolume(BoundingVolume *bv) {
+	return (bv->high.x - bv->low.x) * //
+				 (bv->high.y - bv->low.y) * //
+				 (bv->high.z - bv->low.z);
+}
+
+double getSurfaceArea(BoundingVolume *bv) {
+	Vector3D dims;
+	sub(&bv->high, &bv->low, &dims);
+	return (dims.x * dims.y) + //
+				 (dims.x * dims.z) + //
+				 (dims.y - dims.z);
+}
+
+void swapd(double *a, double *b) {
+	double temp = *b;
+	*b = *a;
+	*a = temp;
+}
+
+void vectorSort(Vector3D *v) {
+	if (v->y < v->x)
+		swapd(&v->x, &v->y);
+
+	// Insert arr[2]
+	if (v->z < v->y) {
+		swapd(&v->y, &v->z);
+		if (v->y < v->x)
+			swapd(&v->y, &v->x);
+	}
+}
+
+double volumeQuantifier(BoundingVolume *bv) {
+	Vector3D dims;
+	sub(&bv->high, &bv->low, &dims);
+	vectorSort(&dims);
+	return (dims.x + dims.y + 2 * dims.z);
+}
+
 // generate bounding volumes
 // in: scene
 // create node around all triangles
@@ -299,32 +353,7 @@ BoundingVolume *constructBoundingVolumes(BoundingVolume *bv) {
 		return bv;
 	}
 	// determine own bounding volume points
-	{
-		Triangle3D *cur = bv->triangles[0];
-
-		bv->low.x = fmin(fmin(cur->p1->x, cur->p2->x), cur->p3->x);
-		bv->low.y = fmin(fmin(cur->p1->y, cur->p2->y), cur->p3->y);
-		bv->low.z = fmin(fmin(cur->p1->z, cur->p2->z), cur->p3->z);
-		bv->high.x = fmax(fmax(cur->p1->x, cur->p2->x), cur->p3->x);
-		bv->high.y = fmax(fmax(cur->p1->y, cur->p2->y), cur->p3->y);
-		bv->high.z = fmax(fmax(cur->p1->z, cur->p2->z), cur->p3->z);
-
-		for (int i = 1; i < bv->nTriangles; i++) {
-			cur = bv->triangles[i];
-			bv->low.x =
-					fmin(bv->low.x, fmin(fmin(cur->p1->x, cur->p2->x), cur->p3->x));
-			bv->low.y =
-					fmin(bv->low.y, fmin(fmin(cur->p1->y, cur->p2->y), cur->p3->y));
-			bv->low.z =
-					fmin(bv->low.z, fmin(fmin(cur->p1->z, cur->p2->z), cur->p3->z));
-			bv->high.x =
-					fmax(bv->high.x, fmax(fmax(cur->p1->x, cur->p2->x), cur->p3->x));
-			bv->high.y =
-					fmax(bv->high.y, fmax(fmax(cur->p1->y, cur->p2->y), cur->p3->y));
-			bv->high.z =
-					fmax(bv->high.z, fmax(fmax(cur->p1->z, cur->p2->z), cur->p3->z));
-		}
-	}
+	constructVolumeBounds(bv);
 	bv->nChildren = 0;
 
 	// end at n triangles per volume
@@ -341,30 +370,76 @@ BoundingVolume *constructBoundingVolumes(BoundingVolume *bv) {
 		sub(&bv->high, &bv->low, &bvDims);
 		//		printf("dims (%.2f, %.2f, %.2f) \n", bvDims.x, bvDims.y, bvDims.z);
 
-		if (bvDims.x > bvDims.y && bvDims.x > bvDims.z) { // split along x
+		BoundingVolume *children =
+				(BoundingVolume *)malloc(sizeof(BoundingVolume) * 2);
+		low = bv->triangles;
+		high = bv->triangles + nLow;
+		children[0].triangles = low;
+		children[0].nTriangles = nLow;
+		children[1].triangles = high;
+		children[1].nTriangles = nHigh;
+		bv->children = children;
+		bv->nChildren = 2;
+
+		{ // Pick dimension based on min total children surface area
+			double (*quantifier)(BoundingVolume *) = volumeQuantifier;
+			char pick = 'x';
+			double minQ, q;
 			quickPartition(bv->triangles, 0, bv->nTriangles - 1, triangleCentroidX);
-		} else if (bvDims.y > bvDims.z) { // split along y
-			quickPartition(bv->triangles, 0, bv->nTriangles - 1, triangleCentroidY);
-		} else { // split along z
-			quickPartition(bv->triangles, 0, bv->nTriangles - 1, triangleCentroidZ);
+			constructVolumeBounds(children);
+			constructVolumeBounds(children + 1);
+			minQ = quantifier(children) + quantifier(children + 1);
+
+			Triangle3D **byY = malloc(sizeof(Triangle3D *) * (size_t)bv->nTriangles);
+			memcpy(byY, bv->triangles, sizeof(Triangle3D *) * (size_t)bv->nTriangles);
+			children[0].triangles = byY;
+			children[1].triangles = byY + nLow;
+			quickPartition(byY, 0, bv->nTriangles - 1, triangleCentroidY);
+			constructVolumeBounds(children);
+			constructVolumeBounds(children + 1);
+			q = quantifier(children) + quantifier(children + 1);
+			if (q < minQ) {
+				minQ = q;
+				pick = 'y';
+			}
+
+			Triangle3D **byZ = malloc(sizeof(Triangle3D *) * (size_t)bv->nTriangles);
+			memcpy(byZ, bv->triangles, sizeof(Triangle3D *) * (size_t)bv->nTriangles);
+			children[0].triangles = byZ;
+			children[1].triangles = byZ + nLow;
+			quickPartition(byZ, 0, bv->nTriangles - 1, triangleCentroidZ);
+			constructVolumeBounds(children);
+			constructVolumeBounds(children + 1);
+			q = quantifier(children) + quantifier(children + 1);
+			if (q < minQ) {
+				pick = 'z';
+			}
+
+			// could just store the sorts instead to speed up construction
+			if (pick == 'x') { // split along x
+				children[0].triangles = bv->triangles;
+				children[1].triangles = bv->triangles + nLow;
+			} else if (pick == 'y') { // split along y
+				children[0].triangles = byY;
+				children[1].triangles = byY + nLow;
+			}
+		}
+
+		{
+//				if (bvDims.x > bvDims.y && bvDims.x > bvDims.z) { // split along x
+//					quickPartition(bv->triangles, 0, bv->nTriangles - 1,
+//		 triangleCentroidX); 		} else if (bvDims.y > bvDims.z) { // split along y
+//					quickPartition(bv->triangles, 0, bv->nTriangles - 1,
+//		 triangleCentroidY); 		} else { // split along z
+//					quickPartition(bv->triangles, 0, bv->nTriangles - 1,
+//		 triangleCentroidZ);
+//				}
 		}
 
 		//		memcpy(low, bv->triangles, sizeof(Triangle3D *) * (size_t)nLow);
 		//		memcpy(high, bv->triangles + nLow, sizeof(Triangle3D *) *
 		//(size_t)nHigh);
-		low = bv->triangles;
-		high = bv->triangles + nLow;
 
-		BoundingVolume *children =
-				(BoundingVolume *)malloc(sizeof(BoundingVolume) * 2);
-
-		children[0].triangles = low;
-		children[0].nTriangles = nLow;
-		children[1].triangles = high;
-		children[1].nTriangles = nHigh;
-
-		bv->children = children;
-		bv->nChildren = 2;
 		bv->nTriangles = 0;
 
 		constructBoundingVolumes(children);
@@ -377,21 +452,21 @@ BoundingVolume *constructBoundingVolumes(BoundingVolume *bv) {
 // inspiration: http://www.cs.utah.edu/~awilliam/box/box.pdf
 int smitsBoxIntersect(BoundingVolume *bv, Ray3D *ray) {
 	double tmin, tmax, tymin, tymax, tzmin, tzmax;
-	double divx = 1 / ray->v->x;
+	double divx = 1 / ray->v.x;
 	if (divx >= 0) {
-		tmin = (bv->low.x - ray->p->x) * divx;
-		tmax = (bv->high.x - ray->p->x) * divx;
+		tmin = (bv->low.x - ray->p.x) * divx;
+		tmax = (bv->high.x - ray->p.x) * divx;
 	} else {
-		tmin = (bv->high.x - ray->p->x) * divx;
-		tmax = (bv->low.x - ray->p->x) * divx;
+		tmin = (bv->high.x - ray->p.x) * divx;
+		tmax = (bv->low.x - ray->p.x) * divx;
 	}
-	double divy = 1 / ray->v->y;
+	double divy = 1 / ray->v.y;
 	if (divy >= 0) {
-		tymin = (bv->low.y - ray->p->y) * divy;
-		tymax = (bv->high.y - ray->p->y) * divy;
+		tymin = (bv->low.y - ray->p.y) * divy;
+		tymax = (bv->high.y - ray->p.y) * divy;
 	} else {
-		tymin = (bv->high.y - ray->p->y) * divy;
-		tymax = (bv->low.y - ray->p->y) * divy;
+		tymin = (bv->high.y - ray->p.y) * divy;
+		tymax = (bv->low.y - ray->p.y) * divy;
 	}
 	if ((tmin > tymax) || (tymin > tmax))
 		return 0;
@@ -399,13 +474,13 @@ int smitsBoxIntersect(BoundingVolume *bv, Ray3D *ray) {
 		tmin = tymin;
 	if (tymax < tmax)
 		tmax = tymax;
-	double divz = 1 / ray->v->z;
+	double divz = 1 / ray->v.z;
 	if (divz >= 0) {
-		tzmin = (bv->low.z - ray->p->z) * divz;
-		tzmax = (bv->high.z - ray->p->z) * divz;
+		tzmin = (bv->low.z - ray->p.z) * divz;
+		tzmax = (bv->high.z - ray->p.z) * divz;
 	} else {
-		tzmin = (bv->high.z - ray->p->z) * divz;
-		tzmax = (bv->low.z - ray->p->z) * divz;
+		tzmin = (bv->high.z - ray->p.z) * divz;
+		tzmax = (bv->low.z - ray->p.z) * divz;
 	}
 	if ((tmin > tzmax) || (tzmin > tmax))
 		return 0;
@@ -438,7 +513,7 @@ Intersection3D *findIntersectionBV(BoundingVolume *bv, Ray3D *ray,
 			intersect(ray, *(bv->triangles + i), &tempIntersection);
 
 			if (tempIntersection.exists) {
-				tempDist = distSqrd(&tempIntersection.point, ray->p);
+				tempDist = distSqrd(&tempIntersection.point, &ray->p);
 				if (tempDist < minDist) {
 					inter->point = tempIntersection.point;
 					inter->triangle = *(bv->triangles + i);
@@ -452,7 +527,7 @@ Intersection3D *findIntersectionBV(BoundingVolume *bv, Ray3D *ray,
 		for (int i = 0; i < bv->nChildren; i++) {
 			findIntersectionBV(bv->children + i, ray, &tempIntersection);
 			if (tempIntersection.exists) {
-				tempDist = distSqrd(&tempIntersection.point, ray->p);
+				tempDist = distSqrd(&tempIntersection.point, &ray->p);
 				if (tempDist < minDist) {
 					inter->point = tempIntersection.point;
 					inter->triangle = tempIntersection.triangle;
@@ -476,11 +551,11 @@ double *getColor(Camera *camera, Scene *scene, Intersection3D *intersection,
 
 	Triangle3D *t = intersection->triangle;
 
-	Vector3D normal = *t->plane->v; // normal
-	if (dot(intersection->originalRay->v, &normal) > 0) {
+	Vector3D normal = t->plane.v; // normal
+	if (dot(&intersection->originalRay->v, &normal) > 0) {
 		sub(&ORIGIN_3D, &normal, &normal);
 	}
-	Vector3D *view = intersection->originalRay->v;
+	Vector3D *view = &intersection->originalRay->v;
 
 	double id = 0;
 	double is = 0;
@@ -500,12 +575,9 @@ double *getColor(Camera *camera, Scene *scene, Intersection3D *intersection,
 		sub(view, mul(&normal, 2 * dot(view, &normal), &reflectedVector),
 				&reflectedVector);
 		Ray3D reflectedRay;
-		Vector3D rrp, rrv;
-		reflectedRay.p = &rrp;
-		reflectedRay.v = &rrv;
-		Vector3D eps;
-		add(&intersection->point, mul(&normal, EPSILON, &eps), reflectedRay.p);
-		reflectedRay.v = &reflectedVector;
+		add(&intersection->point, mul(&normal, EPSILON, &reflectedRay.v),
+				&reflectedRay.p);
+		reflectedRay.v = reflectedVector;
 
 		double reflectedColors[3];
 		traceRay(camera, scene, &reflectedRay, depth - 1, reflectedColors);
@@ -534,18 +606,16 @@ void calcPointLights(Scene *scene, Intersection3D *intersection,
 
 		// shadows
 		Ray3D lightToInter;
-		Vector3D l;
-		sub(&intersection->point, pl->point, &l);
-		norm(&l, &l);
+		sub(&intersection->point, pl->point, &lightToInter.v);
+		norm(&lightToInter.v, &lightToInter.v);
 
-		double lightNormalDot = dot(&l, normal);
+		double lightNormalDot = dot(&lightToInter.v, normal);
 		// check if light behind triangle
 		if (lightNormalDot > 0) { // light points into triangle
 			continue;
 		}
 
-		lightToInter.v = &l;
-		lightToInter.p = pl->point;
+		lightToInter.p = *pl->point;
 
 		// shadow
 		Intersection3D inter;
@@ -556,7 +626,7 @@ void calcPointLights(Scene *scene, Intersection3D *intersection,
 		}
 
 		Vector3D lightReflectedVector;
-		sub(&l, mul(normal, 2 * lightNormalDot, &lightReflectedVector),
+		sub(&lightToInter.v, mul(normal, 2 * lightNormalDot, &lightReflectedVector),
 				&lightReflectedVector);
 		norm(&lightReflectedVector, &lightReflectedVector);
 
@@ -565,7 +635,7 @@ void calcPointLights(Scene *scene, Intersection3D *intersection,
 		il /= dot(pl->attenuationCoeffs, &dvec);
 
 		// diffuse light
-		*id += -intersection->triangle->k_d * dot(normal, &l) * il;
+		*id += -intersection->triangle->k_d * dot(normal, &lightToInter.v) * il;
 
 		// specular reflection
 		double is_temp = -dot(norm(view, view), &lightReflectedVector);
@@ -591,13 +661,9 @@ void calcDirectionalLights(Scene *scene, Intersection3D *intersection,
 
 		// shadows
 		Ray3D lightToInter;
-		Vector3D ltiv;
-		Vector3D ltip;
-		lightToInter.v = &ltiv;
-		lightToInter.p = &ltip;
-		mul(dl->direction, -1, lightToInter.v);
-		add(&intersection->point, mul(normal, EPSILON, lightToInter.p),
-				lightToInter.p);
+		mul(dl->direction, -1, &lightToInter.v);
+		add(&intersection->point, mul(normal, EPSILON, &lightToInter.p),
+				&lightToInter.p);
 
 		Intersection3D inter;
 		inter.exists = 0;
@@ -650,8 +716,8 @@ void calcSpotLights(Scene *scene, Intersection3D *intersection,
 
 		// shadows
 		Ray3D lightToInterRay;
-		lightToInterRay.v = &lightToInter;
-		lightToInterRay.p = sl->point;
+		lightToInterRay.v = lightToInter;
+		lightToInterRay.p = *sl->point;
 
 		Intersection3D inter;
 		inter.exists = 0;

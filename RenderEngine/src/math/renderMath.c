@@ -114,7 +114,7 @@ Intersection3D *intersect(Ray3D *r, Triangle3D *t, Intersection3D *i) {
 	// we get    : u = -(P0 . N + d) / (V . N)
 	// Intersection point is therefore :
 	// P = P0 + Vu
-	double u = -(dot(r->p, t->plane->v) + t->plane->d) / dot(r->v, t->plane->v);
+	double u = -(dot(&r->p, &t->plane.v) + t->plane.d) / dot(&r->v, &t->plane.v);
 	if (isinf(u) || isnan(u) ||
 			u == 0.0 || // u == 0.0 prevents intersection at exactly camera point
 			u < 0) {     // do not intersect behind ray origin
@@ -122,15 +122,15 @@ Intersection3D *intersect(Ray3D *r, Triangle3D *t, Intersection3D *i) {
 		return i;
 	}
 	Vector3D cameraToInter;
-	add(r->p, mul(r->v, u, &cameraToInter), &i->point);
+	add(&r->p, mul(&r->v, u, &cameraToInter), &i->point);
 
 	// check if inside triangle bounds
 	Vector3D v1;
-	sub(t->p1, r->p, &v1);
+	sub(&t->p1, &r->p, &v1);
 	Vector3D v2;
-	sub(t->p2, r->p, &v2);
+	sub(&t->p2, &r->p, &v2);
 	Vector3D v3;
-	sub(t->p3, r->p, &v3);
+	sub(&t->p3, &r->p, &v3);
 	Vector3D n1;
 	cross(&v3, &v1, &n1);
 	Vector3D n2;
@@ -306,31 +306,31 @@ void setMinMax(const double *point, double *min, double *max) {
 }
 
 Vector3D *triangleGetX(Triangle3D *t, Vector3D *v) {
-	v->x = t->p1->x;
-	v->y = t->p2->x;
-	v->z = t->p3->x;
+	v->x = t->p1.x;
+	v->y = t->p2.x;
+	v->z = t->p3.x;
 	return v;
 }
 
 Vector3D *triangleGetY(Triangle3D *t, Vector3D *v) {
-	v->x = t->p1->y;
-	v->y = t->p2->y;
-	v->z = t->p3->y;
+	v->x = t->p1.y;
+	v->y = t->p2.y;
+	v->z = t->p3.y;
 	return v;
 }
 
 Vector3D *triangleGetZ(Triangle3D *t, Vector3D *v) {
-	v->x = t->p1->z;
-	v->y = t->p2->z;
-	v->z = t->p3->z;
+	v->x = t->p1.z;
+	v->y = t->p2.z;
+	v->z = t->p3.z;
 	return v;
 }
 
 double dotOne(Vector3D *v) { return v->x + v->y + v->z; }
 
-double triangleCentroidX(Triangle3D *t) { return t->centroid->x; }
-double triangleCentroidY(Triangle3D *t) { return t->centroid->y; }
-double triangleCentroidZ(Triangle3D *t) { return t->centroid->z; }
+double triangleCentroidX(Triangle3D *t) { return t->centroid.x; }
+double triangleCentroidY(Triangle3D *t) { return t->centroid.y; }
+double triangleCentroidZ(Triangle3D *t) { return t->centroid.z; }
 
 double sigmoid(double x) {
 	double ex = pow(E, x);

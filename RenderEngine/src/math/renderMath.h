@@ -11,28 +11,23 @@ typedef struct {
 } Vector2D;
 
 typedef struct {
-	Vector3D *v;
+	Vector3D v;
 	double d;
 } Plane3D;
 
 typedef struct {
-	Vector3D *points;
-	int npoints;
-} Polygon3D;
-
-typedef struct {
-	Vector3D *p1, *p2, *p3;
-	Plane3D *plane;
+	Vector3D p1, p2, p3;
+	Plane3D plane;
 	double colorR, colorG, colorB;
 	double k_e; // emission
 	double k_d; // diffuse
 	double k_s; // specular (reflectivity)
-	Vector3D *centroid;
+	Vector3D centroid;
 } Triangle3D;
 
 typedef struct {
-	Vector3D *p;
-	Vector3D *v;
+	Vector3D p;
+	Vector3D v;
 } Ray3D;
 
 typedef struct {
