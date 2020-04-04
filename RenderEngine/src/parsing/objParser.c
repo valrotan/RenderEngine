@@ -277,8 +277,11 @@ Material *parseMtl(const char *path, Triangle3D baseTriangle,
 	char *line = NULL;
 	while (getline(&line, &len, mtlFile) != -1) {
 		char *word = strtok(line, " \t\n\r");
+		if (!word)
+			continue;
 		if (strcmp("newmtl", word) == 0) {
 			// create new material
+			printf("set new mtl \n");
 			if (nMats != 0 && (nMats & (nMats - 1)) == 0) { // if size is a power of 2
 				materials = realloc(materials, nMats * 2 * sizeof(Material));
 			}
@@ -290,6 +293,7 @@ Material *parseMtl(const char *path, Triangle3D baseTriangle,
 
 		} else if (strcmp("Ka", word) == 0) {
 			// set color of current material
+			printf("set Ka \n");
 			materials[nMats - 1].baseTriangle.colorR =
 				strtod(strtok(NULL, " \t\n\r"), NULL);
 			materials[nMats - 1].baseTriangle.colorG =
