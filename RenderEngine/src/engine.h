@@ -21,6 +21,7 @@ typedef struct {
 	int nThreads;
 
 	int loadVideo;
+	int useMTL;
 
 	Triangle3D baseTriangle;
 } RenderArgs;

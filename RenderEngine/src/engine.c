@@ -32,6 +32,7 @@ RenderArgs engineDefaultArgs() {
 	args.nThreads = 96;
 
 	args.loadVideo = 0;
+	args.useMTL = 0;
 
 	args.baseTriangle.k_e = .3;
 	args.baseTriangle.k_d = .3;
@@ -82,7 +83,7 @@ void engineRun(RenderArgs *args) {
 	}
 
 	double scale = 1;
-	parseObj(path, &t, &size, &scale, args->baseTriangle);
+	parseObj(path, &t, &size, &scale, args->baseTriangle, args->useMTL);
 	scale /= args->scale;
 
 	Camera camera;
@@ -122,17 +123,17 @@ void engineRun(RenderArgs *args) {
 	//	scene.pointLights = pointLights;
 
 	DirectionalLight dirLights[4];
-	Vector3D dirLightDir0 = {1, -1.5, -1};
+	Vector3D dirLightDir0 = {1, -.5, -1};
 	dirLights[0].direction = norm(&dirLightDir0, &dirLightDir0);
 	dirLights[0].intensity = .5;
 	Vector3D dirLightDir1 = {1, -.5, 1};
 	dirLights[1].direction = norm(&dirLightDir1, &dirLightDir1);
 	dirLights[1].intensity = 1.5;
-	Vector3D dirLightDir2 = {-1, -1.5, -1};
+	Vector3D dirLightDir2 = {-1, -.5, -1};
 	dirLights[2].direction = norm(&dirLightDir2, &dirLightDir2);
 	dirLights[2].intensity = .5;
 	scene.directionalLights = dirLights;
-	Vector3D dirLightDir3 = {-1, -1.5, 1};
+	Vector3D dirLightDir3 = {-1, -.5, 1};
 	dirLights[3].direction = norm(&dirLightDir3, &dirLightDir3);
 	dirLights[3].intensity = .5;
 	scene.directionalLights = dirLights;

@@ -109,6 +109,10 @@ int main(int argc, char **argv) {
 		} else if (strcmp(argv[i], "-threads") == 0 || strcmp(argv[i], "-n") == 0) {
 			args.nThreads = (int)strtol(argv[i + 1], NULL, 10);
 
+		} else if (strcmp(argv[i], "-use_mtl") == 0 || strcmp(argv[i], "-mtl") == 0) {
+			args.useMTL = 1;
+			i--;
+
 		} else {
 			printf("Unknown option: %s\n", argv[i]);
 			return 0;

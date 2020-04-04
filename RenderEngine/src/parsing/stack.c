@@ -13,7 +13,7 @@ void destroyStack(StackNode* stack) {
 /***************************************************
 	Stack Insert: insert in the beginning
 */
-StackNode* push(StackNode* stack, int p1, int p2, int p3)
+StackNode* push(StackNode* stack, int p1, int p2, int p3, int curMat)
 {
 	StackNode* pnew;
 
@@ -26,6 +26,7 @@ StackNode* push(StackNode* stack, int p1, int p2, int p3)
 	pnew->p1 = p1;
 	pnew->p2 = p2;
 	pnew->p3 = p3;
+	pnew->curMat = curMat;
 	pnew->next = stack;
 	stack = pnew;
 	return stack;
