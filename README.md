@@ -10,8 +10,21 @@ The only two non-standard C libraries used are pthread and gtk+. gtk is used to 
 ![](https://github.com/valrotan/RenderEngine/blob/master/human.png)
 ![](https://github.com/valrotan/RenderEngine/blob/master/biglady.jpg)
 
+# Features
+- Easy-to-use command line interface (see usage below)
+- OBJ model input (supports MTL for polygon colors)
+- TGA image output
+- GTK window visualization
+- 24-bit RGB
+- Phong lighting model (ambient, diffuse, specular)
+- Point, Directional, and Spot lights
+- Reflections (no refractions yet)
+- Triangles visible from both sides
+- Grid sampling anti-aliasing
+- Multithreading
+
 ## How to run
-### Prerequisites:
+### Prerequisites
 - GTK+ needs to be installed for visualization. Without it, the visualization module will not work.
 *(GTK+ is not required for proper function of the renderer module)*
 ### Windows
