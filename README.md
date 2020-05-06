@@ -36,7 +36,3 @@ The source code is split into 4 main modules.
 - *renderer* - module responsible for tracking the scene state and performing raytracing. Depends on the *math* module.
 - *fileReader* - module to read in the .obj file with triangle verticies.
 - main.c has a lot most of the needed sample code to get started with modifying the scene and extending the project
-
-## Render times benchmarks (HD Human, dafault scene/obj) (***VERY MUCH NOT UP TO DATE***):
-- MacBookPro 2019 2.30 GHZ i5 : 6359ms ***not updated***
-- Dell XPS 15 2.20 GHZ i7: 426 ms ***not updated***
